@@ -16,7 +16,7 @@ router.use(auth);
 router.get('/status', ctrl.getStatus);
 router.post('/check-in', validate(schemas.checkIn), ctrl.checkIn);
 router.post('/check-out', validate(schemas.checkOut), ctrl.checkOut);
-router.get('/history', validate(schemas.history), ctrl.history);
-router.get('/daily', rbac('admin', 'hr', 'manager'), validate(schemas.daily), ctrl.daily);
+router.get('/history', validate(schemas.history, 'query'), ctrl.history);
+router.get('/daily', rbac('admin', 'hr', 'manager'), validate(schemas.daily, 'query'), ctrl.daily);
 
 module.exports = router;

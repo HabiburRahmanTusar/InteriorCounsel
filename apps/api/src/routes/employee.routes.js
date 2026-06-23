@@ -13,7 +13,7 @@ const router = express.Router();
 
 router.use(auth);
 
-router.get('/', rbac('admin', 'hr', 'manager'), validate(schemas.list), ctrl.list);
+router.get('/', rbac('admin', 'hr', 'manager'), validate(schemas.list, 'query'), ctrl.list);
 router.get('/:id', rbac('admin', 'hr'), ctrl.getById);
 router.post('/', rbac('admin', 'hr'), validate(schemas.create), ctrl.create);
 router.put('/:id', rbac('admin', 'hr'), validate(schemas.update), ctrl.update);

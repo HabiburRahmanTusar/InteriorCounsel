@@ -13,8 +13,8 @@ const router = express.Router();
 
 router.use(auth, rbac('admin', 'hr'));
 
-router.get('/daily', validate(schemas.daily), ctrl.daily);
-router.get('/monthly', validate(schemas.monthly), ctrl.monthly);
-router.get('/export', validate(schemas.exportReport), ctrl.exportReport);
+router.get('/daily', validate(schemas.daily, 'query'), ctrl.daily);
+router.get('/monthly', validate(schemas.monthly, 'query'), ctrl.monthly);
+router.get('/export', validate(schemas.exportReport, 'query'), ctrl.exportReport);
 
 module.exports = router;
