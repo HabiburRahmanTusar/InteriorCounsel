@@ -44,7 +44,7 @@ const attendanceSchema = new mongoose.Schema(
     checkOut: checkOutSchema,
     workingMinutes: { type: Number, default: 0, min: 0 },
   },
-  { timestamps: true },
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } },
 );
 
 attendanceSchema.index({ employeeId: 1, attendanceDate: 1 }, { unique: true });

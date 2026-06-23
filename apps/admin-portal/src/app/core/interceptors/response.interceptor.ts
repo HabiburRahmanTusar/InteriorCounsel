@@ -23,6 +23,6 @@ export const responseInterceptor: HttpInterceptorFn = (req, next) => {
         }
       }
       return event;
-    })
+    }),
   );
 };

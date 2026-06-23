@@ -18,7 +18,7 @@ dayjs.extend(timezone);
  * @returns {'On Time' | 'Late'}
  */
 function checkInStatus(checkInUtc, shift) {
-  const checkInLocal = dayjs(checkInUtc).tz(shift.timezone);
+  const checkInLocal = dayjs(checkInUtc).tz('Asia/Dhaka');
   const [sh, sm] = shift.startTime.split(':').map(Number);
   const shiftStartLocal = checkInLocal.hour(sh).minute(sm).second(0).millisecond(0);
   const thresholdLocal = shiftStartLocal.add(shift.gracePeriod || 0, 'minute');
@@ -27,7 +27,7 @@ function checkInStatus(checkInUtc, shift) {
 }
 
 function checkOutStatus(checkOutUtc, shift) {
-  const checkOutLocal = dayjs(checkOutUtc).tz(shift.timezone);
+  const checkOutLocal = dayjs(checkOutUtc).tz('Asia/Dhaka');
   const [eh, em] = shift.endTime.split(':').map(Number);
   const shiftEndLocal = checkOutLocal.hour(eh).minute(em).second(0).millisecond(0);
 

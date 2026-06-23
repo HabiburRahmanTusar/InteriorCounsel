@@ -11,7 +11,7 @@ const officeLocationSchema = new mongoose.Schema(
     longitude: { type: Number, required: true, min: -180, max: 180 },
     radius: { type: Number, required: true, min: 1, default: 100 },
   },
-  { timestamps: true },
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } },
 );
 
 module.exports = mongoose.model('OfficeLocation', officeLocationSchema);

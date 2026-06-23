@@ -12,7 +12,10 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, withComponentInputBinding(), withViewTransitions()),
-    provideHttpClient(withFetch(), withInterceptors([authInterceptor, responseInterceptor, errorInterceptor])),
+    provideHttpClient(
+      withFetch(),
+      withInterceptors([authInterceptor, responseInterceptor, errorInterceptor]),
+    ),
     {
       provide: APP_INITIALIZER,
       useFactory: (auth: AuthService) => () => auth.restoreSession(),

@@ -50,7 +50,6 @@ async function seed() {
       startTime: '09:00',
       endTime: '18:00',
       gracePeriod: 15,
-      timezone: 'Asia/Dhaka',
     });
 
     const nightShift = await Shift.create({
@@ -58,7 +57,6 @@ async function seed() {
       startTime: '21:00',
       endTime: '06:00',
       gracePeriod: 15,
-      timezone: 'Asia/Dhaka',
     });
     log.info('Shifts seeded successfully.');
 

@@ -10,7 +10,6 @@ exports.create = Joi.object({
   startTime: timeSchema.required(),
   endTime: timeSchema.required(),
   gracePeriod: Joi.number().integer().min(0).max(120).default(15),
-  timezone: Joi.string().default('Asia/Dhaka'),
 });
 
 exports.update = Joi.object({
@@ -18,5 +17,4 @@ exports.update = Joi.object({
   startTime: timeSchema,
   endTime: timeSchema,
   gracePeriod: Joi.number().integer().min(0).max(120),
-  timezone: Joi.string(),
 }).min(1);

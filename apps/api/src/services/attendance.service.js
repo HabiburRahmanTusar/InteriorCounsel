@@ -5,8 +5,7 @@ const { checkInStatus, checkOutStatus, workingMinutes, dayjs } = require('../uti
 
 exports.getStatus = async function getStatus(userId) {
   const user = await User.findById(userId).populate('shiftId');
-  const timezone = user?.shiftId?.timezone || 'Asia/Dhaka';
-  const localToday = dayjs().tz(timezone).startOf('day').toDate();
+  const localToday = dayjs().tz('Asia/Dhaka').startOf('day').toDate();
 
   const record = await Attendance.findOne({ employeeId: userId, attendanceDate: localToday });
 
@@ -44,8 +43,7 @@ exports.checkIn = async function checkIn({ userId, latitude, longitude }) {
     throw error;
   }
 
-  const timezone = user.shiftId.timezone;
-  const localToday = dayjs().tz(timezone).startOf('day').toDate();
+  const localToday = dayjs().tz('Asia/Dhaka').startOf('day').toDate();
 
   // Check if already checked in
   const exists = await Attendance.findOne({ employeeId: userId, attendanceDate: localToday });
@@ -100,8 +98,7 @@ exports.checkOut = async function checkOut({ userId, latitude, longitude }) {
     throw error;
   }
 
-  const timezone = user.shiftId.timezone;
-  const localToday = dayjs().tz(timezone).startOf('day').toDate();
+  const localToday = dayjs().tz('Asia/Dhaka').startOf('day').toDate();
 
   const record = await Attendance.findOne({ employeeId: userId, attendanceDate: localToday });
   if (!record || !record.checkIn) {

@@ -18,9 +18,8 @@ const shiftSchema = new mongoose.Schema(
       match: /^([01]\d|2[0-3]):([0-5]\d)$/,
     },
     gracePeriod: { type: Number, default: 15, min: 0, max: 120 },
-    timezone: { type: String, default: 'Asia/Dhaka' },
   },
-  { timestamps: true },
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } },
 );
 
 module.exports = mongoose.model('Shift', shiftSchema);
