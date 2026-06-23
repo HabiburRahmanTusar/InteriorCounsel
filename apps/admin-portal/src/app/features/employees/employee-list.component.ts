@@ -185,14 +185,14 @@ import { Employee, UserStatus } from '../../core/models/employee.model';
                       @if (isAdminOrHr()) {
                           <a
                             [routerLink]="['/employees', employee.id]"
-                            class="btn-link btn-link-indigo"
+                            class="btn-link-outline btn-link-outline-indigo"
                             >Edit</a
                           >
                         <button
                           (click)="toggleStatus(employee)"
-                          class="btn-link"
-                          [class.btn-link-amber]="employee.status === 'active'"
-                          [class.btn-link-emerald]="employee.status !== 'active'"
+                          class="btn-link-outline"
+                          [class.btn-link-outline-amber]="employee.status === 'active'"
+                          [class.btn-link-outline-emerald]="employee.status !== 'active'"
                         >
                           {{ employee.status === 'active' ? 'Deactivate' : 'Activate' }}
                         </button>
@@ -200,7 +200,7 @@ import { Employee, UserStatus } from '../../core/models/employee.model';
                       @if (isAdmin()) {
                         <button
                           (click)="deleteEmployee(employee)"
-                          class="btn-link btn-link-rose"
+                          class="btn-link-outline btn-link-outline-rose"
                         >
                           Delete
                         </button>

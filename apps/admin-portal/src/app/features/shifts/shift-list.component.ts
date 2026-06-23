@@ -109,13 +109,13 @@ import { Shift } from '../../core/models/shift.model';
                       <div class="flex justify-end gap-3">
                         <button
                           (click)="openEditModal(shift)"
-                          class="btn-link btn-link-indigo"
+                          class="btn-link-outline btn-link-outline-indigo"
                         >
                           Edit
                         </button>
                         <button
                           (click)="deleteShift(shift.id || shift._id!)"
-                          class="btn-link btn-link-rose"
+                          class="btn-link-outline btn-link-outline-rose"
                         >
                           Delete
                         </button>
