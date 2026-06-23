@@ -34,7 +34,7 @@ export class AuthService {
           email: payload.email,
           role: tokens.role || 'admin',
         };
-        this.setSession(tokens, user);
+        this.setSession(tokens, user, payload.rememberMe ?? false);
       }),
     );
   }
@@ -60,12 +60,18 @@ export class AuthService {
 
   // ---- Session helpers ----
 
-  setSession(tokens: AuthTokens, user: AuthUser): void {
+  setSession(tokens: AuthTokens, user: AuthUser, rememberMe: boolean = false): void {
     this._accessToken.set(tokens.accessToken);
     this._user.set(user);
-    localStorage.setItem('accessToken', tokens.accessToken);
-    localStorage.setItem('refreshToken', tokens.refreshToken);
-    localStorage.setItem('currentUser', JSON.stringify(user));
+    const storage = rememberMe ? localStorage : sessionStorage;
+    storage.setItem('accessToken', tokens.accessToken);
+    storage.setItem('refreshToken', tokens.refreshToken);
+    storage.setItem('currentUser', JSON.stringify(user));
+
+    const otherStorage = rememberMe ? sessionStorage : localStorage;
+    otherStorage.removeItem('accessToken');
+    otherStorage.removeItem('refreshToken');
+    otherStorage.removeItem('currentUser');
   }
 
   clearSession(): void {
@@ -74,11 +80,14 @@ export class AuthService {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('currentUser');
+    sessionStorage.removeItem('accessToken');
+    sessionStorage.removeItem('refreshToken');
+    sessionStorage.removeItem('currentUser');
   }
 
   restoreSession(): void {
-    const token = localStorage.getItem('accessToken');
-    const userStr = localStorage.getItem('currentUser');
+    const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
+    const userStr = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
     if (token) {
       this._accessToken.set(token);
     }
@@ -86,7 +95,7 @@ export class AuthService {
       try {
         this._user.set(JSON.parse(userStr));
       } catch (e) {
-        console.error('Failed to restore user from localStorage', e);
+        console.error('Failed to restore user from storage', e);
       }
     }
   }

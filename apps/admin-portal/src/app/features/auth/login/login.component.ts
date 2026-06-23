@@ -170,6 +170,21 @@ import { AuthTokens, AuthUser } from '../../../core/models/auth.model';
             }
           </div>
 
+          <div class="flex items-center">
+            <input
+              type="checkbox"
+              id="rememberMe"
+              formControlName="rememberMe"
+              class="h-4 w-4 text-indigo-600 focus:ring-indigo-600 border-slate-300 rounded cursor-pointer"
+            />
+            <label
+              for="rememberMe"
+              class="ml-2 block text-sm text-slate-600 cursor-pointer select-none"
+            >
+              Remember me
+            </label>
+          </div>
+
           <button
             type="submit"
             [disabled]="loading()"
@@ -194,6 +209,7 @@ export class LoginComponent {
   readonly form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(8)]],
+    rememberMe: [false],
   });
 
   private handleError(error: any): void {
@@ -207,19 +223,11 @@ export class LoginComponent {
     }
     this.errorMessage.set(null);
     this.loading.set(true);
-    const { email, password } = this.form.getRawValue();
+    const { email, password, rememberMe } = this.form.getRawValue();
     this.auth
-      .login({ email, password })
+      .login({ email, password, rememberMe })
       .pipe(
-        tap((tokens: AuthTokens) => {
-          const user: AuthUser = {
-            id: tokens.id || '',
-            employeeId: tokens.employeeId || '',
-            name: email.split('@')[0],
-            email,
-            role: 'admin',
-          };
-          this.auth.setSession(tokens, user);
+        tap(() => {
           this.router.navigate(['/dashboard']);
         }),
         catchError((err) => {
