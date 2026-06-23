@@ -1,24 +1,35 @@
-/**
- * Shift service — CRUD with delete guard.
- * Stubbed; implement later per build plan §7 (Employee & Shift APIs).
- */
+const Shift = require('../models/Shift');
+const User = require('../models/User');
 
 exports.list = async function list() {
-  // TODO: return all shifts
-  throw new Error('shift.service.list not implemented');
+  return Shift.find({});
 };
 
 exports.create = async function create(payload) {
-  // TODO: create shift
-  throw new Error('shift.service.create not implemented');
+  return Shift.create(payload);
 };
 
 exports.update = async function update(id, payload) {
-  // TODO: update shift config
-  throw new Error('shift.service.update not implemented');
+  const shift = await Shift.findByIdAndUpdate(id, payload, { new: true });
+  if (!shift) {
+    const error = new Error('Shift not found');
+    error.status = 404;
+    throw error;
+  }
+  return shift;
 };
 
 exports.remove = async function remove(id) {
-  // TODO: block delete if any employee is assigned to this shift
-  throw new Error('shift.service.remove not implemented');
+  const userCount = await User.countDocuments({ shiftId: id });
+  if (userCount > 0) {
+    const error = new Error('Cannot delete shift: employees are currently assigned to it');
+    error.status = 400;
+    throw error;
+  }
+  const shift = await Shift.findByIdAndDelete(id);
+  if (!shift) {
+    const error = new Error('Shift not found');
+    error.status = 404;
+    throw error;
+  }
 };

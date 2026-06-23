@@ -4,6 +4,10 @@ Monorepo for the Attendance & Workforce Management System — covers backend API
 
 > **Status:** Scaffolding only. Folder structure, configurations, Mongoose schemas, route definitions, controller signatures, Joi validators, Angular feature components, guards, interceptors, and services are in place. **No business logic has been implemented yet** — every controller returns `501 Not Implemented` and every service throws `Error('… not implemented')`. This is intentional so the structure can be reviewed before any logic lands.
 
+
+Email/Username: admin@attendly.com
+Password: password123
+
 ## Tech Stack
 
 | Layer        | Technology                                |

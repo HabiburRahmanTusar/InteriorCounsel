@@ -18,23 +18,20 @@ dayjs.extend(timezone);
  * @returns {'On Time' | 'Late'}
  */
 function checkInStatus(checkInUtc, shift) {
-  // TODO: implement timezone-aware comparison
-  // 1. Parse shift.startTime (HH:mm) in shift.timezone on checkInUtc's date.
-  // 2. Add gracePeriod minutes → threshold UTC.
-  // 3. Compare checkInUtc <= threshold → "On Time", else "Late".
-  throw new Error('time.checkInStatus not implemented');
+  const checkInLocal = dayjs(checkInUtc).tz(shift.timezone);
+  const [sh, sm] = shift.startTime.split(':').map(Number);
+  const shiftStartLocal = checkInLocal.hour(sh).minute(sm).second(0).millisecond(0);
+  const thresholdLocal = shiftStartLocal.add(shift.gracePeriod || 0, 'minute');
+
+  return checkInLocal.isAfter(thresholdLocal) ? 'Late' : 'On Time';
 }
 
-/**
- * Returns "Normal" or "Early Leave" given a check-out instant and shift config.
- *
- * @param {Date} checkOutUtc
- * @param {{endTime:string, timezone:string}} shift
- * @returns {'Normal' | 'Early Leave'}
- */
 function checkOutStatus(checkOutUtc, shift) {
-  // TODO: parse shift.endTime in shift.timezone on checkOutUtc's date → compare.
-  throw new Error('time.checkOutStatus not implemented');
+  const checkOutLocal = dayjs(checkOutUtc).tz(shift.timezone);
+  const [eh, em] = shift.endTime.split(':').map(Number);
+  const shiftEndLocal = checkOutLocal.hour(eh).minute(em).second(0).millisecond(0);
+
+  return checkOutLocal.isBefore(shiftEndLocal) ? 'Early Leave' : 'Normal';
 }
 
 /**

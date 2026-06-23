@@ -26,13 +26,13 @@ export class AuthService {
 
   login(payload: LoginPayload): Observable<AuthTokens> {
     return this.http.post<AuthTokens>(`${this.baseUrl}/login`, payload).pipe(
-      tap((tokens) => {
+      tap((tokens: any) => {
         const user: AuthUser = {
           id: tokens.id || '',
           employeeId: tokens.employeeId || '',
-          name: payload.email.split('@')[0],
+          name: tokens.name || payload.email.split('@')[0],
           email: payload.email,
-          role: 'admin',
+          role: tokens.role || 'admin',
         };
         this.setSession(tokens, user);
       }),
