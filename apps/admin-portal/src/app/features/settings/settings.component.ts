@@ -162,7 +162,7 @@ import { OfficeLocation } from '../../core/models/office-location.model';
                 <button
                   (click)="saveRules()"
                   [disabled]="savingRules()"
-                  class="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-semibold text-sm rounded-xl px-6 py-2.5 transition-colors shadow-sm shadow-indigo-100"
+                  class="btn btn-primary btn-primary-sm"
                 >
                   {{ savingRules() ? 'Saving...' : 'Save Changes' }}
                 </button>
@@ -205,7 +205,7 @@ import { OfficeLocation } from '../../core/models/office-location.model';
                 <button
                   (click)="saveCompany()"
                   [disabled]="savingCompany()"
-                  class="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-semibold text-sm rounded-xl px-6 py-2.5 transition-colors shadow-sm shadow-indigo-100"
+                  class="btn btn-primary btn-primary-sm"
                 >
                   {{ savingCompany() ? 'Saving...' : 'Save Changes' }}
                 </button>

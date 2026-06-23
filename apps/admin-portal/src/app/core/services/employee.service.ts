@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { Employee, EmployeeListParams, PaginatedResult } from '../models/employee.model';
@@ -21,7 +21,12 @@ export class EmployeeService {
     if (params.search) httpParams = httpParams.set('search', params.search);
     if (params.status) httpParams = httpParams.set('status', params.status);
 
-    return this.http.get<PaginatedResult<Employee>>(this.baseUrl, { params: httpParams });
+    return this.http.get<PaginatedResult<Employee>>(this.baseUrl, { params: httpParams }).pipe(
+      map((result) => ({
+        ...result,
+        data: result.data.map((emp: any) => ({ ...emp, id: emp._id ?? emp.id })),
+      })),
+    );
   }
 
   getById(id: string): Observable<Employee> {

@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import 'ngx-toastr/toastr';
 
 /* Global styles for the Workforce Management admin portal. */
 
@@ -26,4 +27,135 @@ body {
 
 .spacer {
   flex: 1 1 auto;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: 14px;
+  line-height: 1.25;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+  font-family: inherit;
+  white-space: nowrap;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+.btn-primary {
+  @extend .btn;
+  background-color: #4f46e5;
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(79, 70, 229, 0.1);
+
+  &:hover:not(:disabled) {
+    background-color: #4338ca;
+  }
+
+  &:disabled {
+    background-color: #a5b4fc;
+  }
+}
+
+.btn-primary-sm {
+  @extend .btn-primary;
+  padding: 10px 16px;
+  font-size: 14px;
+}
+
+.btn-primary-lg {
+  @extend .btn-primary;
+  padding: 14px 24px;
+  font-size: 14px;
+
+  &.btn-full {
+    width: 100%;
+  }
+}
+
+.btn-link {
+  @extend .btn;
+  background: transparent;
+  padding: 8px 12px;
+  box-shadow: none;
+  font-weight: 600;
+
+  &:hover:not(:disabled) {
+    background-color: transparent;
+  }
+}
+
+.btn-link-indigo {
+  @extend .btn-link;
+  color: #4f46e5;
+
+  &:hover:not(:disabled) {
+    color: #4338ca;
+  }
+}
+
+.btn-link-rose {
+  @extend .btn-link;
+  color: #e11d48;
+
+  &:hover:not(:disabled) {
+    color: #be123c;
+  }
+}
+
+.btn-link-amber {
+  @extend .btn-link;
+  color: #d97706;
+
+  &:hover:not(:disabled) {
+    color: #b45309;
+  }
+}
+
+.btn-link-emerald {
+  @extend .btn-link;
+  color: #059669;
+
+  &:hover:not(:disabled) {
+    color: #047857;
+  }
+}
+
+.btn-secondary {
+  @extend .btn;
+  background-color: #fff;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+  box-shadow: none;
+
+  &:hover:not(:disabled) {
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+  }
+}
+
+.btn-secondary-sm {
+  @extend .btn-secondary;
+  padding: 10px 20px;
+  font-size: 14px;
+}
+
+.btn-secondary-lg {
+  @extend .btn-secondary;
+  padding: 14px 24px;
+  font-size: 14px;
+
+  &.btn-full {
+    width: 100%;
+  }
 }

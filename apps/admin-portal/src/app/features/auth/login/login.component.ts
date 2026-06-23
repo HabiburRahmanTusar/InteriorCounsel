@@ -188,7 +188,7 @@ import { AuthTokens, AuthUser } from '../../../core/models/auth.model';
           <button
             type="submit"
             [disabled]="loading()"
-            class="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-semibold text-sm rounded-xl py-3.5 transition-colors shadow-sm shadow-indigo-100"
+            class="btn btn-primary btn-primary-lg btn-full"
           >
             <span>Sign in</span>
           </button>

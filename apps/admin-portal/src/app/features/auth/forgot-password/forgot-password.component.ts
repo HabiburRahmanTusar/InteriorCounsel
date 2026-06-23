@@ -72,14 +72,14 @@ import { AuthService } from '../../../core/services/auth.service';
             <button
               type="submit"
               [disabled]="loading()"
-              class="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-semibold text-sm rounded-xl py-3.5 transition-colors shadow-sm shadow-indigo-100"
+              class="btn btn-primary btn-primary-lg btn-full"
             >
               <span>Send reset link</span>
             </button>
 
             <a
               routerLink="/login"
-              class="w-full flex items-center justify-center border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm rounded-xl py-3.5 transition-colors mt-2"
+              class="btn btn-secondary btn-secondary-lg btn-full"
             >
               Cancel and return
             </a>

@@ -10,6 +10,7 @@ import { RouterLink } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { catchError, finalize, of, tap } from 'rxjs';
 
+import { ToastrService } from 'ngx-toastr';
 import { EmployeeService } from '../../core/services/employee.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Employee, UserStatus } from '../../core/models/employee.model';
@@ -28,7 +29,7 @@ import { Employee, UserStatus } from '../../core/models/employee.model';
         </div>
         <button
           routerLink="/employees/new"
-          class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl px-4 py-2.5 transition-colors shadow-sm"
+          class="btn btn-primary"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -182,19 +183,16 @@ import { Employee, UserStatus } from '../../core/models/employee.model';
                     </td>
                     <td class="px-6 py-4 text-right text-sm space-x-3">
                       @if (isAdminOrHr()) {
-                        <a
-                          [routerLink]="['/employees', employee.id]"
-                          class="text-indigo-600 hover:text-indigo-700 font-semibold"
-                          >Edit</a
-                        >
+                          <a
+                            [routerLink]="['/employees', employee.id]"
+                            class="btn-link btn-link-indigo"
+                            >Edit</a
+                          >
                         <button
                           (click)="toggleStatus(employee)"
-                          class="font-semibold transition-colors"
-                          [class]="
-                            employee.status === 'active'
-                              ? 'text-amber-600 hover:text-amber-700'
-                              : 'text-emerald-600 hover:text-emerald-700'
-                          "
+                          class="btn-link"
+                          [class.btn-link-amber]="employee.status === 'active'"
+                          [class.btn-link-emerald]="employee.status !== 'active'"
                         >
                           {{ employee.status === 'active' ? 'Deactivate' : 'Activate' }}
                         </button>
@@ -202,7 +200,7 @@ import { Employee, UserStatus } from '../../core/models/employee.model';
                       @if (isAdmin()) {
                         <button
                           (click)="deleteEmployee(employee)"
-                          class="text-rose-600 hover:text-rose-700 font-semibold"
+                          class="btn-link btn-link-rose"
                         >
                           Delete
                         </button>
@@ -247,6 +245,7 @@ import { Employee, UserStatus } from '../../core/models/employee.model';
 export class EmployeeListComponent implements OnDestroy {
   private employeeService = inject(EmployeeService);
   private authService = inject(AuthService);
+  private toastr = inject(ToastrService);
   private destroy$ = new Subject<void>();
 
   readonly search = signal('');
@@ -294,7 +293,7 @@ export class EmployeeListComponent implements OnDestroy {
           this.employees.set(result.data);
         }),
         catchError((err) => {
-          console.error('Failed to load employees', err);
+          this.toastr.error('Failed to load employees', 'Error');
           return of(null);
         }),
         finalize(() => this.loading.set(false)),

@@ -84,7 +84,7 @@ import { ReportService } from '../../core/services/report.service';
           <button
             (click)="exportReport()"
             [disabled]="exporting()"
-            class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-semibold text-sm rounded-xl px-5 py-2.5 transition-colors shadow-sm shadow-indigo-100"
+            class="btn btn-primary btn-primary-sm"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

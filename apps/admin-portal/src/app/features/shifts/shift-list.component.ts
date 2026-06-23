@@ -20,7 +20,7 @@ import { Shift } from '../../core/models/shift.model';
         </div>
         <button
           (click)="openNewModal()"
-          class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl px-4 py-2.5 transition-colors shadow-sm shadow-indigo-100"
+          class="btn btn-primary btn-primary-sm"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -109,13 +109,13 @@ import { Shift } from '../../core/models/shift.model';
                       <div class="flex justify-end gap-3">
                         <button
                           (click)="openEditModal(shift)"
-                          class="text-indigo-600 hover:text-indigo-700 font-semibold"
+                          class="btn-link btn-link-indigo"
                         >
                           Edit
                         </button>
                         <button
                           (click)="deleteShift(shift.id || shift._id!)"
-                          class="text-rose-600 hover:text-rose-700 font-semibold"
+                          class="btn-link btn-link-rose"
                         >
                           Delete
                         </button>
@@ -235,14 +235,14 @@ import { Shift } from '../../core/models/shift.model';
               <button
                 type="button"
                 (click)="closeModal()"
-                class="border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm rounded-xl px-5 py-2.5 transition-colors"
+                class="btn btn-secondary btn-secondary-sm"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 [disabled]="saving()"
-                class="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-semibold text-sm rounded-xl px-6 py-2.5 transition-colors shadow-sm shadow-indigo-100"
+                class="btn btn-primary btn-primary-sm"
               >
                 {{ saving() ? 'Saving...' : 'Save' }}
               </button>

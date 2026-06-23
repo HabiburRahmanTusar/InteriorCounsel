@@ -176,20 +176,20 @@ import { Shift } from '../../core/models/shift.model';
           </div>
 
           <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
-            <button
-              type="button"
-              (click)="cancel()"
-              class="border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm rounded-xl px-5 py-2.5 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              [disabled]="saving()"
-              class="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-semibold text-sm rounded-xl px-6 py-2.5 transition-colors shadow-sm shadow-indigo-100"
-            >
-              {{ saving() ? 'Saving...' : 'Save' }}
-            </button>
+              <button
+                type="button"
+                (click)="cancel()"
+                class="btn btn-secondary btn-secondary-sm"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                [disabled]="saving()"
+                class="btn btn-primary btn-primary-sm"
+              >
+                {{ saving() ? 'Saving...' : 'Save' }}
+              </button>
           </div>
         </form>
       </div>
