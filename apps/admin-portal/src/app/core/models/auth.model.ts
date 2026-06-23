@@ -12,6 +12,8 @@ export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
   expiresIn?: number;
+  id?: string;
+  employeeId?: string;
 }
 
 export interface LoginPayload {

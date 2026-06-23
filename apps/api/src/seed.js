@@ -28,7 +28,7 @@ const log = {
 async function seed() {
   const uri = config.mongodbUri || 'mongodb://localhost:27017/workforce_management';
   log.info(`Connecting to database: ${uri}`);
-  
+
   await connectDatabase(uri);
 
   try {
@@ -81,7 +81,7 @@ async function seed() {
 
     // 4. Seed Users (Scaffolding / Passwords hashed automatically via User model pre-save hook)
     log.info('Seeding Users...');
-    
+
     // Seed Admin
     const adminUser = await User.create({
       employeeId: 'EMP0001',

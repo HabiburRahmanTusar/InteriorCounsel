@@ -7,7 +7,7 @@
     "start": "ng serve --proxy-config proxy.conf.json",
     "build": "ng build",
     "test": "ng test --watch=false --browsers=ChromeHeadless",
-    "lint": "ng lint",
+    "lint": "prettier --check \"src/**/*.{ts,html,scss}\" && tsc --noEmit -p tsconfig.app.json",
     "format": "prettier --write \"src/**/*.{ts,html,scss}\""
   },
   "dependencies": {

@@ -1,5 +1,17 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  signal,
+  computed,
+  inject,
+  OnDestroy,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
+import { catchError, finalize, of, tap } from 'rxjs';
+
+import { EmployeeService } from '../../core/services/employee.service';
+import { Employee, UserStatus } from '../../core/models/employee.model';
 
 @Component({
   selector: 'wfm-employee-list',
@@ -17,36 +29,70 @@ import { RouterLink } from '@angular/router';
           routerLink="/employees/new"
           class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl px-4 py-2.5 transition-colors shadow-sm"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            />
           </svg>
           <span>Add employee</span>
         </button>
       </div>
 
       <!-- Filters -->
-      <div class="bg-white border border-slate-200/80 rounded-2xl p-5 flex flex-col sm:flex-row gap-4">
+      <div
+        class="bg-white border border-slate-200/80 rounded-2xl p-5 flex flex-col sm:flex-row gap-4"
+      >
         <div class="flex-1">
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Search directory</label>
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5"
+            >Search directory</label
+          >
           <input
             type="text"
+            [value]="search()"
+            (input)="onSearch($event)"
             placeholder="Search by name, email or employee ID"
             class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
           />
         </div>
         <div class="w-full sm:w-48">
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Status</label>
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5"
+            >Status</label
+          >
           <div class="relative">
             <select
+              [value]="status()"
+              (change)="onStatusChange($event)"
               class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all appearance-none cursor-pointer pr-10"
             >
               <option value="">All</option>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </select>
-            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            <div
+              class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 9l-7 7-7-7"
+                />
               </svg>
             </div>
           </div>
@@ -59,41 +105,200 @@ import { RouterLink } from '@angular/router';
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="border-b border-slate-100 bg-slate-50/70">
-                <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Employee ID</th>
-                <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Name</th>
-                <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Email</th>
-                <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Designation</th>
-                <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Status</th>
-                <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4 text-right">Actions</th>
+                <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
+                  Employee ID
+                </th>
+                <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
+                  Name
+                </th>
+                <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
+                  Email
+                </th>
+                <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
+                  Designation
+                </th>
+                <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
+                  Status
+                </th>
+                <th
+                  class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4 text-right"
+                >
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td colspan="6" class="px-6 py-12 text-center text-slate-400">
-                  <div class="flex flex-col items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    <span class="text-sm font-medium">No employees found</span>
-                  </div>
-                </td>
-              </tr>
+              @if (loading()) {
+                <tr>
+                  <td colspan="6" class="px-6 py-12 text-center text-slate-400">
+                    <span class="text-sm font-medium">Loading employees...</span>
+                  </td>
+                </tr>
+              } @else if (employees().length === 0) {
+                <tr>
+                  <td colspan="6" class="px-6 py-12 text-center text-slate-400">
+                    <div class="flex flex-col items-center gap-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-8 w-8 text-slate-300"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                        />
+                      </svg>
+                      <span class="text-sm font-medium">No employees found</span>
+                    </div>
+                  </td>
+                </tr>
+              } @else {
+                @for (employee of employees(); track employee.id) {
+                  <tr class="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
+                    <td class="px-6 py-4 text-sm font-medium text-slate-900">
+                      {{ employee.employeeId }}
+                    </td>
+                    <td class="px-6 py-4 text-sm text-slate-700">{{ employee.name }}</td>
+                    <td class="px-6 py-4 text-sm text-slate-700">{{ employee.email }}</td>
+                    <td class="px-6 py-4 text-sm text-slate-700">
+                      {{ employee.designation || '—' }}
+                    </td>
+                    <td class="px-6 py-4 text-sm">
+                      <span
+                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                        [class]="
+                          employee.status === 'active'
+                            ? 'bg-emerald-50 text-emerald-700'
+                            : 'bg-rose-50 text-rose-700'
+                        "
+                      >
+                        {{ employee.status }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 text-right text-sm">
+                      <a
+                        [routerLink]="['/employees', employee.id]"
+                        class="text-indigo-600 hover:text-indigo-700 font-semibold"
+                        >Edit</a
+                      >
+                    </td>
+                  </tr>
+                }
+              }
             </tbody>
           </table>
         </div>
 
         <!-- Paginator -->
-        <div class="border-t border-slate-100 px-6 py-4 flex items-center justify-between bg-slate-50/50">
-          <span class="text-xs text-slate-500">Showing 0 of 0 employees</span>
+        <div
+          class="border-t border-slate-100 px-6 py-4 flex items-center justify-between bg-slate-50/50"
+        >
+          <span class="text-xs text-slate-500"
+            >Showing {{ pagination().data.length }} of
+            {{ pagination().pagination.total }} employees</span
+          >
           <div class="flex gap-2">
-            <button class="border border-slate-200/80 bg-white hover:bg-slate-50 disabled:opacity-50 text-slate-600 rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors" disabled>Previous</button>
-            <button class="border border-slate-200/80 bg-white hover:bg-slate-50 disabled:opacity-50 text-slate-600 rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors" disabled>Next</button>
+            <button
+              (click)="prevPage()"
+              [disabled]="pagination().pagination.page <= 1"
+              class="border border-slate-200/80 bg-white hover:bg-slate-50 disabled:opacity-50 text-slate-600 rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors"
+            >
+              Previous
+            </button>
+            <button
+              (click)="nextPage()"
+              [disabled]="pagination().pagination.page >= pagination().pagination.totalPages"
+              class="border border-slate-200/80 bg-white hover:bg-slate-50 disabled:opacity-50 text-slate-600 rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors"
+            >
+              Next
+            </button>
           </div>
         </div>
       </div>
     </div>
   `,
 })
-export class EmployeeListComponent {
-  displayedColumns = ['employeeId', 'name', 'email', 'designation', 'status', 'actions'];
+export class EmployeeListComponent implements OnDestroy {
+  private employeeService = inject(EmployeeService);
+  private destroy$ = new Subject<void>();
+
+  readonly search = signal('');
+  readonly status = signal('');
+  readonly page = signal(1);
+  readonly loading = signal(false);
+
+  readonly employees = signal<Employee[]>([]);
+  readonly pagination = computed(() => ({
+    data: this.employees(),
+    pagination: {
+      page: this.page(),
+      limit: 10,
+      total: this.employees().length,
+      totalPages: Math.ceil(this.employees().length / 10) || 1,
+    },
+  }));
+
+  constructor() {
+    this.loadEmployees();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  loadEmployees() {
+    this.loading.set(true);
+    this.employeeService
+      .list({
+        page: this.page(),
+        limit: 10,
+        search: this.search() || undefined,
+        status: this.status() as UserStatus | undefined,
+      })
+      .pipe(
+        tap((result) => {
+          this.employees.set(result.data);
+        }),
+        catchError((err) => {
+          console.error('Failed to load employees', err);
+          return of(null);
+        }),
+        finalize(() => this.loading.set(false)),
+        takeUntil(this.destroy$),
+      )
+      .subscribe();
+  }
+
+  onSearch(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.search.set(value);
+    this.page.set(1);
+    this.loadEmployees();
+  }
+
+  onStatusChange(event: Event) {
+    const value = (event.target as HTMLSelectElement).value;
+    this.status.set(value);
+    this.page.set(1);
+    this.loadEmployees();
+  }
+
+  prevPage() {
+    if (this.page() > 1) {
+      this.page.update((p) => p - 1);
+      this.loadEmployees();
+    }
+  }
+
+  nextPage() {
+    if (this.page() < this.pagination().pagination.totalPages) {
+      this.page.update((p) => p + 1);
+      this.loadEmployees();
+    }
+  }
 }

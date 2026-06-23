@@ -20,7 +20,11 @@ router.put(
   validate(schemas.updateOfficeLocation),
   ctrl.updateOfficeLocation,
 );
-router.put('/attendance-rules', validate(schemas.updateAttendanceRules), ctrl.updateAttendanceRules);
+router.put(
+  '/attendance-rules',
+  validate(schemas.updateAttendanceRules),
+  ctrl.updateAttendanceRules,
+);
 router.get('/company', ctrl.getCompany);
 router.put('/company', validate(schemas.updateCompany), ctrl.updateCompany);
 

@@ -8,11 +8,7 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
   selector: 'wfm-main-layout',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    RouterOutlet,
-    HeaderComponent,
-    SidebarComponent,
-  ],
+  imports: [RouterOutlet, HeaderComponent, SidebarComponent],
   template: `
     <div class="flex h-screen overflow-hidden bg-slate-50">
       <!-- Sidebar -->

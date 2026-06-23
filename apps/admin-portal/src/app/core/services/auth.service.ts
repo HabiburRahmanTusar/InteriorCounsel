@@ -1,6 +1,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 import { environment } from '../../../environments/environment';
 import { AuthTokens, LoginPayload, AuthUser } from '../models/auth.model';
@@ -24,13 +25,25 @@ export class AuthService {
   currentRole = computed(() => this._user()?.role ?? null);
 
   login(payload: LoginPayload): Observable<AuthTokens> {
-    // TODO: POST /auth/login — store tokens, hydrate user, return tokens
-    return this.http.post<AuthTokens>(`${this.baseUrl}/login`, payload);
+    return this.http.post<AuthTokens>(`${this.baseUrl}/login`, payload).pipe(
+      tap((tokens) => {
+        const user: AuthUser = {
+          id: tokens.id || '',
+          employeeId: tokens.employeeId || '',
+          name: payload.email.split('@')[0],
+          email: payload.email,
+          role: 'admin',
+        };
+        this.setSession(tokens, user);
+      }),
+    );
   }
 
   logout(): Observable<void> {
-    // TODO: POST /auth/logout with refresh token, then clear local session
-    return of(void 0);
+    const refreshToken = localStorage.getItem('refreshToken');
+    return this.http
+      .post<void>(`${this.baseUrl}/logout`, { refreshToken })
+      .pipe(tap(() => this.clearSession()));
   }
 
   refreshToken(refreshToken: string): Observable<AuthTokens> {
@@ -49,12 +62,32 @@ export class AuthService {
 
   setSession(tokens: AuthTokens, user: AuthUser): void {
     this._accessToken.set(tokens.accessToken);
-    // TODO: persist to localStorage / sessionStorage
+    this._user.set(user);
+    localStorage.setItem('accessToken', tokens.accessToken);
+    localStorage.setItem('refreshToken', tokens.refreshToken);
+    localStorage.setItem('currentUser', JSON.stringify(user));
   }
 
   clearSession(): void {
     this._accessToken.set(null);
     this._user.set(null);
-    // TODO: clear persistence
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('currentUser');
+  }
+
+  restoreSession(): void {
+    const token = localStorage.getItem('accessToken');
+    const userStr = localStorage.getItem('currentUser');
+    if (token) {
+      this._accessToken.set(token);
+    }
+    if (userStr) {
+      try {
+        this._user.set(JSON.parse(userStr));
+      } catch (e) {
+        console.error('Failed to restore user from localStorage', e);
+      }
+    }
   }
 }
