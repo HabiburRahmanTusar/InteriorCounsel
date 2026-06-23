@@ -13,7 +13,7 @@ const router = express.Router();
 
 router.use(auth);
 
-router.get('/status', ctrl.status);
+router.get('/status', ctrl.getStatus);
 router.post('/check-in', validate(schemas.checkIn), ctrl.checkIn);
 router.post('/check-out', validate(schemas.checkOut), ctrl.checkOut);
 router.get('/history', validate(schemas.history), ctrl.history);
