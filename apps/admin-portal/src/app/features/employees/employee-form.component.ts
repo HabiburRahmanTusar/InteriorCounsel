@@ -106,7 +106,6 @@ import { Shift } from '../../core/models/shift.model';
                 class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
               />
             </div>
-          </div>
             <div>
               <label
                 class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5"
@@ -284,8 +283,8 @@ export class EmployeeFormComponent implements OnDestroy {
             designation: emp.designation || '',
             salary: emp.salary ?? 0,
             role: emp.role,
-            shiftId: emp.shiftId || '',
-            officeLocationId: emp.officeLocationId || '',
+            shiftId: (emp.shiftId as any)?._id || emp.shiftId || '',
+            officeLocationId: (emp.officeLocationId as any)?._id || emp.officeLocationId || '',
             status: emp.status,
           });
         }),
@@ -307,6 +306,8 @@ export class EmployeeFormComponent implements OnDestroy {
     this.saving.set(true);
     const raw = this.form.getRawValue();
     const payload: any = { ...raw };
+    if (!payload.shiftId) payload.shiftId = null;
+    if (!payload.officeLocationId) payload.officeLocationId = null;
     if (!this.isEdit()) {
       delete payload.employeeId;
       payload.password = 'password123'; // Default password for new employees

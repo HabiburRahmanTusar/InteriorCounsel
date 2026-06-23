@@ -120,6 +120,9 @@ import { Employee, UserStatus } from '../../core/models/employee.model';
                   Designation
                 </th>
                 <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
+                  Role
+                </th>
+                <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
                   Status
                 </th>
                 <th
@@ -132,13 +135,13 @@ import { Employee, UserStatus } from '../../core/models/employee.model';
             <tbody>
               @if (loading()) {
                 <tr>
-                  <td colspan="6" class="px-6 py-12 text-center text-slate-400">
+                  <td colspan="7" class="px-6 py-12 text-center text-slate-400">
                     <span class="text-sm font-medium">Loading employees...</span>
                   </td>
                 </tr>
               } @else if (employees().length === 0) {
                 <tr>
-                  <td colspan="6" class="px-6 py-12 text-center text-slate-400">
+                  <td colspan="7" class="px-6 py-12 text-center text-slate-400">
                     <div class="flex flex-col items-center gap-2">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -168,6 +171,22 @@ import { Employee, UserStatus } from '../../core/models/employee.model';
                     <td class="px-6 py-4 text-sm text-slate-700">{{ employee.email }}</td>
                     <td class="px-6 py-4 text-sm text-slate-700">
                       {{ employee.designation || '—' }}
+                    </td>
+                    <td class="px-6 py-4 text-sm">
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider"
+                        [class]="
+                          employee.role === 'admin'
+                            ? 'bg-indigo-50 text-indigo-700 border border-indigo-100'
+                            : employee.role === 'hr'
+                              ? 'bg-purple-50 text-purple-700 border border-purple-100'
+                              : employee.role === 'manager'
+                                ? 'bg-sky-50 text-sky-700 border border-sky-100'
+                                : 'bg-slate-50 text-slate-600 border border-slate-200/60'
+                        "
+                      >
+                        {{ employee.role }}
+                      </span>
                     </td>
                     <td class="px-6 py-4 text-sm">
                       <span

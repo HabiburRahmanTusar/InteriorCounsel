@@ -3,7 +3,7 @@
  */
 const Joi = require('joi');
 
-const idSchema = Joi.string().hex().length(24);
+const idSchema = Joi.string().hex().length(24).allow(null).empty('').default(null);
 
 exports.list = Joi.object({
   page: Joi.number().integer().min(1).default(1),
