@@ -9,12 +9,11 @@ exports.list = Joi.object({
   page: Joi.number().integer().min(1).default(1),
   limit: Joi.number().integer().min(1).max(200).default(20),
   search: Joi.string().trim().allow(''),
-  departmentId: idSchema,
   status: Joi.string().valid('active', 'inactive'),
 }).default({});
 
 exports.create = Joi.object({
-  employeeId: Joi.string().alphanum().min(2).max(20).required(),
+  employeeId: Joi.string().alphanum().min(2).max(20),
   name: Joi.string().trim().min(2).max(120).required(),
   email: Joi.string().email().required(),
   password: Joi.string().min(8).max(128).required(),
@@ -22,7 +21,6 @@ exports.create = Joi.object({
   designation: Joi.string().trim().max(120).allow(''),
   role: Joi.string().valid('admin', 'hr', 'manager', 'employee').default('employee'),
   shiftId: idSchema,
-  departmentId: idSchema,
   officeLocationId: idSchema,
 });
 
@@ -33,7 +31,6 @@ exports.update = Joi.object({
   designation: Joi.string().trim().max(120).allow(''),
   role: Joi.string().valid('admin', 'hr', 'manager', 'employee'),
   shiftId: idSchema,
-  departmentId: idSchema,
   officeLocationId: idSchema,
   status: Joi.string().valid('active', 'inactive'),
   password: Joi.string().min(8).max(128),
@@ -41,8 +38,4 @@ exports.update = Joi.object({
 
 exports.assignShift = Joi.object({
   shiftId: idSchema.required(),
-});
-
-exports.assignDepartment = Joi.object({
-  departmentId: idSchema.required(),
 });

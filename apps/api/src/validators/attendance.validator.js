@@ -22,5 +22,4 @@ exports.history = Joi.object({
 
 exports.daily = Joi.object({
   date: Joi.date().iso().required(),
-  departmentId: Joi.string().hex().length(24),
 }).default({});

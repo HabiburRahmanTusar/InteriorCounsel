@@ -1,14 +1,11 @@
 const User = require('../models/User');
 
-exports.list = async function list({ page, limit, search, departmentId, status }) {
+exports.list = async function list({ page, limit, search, status }) {
   const query = {};
 
   if (search) {
     const rx = new RegExp(search, 'i');
     query.$or = [{ name: rx }, { email: rx }, { employeeId: rx }];
-  }
-  if (departmentId) {
-    query.departmentId = departmentId;
   }
   if (status) {
     query.status = status;
@@ -19,7 +16,6 @@ exports.list = async function list({ page, limit, search, departmentId, status }
     .skip((page - 1) * limit)
     .limit(limit)
     .populate('shiftId')
-    .populate('departmentId')
     .populate('officeLocationId')
     .sort({ createdAt: -1 });
 
@@ -32,7 +28,6 @@ exports.list = async function list({ page, limit, search, departmentId, status }
 exports.getById = async function getById(id) {
   const user = await User.findById(id)
     .populate('shiftId')
-    .populate('departmentId')
     .populate('officeLocationId');
   if (!user) {
     const error = new Error('User not found');
@@ -51,12 +46,16 @@ exports.create = async function create(payload) {
     throw error;
   }
 
-  const empIdExists = await User.findOne({ employeeId: payload.employeeId });
-  if (empIdExists) {
-    const error = new Error('Employee ID is already taken');
-    error.status = 400;
-    throw error;
+  // Auto-generate sequential employee ID
+  const lastUser = await User.findOne({ employeeId: /^EMP\d+$/ }).sort({ employeeId: -1 });
+  let nextNum = 1;
+  if (lastUser) {
+    const match = lastUser.employeeId.match(/^EMP(\d+)$/);
+    if (match) {
+      nextNum = parseInt(match[1], 10) + 1;
+    }
   }
+  payload.employeeId = `EMP${String(nextNum).padStart(4, '0')}`;
 
   const user = await User.create(payload);
   return user.toSafeJSON();
@@ -93,15 +92,13 @@ exports.update = async function update(id, payload) {
   return user.toSafeJSON();
 };
 
-exports.deactivate = async function deactivate(id) {
-  const user = await User.findById(id);
+exports.remove = async function remove(id) {
+  const user = await User.findByIdAndDelete(id);
   if (!user) {
     const error = new Error('User not found');
     error.status = 404;
     throw error;
   }
-  user.status = 'inactive';
-  await user.save();
 };
 
 exports.assignShift = async function assignShift(id, shiftId) {
@@ -112,18 +109,6 @@ exports.assignShift = async function assignShift(id, shiftId) {
     throw error;
   }
   user.shiftId = shiftId;
-  await user.save();
-  return user.toSafeJSON();
-};
-
-exports.assignDepartment = async function assignDepartment(id, departmentId) {
-  const user = await User.findById(id);
-  if (!user) {
-    const error = new Error('User not found');
-    error.status = 404;
-    throw error;
-  }
-  user.departmentId = departmentId;
   await user.save();
   return user.toSafeJSON();
 };

@@ -3,8 +3,6 @@ import { Subject, of } from 'rxjs';
 import { catchError, finalize, tap, takeUntil } from 'rxjs';
 
 import { ReportService } from '../../core/services/report.service';
-import { DepartmentService } from '../../core/services/department.service';
-import { Department } from '../../core/models/department.model';
 
 @Component({
   selector: 'wfm-report',
@@ -20,7 +18,7 @@ import { Department } from '../../core/models/department.model';
 
       <!-- Filters -->
       <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
           <div>
             <label
               class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5"
@@ -44,47 +42,6 @@ import { Department } from '../../core/models/department.model';
               (input)="setTo($event)"
               class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all cursor-pointer"
             />
-          </div>
-          <div>
-            <label
-              class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5"
-              >Department</label
-            >
-            <div class="relative">
-              <select
-                [value]="departmentId()"
-                (change)="setDepartmentId($event)"
-                class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all appearance-none cursor-pointer pr-10"
-              >
-                <option value="">All Departments</option>
-                @for (dept of departments(); track dept.id) {
-                  <option [value]="dept.id">{{ dept.name }}</option>
-                }
-              </select>
-              @if (departmentsLoading()) {
-                <div class="absolute inset-y-0 right-8 flex items-center px-2 text-slate-400">
-                  <span class="text-xs">Loading...</span>
-                </div>
-              }
-              <div
-                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </div>
-            </div>
           </div>
           <div>
             <label
@@ -181,7 +138,6 @@ import { Department } from '../../core/models/department.model';
 })
 export class ReportComponent implements OnDestroy {
   private reportService = inject(ReportService);
-  private departmentService = inject(DepartmentService);
   private destroy$ = new Subject<void>();
 
   private getToday(): string {
@@ -203,11 +159,6 @@ export class ReportComponent implements OnDestroy {
     this.to.set(value);
   }
 
-  setDepartmentId(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value;
-    this.departmentId.set(value);
-  }
-
   setFormat(event: Event): void {
     const value = (event.target as HTMLSelectElement).value as 'excel' | 'csv' | 'pdf';
     this.format.set(value);
@@ -215,23 +166,8 @@ export class ReportComponent implements OnDestroy {
 
   readonly from = signal(this.getToday());
   readonly to = signal(this.getToday());
-  readonly departmentId = signal('');
   readonly format = signal<'excel' | 'csv' | 'pdf'>('excel');
   readonly exporting = signal(false);
-  readonly departments = signal<Department[]>([]);
-  readonly departmentsLoading = signal(true);
-
-  constructor() {
-    this.departmentService
-      .list()
-      .pipe(
-        tap((data) => this.departments.set(data)),
-        catchError(() => of([])),
-        finalize(() => this.departmentsLoading.set(false)),
-        takeUntil(this.destroy$),
-      )
-      .subscribe();
-  }
 
   exportReport() {
     if (!this.from() || !this.to()) return;
@@ -241,7 +177,6 @@ export class ReportComponent implements OnDestroy {
         format: this.format(),
         from: this.from(),
         to: this.to(),
-        departmentId: this.departmentId() || undefined,
       })
       .pipe(
         catchError(() => of(null)),

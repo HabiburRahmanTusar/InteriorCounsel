@@ -147,16 +147,13 @@ exports.history = async function history({ userId, from, to, page, limit }) {
   };
 };
 
-exports.daily = async function daily({ date, departmentId }) {
+exports.daily = async function daily({ date }) {
   // Use Asia/Dhaka or convert the date string to start of day in Dhaka
   const targetDate = dayjs(date).tz('Asia/Dhaka').startOf('day').toDate();
 
   const userQuery = { status: 'active' };
-  if (departmentId) {
-    userQuery.departmentId = departmentId;
-  }
 
-  const users = await User.find(userQuery).populate('departmentId');
+  const users = await User.find(userQuery);
   const attendanceLogs = await Attendance.find({ attendanceDate: targetDate });
 
   const logMap = new Map(attendanceLogs.map((log) => [log.employeeId.toString(), log]));
@@ -167,7 +164,6 @@ exports.daily = async function daily({ date, departmentId }) {
       employeeId: user._id,
       employeeName: user.name,
       employeeCode: user.employeeId,
-      department: user.departmentId?.name || '',
       checkIn: log?.checkIn
         ? {
             time: log.checkIn.time,

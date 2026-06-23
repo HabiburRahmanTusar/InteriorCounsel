@@ -65,13 +65,13 @@ exports.history = async (req, res, next) => {
 
 exports.daily = async (req, res, next) => {
   try {
-    const { date, departmentId } = req.query;
+    const { date } = req.query;
     if (!date) {
       const error = new Error('Date parameter is required');
       error.status = 400;
       throw error;
     }
-    const data = await attendanceService.daily({ date, departmentId });
+    const data = await attendanceService.daily({ date });
     return apiResponse.ok(res, data);
   } catch (err) {
     return next(err);

@@ -17,13 +17,7 @@ router.get('/', rbac('admin', 'hr', 'manager'), validate(schemas.list, 'query'),
 router.get('/:id', rbac('admin', 'hr'), ctrl.getById);
 router.post('/', rbac('admin', 'hr'), validate(schemas.create), ctrl.create);
 router.put('/:id', rbac('admin', 'hr'), validate(schemas.update), ctrl.update);
-router.delete('/:id', rbac('admin'), ctrl.deactivate);
+router.delete('/:id', rbac('admin'), ctrl.remove);
 router.put('/:id/shift', rbac('admin', 'hr'), validate(schemas.assignShift), ctrl.assignShift);
-router.put(
-  '/:id/department',
-  rbac('admin', 'hr'),
-  validate(schemas.assignDepartment),
-  ctrl.assignDepartment,
-);
 
 module.exports = router;

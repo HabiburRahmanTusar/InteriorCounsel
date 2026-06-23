@@ -11,7 +11,6 @@ export interface Employee {
   designation?: string;
   role: UserRole;
   shiftId?: string;
-  departmentId?: string;
   officeLocationId?: string;
   status: UserStatus;
   createdAt: string;
@@ -22,7 +21,6 @@ export interface EmployeeListParams {
   page?: number;
   limit?: number;
   search?: string;
-  departmentId?: string;
   status?: UserStatus;
 }
 

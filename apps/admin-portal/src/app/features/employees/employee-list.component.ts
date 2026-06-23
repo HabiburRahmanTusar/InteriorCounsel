@@ -11,6 +11,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { catchError, finalize, of, tap } from 'rxjs';
 
 import { EmployeeService } from '../../core/services/employee.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Employee, UserStatus } from '../../core/models/employee.model';
 
 @Component({
@@ -179,12 +180,33 @@ import { Employee, UserStatus } from '../../core/models/employee.model';
                         {{ employee.status }}
                       </span>
                     </td>
-                    <td class="px-6 py-4 text-right text-sm">
-                      <a
-                        [routerLink]="['/employees', employee.id]"
-                        class="text-indigo-600 hover:text-indigo-700 font-semibold"
-                        >Edit</a
-                      >
+                    <td class="px-6 py-4 text-right text-sm space-x-3">
+                      @if (isAdminOrHr()) {
+                        <a
+                          [routerLink]="['/employees', employee.id]"
+                          class="text-indigo-600 hover:text-indigo-700 font-semibold"
+                          >Edit</a
+                        >
+                        <button
+                          (click)="toggleStatus(employee)"
+                          class="font-semibold transition-colors"
+                          [class]="
+                            employee.status === 'active'
+                              ? 'text-amber-600 hover:text-amber-700'
+                              : 'text-emerald-600 hover:text-emerald-700'
+                          "
+                        >
+                          {{ employee.status === 'active' ? 'Deactivate' : 'Activate' }}
+                        </button>
+                      }
+                      @if (isAdmin()) {
+                        <button
+                          (click)="deleteEmployee(employee)"
+                          class="text-rose-600 hover:text-rose-700 font-semibold"
+                        >
+                          Delete
+                        </button>
+                      }
                     </td>
                   </tr>
                 }
@@ -224,6 +246,7 @@ import { Employee, UserStatus } from '../../core/models/employee.model';
 })
 export class EmployeeListComponent implements OnDestroy {
   private employeeService = inject(EmployeeService);
+  private authService = inject(AuthService);
   private destroy$ = new Subject<void>();
 
   readonly search = signal('');
@@ -241,6 +264,12 @@ export class EmployeeListComponent implements OnDestroy {
       totalPages: Math.ceil(this.employees().length / 10) || 1,
     },
   }));
+
+  readonly isAdmin = computed(() => this.authService.currentRole() === 'admin');
+  readonly isAdminOrHr = computed(() => {
+    const role = this.authService.currentRole();
+    return role === 'admin' || role === 'hr';
+  });
 
   constructor() {
     this.loadEmployees();
@@ -300,5 +329,38 @@ export class EmployeeListComponent implements OnDestroy {
       this.page.update((p) => p + 1);
       this.loadEmployees();
     }
+  }
+
+  deleteEmployee(employee: Employee) {
+    if (confirm(`Are you sure you want to delete ${employee.name}?`)) {
+      this.employeeService
+        .remove(employee.id)
+        .pipe(
+          tap(() => this.loadEmployees()),
+          catchError((err) => {
+            console.error('Failed to delete employee', err);
+            alert('Failed to delete employee. Please try again.');
+            return of(null);
+          }),
+          takeUntil(this.destroy$),
+        )
+        .subscribe();
+    }
+  }
+
+  toggleStatus(employee: Employee) {
+    const nextStatus = employee.status === 'active' ? 'inactive' : 'active';
+    this.employeeService
+      .update(employee.id, { status: nextStatus })
+      .pipe(
+        tap(() => this.loadEmployees()),
+        catchError((err) => {
+          console.error('Failed to toggle employee status', err);
+          alert('Failed to toggle status. Please try again.');
+          return of(null);
+        }),
+        takeUntil(this.destroy$),
+      )
+      .subscribe();
   }
 }

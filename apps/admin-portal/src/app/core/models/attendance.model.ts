@@ -40,7 +40,6 @@ export interface DailyAttendanceRow {
   employeeId: string;
   employeeName: string;
   employeeCode: string;
-  department?: string;
   checkIn?: CheckInRecord;
   checkOut?: CheckOutRecord;
   workingMinutes: number;

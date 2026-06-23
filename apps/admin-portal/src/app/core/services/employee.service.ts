@@ -19,7 +19,6 @@ export class EmployeeService {
       .set('page', params.page ?? 1)
       .set('limit', params.limit ?? 20);
     if (params.search) httpParams = httpParams.set('search', params.search);
-    if (params.departmentId) httpParams = httpParams.set('departmentId', params.departmentId);
     if (params.status) httpParams = httpParams.set('status', params.status);
 
     return this.http.get<PaginatedResult<Employee>>(this.baseUrl, { params: httpParams });
@@ -37,15 +36,11 @@ export class EmployeeService {
     return this.http.put<Employee>(`${this.baseUrl}/${id}`, payload);
   }
 
-  deactivate(id: string): Observable<void> {
+  remove(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
 
   assignShift(id: string, shiftId: string): Observable<Employee> {
     return this.http.put<Employee>(`${this.baseUrl}/${id}/shift`, { shiftId });
-  }
-
-  assignDepartment(id: string, departmentId: string): Observable<Employee> {
-    return this.http.put<Employee>(`${this.baseUrl}/${id}/department`, { departmentId });
   }
 }

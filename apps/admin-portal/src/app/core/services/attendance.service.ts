@@ -40,9 +40,8 @@ export class AttendanceService {
     });
   }
 
-  daily(date: string, departmentId?: string): Observable<DailyAttendanceRow[]> {
-    let params = new HttpParams().set('date', date);
-    if (departmentId) params = params.set('departmentId', departmentId);
+  daily(date: string): Observable<DailyAttendanceRow[]> {
+    const params = new HttpParams().set('date', date);
     return this.http.get<DailyAttendanceRow[]>(`${this.baseUrl}/daily`, { params });
   }
 }

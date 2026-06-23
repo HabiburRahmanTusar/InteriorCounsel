@@ -5,21 +5,18 @@ const { dayjs } = require('../utils/time');
 const ExcelJS = require('exceljs');
 const PDFDocument = require('pdfkit');
 
-exports.daily = async function daily({ date, departmentId }) {
-  return attendanceService.daily({ date, departmentId });
+exports.daily = async function daily({ date }) {
+  return attendanceService.daily({ date });
 };
 
-exports.monthly = async function monthly({ month, departmentId }) {
+exports.monthly = async function monthly({ month }) {
   const start = dayjs(month).startOf('month').toDate();
   const end = dayjs(month).endOf('month').toDate();
   const daysInMonth = dayjs(month).daysInMonth();
 
   const userQuery = { status: 'active' };
-  if (departmentId) {
-    userQuery.departmentId = departmentId;
-  }
 
-  const users = await User.find(userQuery).populate('departmentId');
+  const users = await User.find(userQuery);
   const userIds = users.map((u) => u._id);
 
   const logs = await Attendance.find({
@@ -45,7 +42,6 @@ exports.monthly = async function monthly({ month, departmentId }) {
       employeeId: user._id,
       employeeName: user.name,
       employeeCode: user.employeeId,
-      department: user.departmentId?.name || '',
       present,
       absent,
       late,
@@ -54,16 +50,13 @@ exports.monthly = async function monthly({ month, departmentId }) {
   });
 };
 
-exports.exportReport = async function exportReport({ format, from, to, departmentId }) {
+exports.exportReport = async function exportReport({ format, from, to }) {
   const start = dayjs(from).startOf('day').toDate();
   const end = dayjs(to).endOf('day').toDate();
 
   const userQuery = { status: 'active' };
-  if (departmentId) {
-    userQuery.departmentId = departmentId;
-  }
 
-  const users = await User.find(userQuery).populate('departmentId');
+  const users = await User.find(userQuery);
   const userIds = users.map((u) => u._id);
 
   const logs = await Attendance.find({

@@ -18,7 +18,6 @@ const userSchema = new mongoose.Schema(
     designation: { type: String, trim: true },
     role: { type: String, enum: ROLES, default: 'employee' },
     shiftId: { type: mongoose.Schema.Types.ObjectId, ref: 'Shift' },
-    departmentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Department' },
     officeLocationId: { type: mongoose.Schema.Types.ObjectId, ref: 'OfficeLocation' },
     status: { type: String, enum: USER_STATUSES, default: 'active' },
   },

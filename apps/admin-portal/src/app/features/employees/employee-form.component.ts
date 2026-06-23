@@ -6,9 +6,7 @@ import { catchError, finalize, of, switchMap, tap } from 'rxjs';
 
 import { EmployeeService } from '../../core/services/employee.service';
 import { ShiftService } from '../../core/services/shift.service';
-import { DepartmentService } from '../../core/services/department.service';
 import { Shift } from '../../core/models/shift.model';
-import { Department } from '../../core/models/department.model';
 
 @Component({
   selector: 'wfm-employee-form',
@@ -27,19 +25,21 @@ import { Department } from '../../core/models/department.model';
       <div class="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 shadow-sm">
         <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-              <label
-                class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5"
-                >Employee ID *</label
-              >
-              <input
-                type="text"
-                formControlName="employeeId"
-                placeholder="EMP-001"
-                class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
-              />
-            </div>
-            <div>
+            @if (isEdit()) {
+              <div>
+                <label
+                  class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5"
+                  >Employee ID</label
+                >
+                <input
+                  type="text"
+                  formControlName="employeeId"
+                  readonly
+                  class="w-full border border-slate-200 bg-slate-50 text-slate-500 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all cursor-not-allowed"
+                />
+              </div>
+            }
+            <div [class.col-span-2]="!isEdit()">
               <label
                 class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5"
                 >Full name *</label
@@ -173,46 +173,6 @@ import { Department } from '../../core/models/department.model';
                 </div>
               </div>
             </div>
-            <div>
-              <label
-                class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5"
-                >Department</label
-              >
-              <div class="relative">
-                <select
-                  formControlName="departmentId"
-                  class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all appearance-none cursor-pointer pr-10"
-                >
-                  <option value="">No department assigned</option>
-                  @for (dept of departments(); track dept.id) {
-                    <option [value]="dept.id">{{ dept.name }}</option>
-                  }
-                </select>
-                @if (departmentsLoading()) {
-                  <div class="absolute inset-y-0 right-8 flex items-center px-2 text-slate-400">
-                    <span class="text-xs">Loading...</span>
-                  </div>
-                }
-                <div
-                  class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
           </div>
 
           <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
@@ -242,27 +202,23 @@ export class EmployeeFormComponent implements OnDestroy {
   private route = inject(ActivatedRoute);
   private employeeService = inject(EmployeeService);
   private shiftService = inject(ShiftService);
-  private departmentService = inject(DepartmentService);
   private destroy$ = new Subject<void>();
 
   readonly loading = signal(true);
   readonly saving = signal(false);
   readonly shiftsLoading = signal(true);
-  readonly departmentsLoading = signal(true);
   readonly shifts = signal<Shift[]>([]);
-  readonly departments = signal<Department[]>([]);
   readonly isEdit = signal(false);
   readonly employeeId = signal<string | null>(null);
 
   readonly form = this.fb.nonNullable.group({
-    employeeId: ['', Validators.required],
+    employeeId: [''],
     name: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
     phone: [''],
     designation: [''],
     role: ['employee'],
     shiftId: [''],
-    departmentId: [''],
     officeLocationId: [''],
     status: ['active'],
     password: [''],
@@ -293,16 +249,6 @@ export class EmployeeFormComponent implements OnDestroy {
         takeUntil(this.destroy$),
       )
       .subscribe();
-
-    this.departmentService
-      .list()
-      .pipe(
-        tap((depts) => this.departments.set(depts)),
-        catchError(() => of([])),
-        finalize(() => this.departmentsLoading.set(false)),
-        takeUntil(this.destroy$),
-      )
-      .subscribe();
   }
 
   loadEmployee() {
@@ -323,7 +269,6 @@ export class EmployeeFormComponent implements OnDestroy {
             designation: emp.designation || '',
             role: emp.role,
             shiftId: emp.shiftId || '',
-            departmentId: emp.departmentId || '',
             officeLocationId: emp.officeLocationId || '',
             status: emp.status,
           });
@@ -346,10 +291,11 @@ export class EmployeeFormComponent implements OnDestroy {
     this.saving.set(true);
     const raw = this.form.getRawValue();
     const payload: any = { ...raw };
-    if (!this.isEdit() && !payload.password) {
-      delete payload.password;
-    } else if (payload.password === '') {
-      delete payload.password;
+    if (!this.isEdit()) {
+      delete payload.employeeId;
+      payload.password = 'password123'; // Default password for new employees
+    } else {
+      delete payload.password; // Don't update password on edit
     }
 
     const request$ = this.isEdit()

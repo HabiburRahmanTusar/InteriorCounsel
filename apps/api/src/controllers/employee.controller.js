@@ -5,13 +5,12 @@ exports.list = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page || '1', 10);
     const limit = parseInt(req.query.limit || '20', 10);
-    const { search, departmentId, status } = req.query;
+    const { search, status } = req.query;
 
     const { items, total } = await employeeService.list({
       page,
       limit,
       search,
-      departmentId,
       status,
     });
 
@@ -53,9 +52,9 @@ exports.update = async (req, res, next) => {
   }
 };
 
-exports.deactivate = async (req, res, next) => {
+exports.remove = async (req, res, next) => {
   try {
-    await employeeService.deactivate(req.params.id);
+    await employeeService.remove(req.params.id);
     return apiResponse.noContent(res);
   } catch (err) {
     return next(err);
@@ -67,16 +66,6 @@ exports.assignShift = async (req, res, next) => {
     const { shiftId } = req.body;
     const data = await employeeService.assignShift(req.params.id, shiftId);
     return apiResponse.ok(res, data, 'Shift assigned successfully');
-  } catch (err) {
-    return next(err);
-  }
-};
-
-exports.assignDepartment = async (req, res, next) => {
-  try {
-    const { departmentId } = req.body;
-    const data = await employeeService.assignDepartment(req.params.id, departmentId);
-    return apiResponse.ok(res, data, 'Department assigned successfully');
   } catch (err) {
     return next(err);
   }

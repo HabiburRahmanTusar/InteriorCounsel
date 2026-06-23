@@ -14,7 +14,6 @@ const { connectDatabase, disconnectDatabase } = require('./config/db');
 // Models
 const User = require('./models/User');
 const Shift = require('./models/Shift');
-const Department = require('./models/Department');
 const OfficeLocation = require('./models/OfficeLocation');
 const Attendance = require('./models/Attendance');
 
@@ -37,7 +36,6 @@ async function seed() {
     await Promise.all([
       User.deleteMany({}),
       Shift.deleteMany({}),
-      Department.deleteMany({}),
       OfficeLocation.deleteMany({}),
       Attendance.deleteMany({}),
     ]);
@@ -136,28 +134,7 @@ async function seed() {
 
     log.info('Users seeded.');
 
-    // 5. Seed Departments and Link Manager
-    log.info('Seeding Departments...');
-    const engineering = await Department.create({
-      name: 'Engineering',
-      managerId: managerUser._id,
-    });
 
-    const hrDepartment = await Department.create({
-      name: 'Human Resources',
-      managerId: hrUser._id,
-    });
-
-    const operations = await Department.create({
-      name: 'Operations',
-      managerId: managerUser._id,
-    });
-
-    // Link users back to departments
-    await User.findByIdAndUpdate(employeeUser._id, { departmentId: engineering._id });
-    await User.findByIdAndUpdate(managerUser._id, { departmentId: engineering._id });
-    await User.findByIdAndUpdate(hrUser._id, { departmentId: hrDepartment._id });
-    log.info('Departments seeded and linked.');
 
     // 6. Seed Attendance Logs (5 days of history for employee user)
     log.info('Seeding Attendance records...');
