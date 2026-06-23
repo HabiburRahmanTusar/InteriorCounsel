@@ -1,0 +1,37 @@
+export type UserStatus = 'active' | 'inactive';
+
+import { UserRole } from './auth.model';
+
+export interface Employee {
+  id: string;
+  employeeId: string;
+  name: string;
+  email: string;
+  phone?: string;
+  designation?: string;
+  role: UserRole;
+  shiftId?: string;
+  departmentId?: string;
+  officeLocationId?: string;
+  status: UserStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EmployeeListParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  departmentId?: string;
+  status?: UserStatus;
+}
+
+export interface PaginatedResult<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}

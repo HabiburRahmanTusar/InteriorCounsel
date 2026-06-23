@@ -1,0 +1,31 @@
+version: '3.9'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: wfm-mongo
+    restart: unless-stopped
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: wfm
+      MONGO_INITDB_ROOT_PASSWORD: wfm_pass
+      MONGO_INITDB_DATABASE: workforce_management
+    volumes:
+      - wfm-mongo-data:/data/db
+
+  mongo-express:
+    image: mongo-express:1-20
+    container_name: wfm-mongo-express
+    restart: unless-stopped
+    ports:
+      - '8081:8081'
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: wfm
+      ME_CONFIG_MONGODB_ADMINPASSWORD: wfm_pass
+      ME_CONFIG_MONGODB_URL: mongodb://wfm:wfm_pass@mongodb:27017/
+    depends_on:
+      - mongodb
+
+volumes:
+  wfm-mongo-data:

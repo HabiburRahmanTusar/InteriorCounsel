@@ -1,0 +1,31 @@
+{
+  "name": "workforce-management",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Attendance & Workforce Management System — monorepo (Node.js API + Angular admin portal). Flutter app excluded from this scaffolding.",
+  "workspaces": [
+    "apps/api",
+    "apps/admin-portal"
+  ],
+  "scripts": {
+    "api:dev": "npm --workspace apps/api run dev",
+    "api:start": "npm --workspace apps/api run start",
+    "api:test": "npm --workspace apps/api run test",
+    "api:lint": "npm --workspace apps/api run lint",
+    "portal:dev": "npm --workspace apps/admin-portal run start",
+    "portal:build": "npm --workspace apps/admin-portal run build",
+    "portal:test": "npm --workspace apps/admin-portal run test",
+    "portal:lint": "npm --workspace apps/admin-portal run lint",
+    "lint": "npm run api:lint && npm run portal:lint",
+    "test": "npm run api:test && npm run portal:test",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "husky": "^9.1.6"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

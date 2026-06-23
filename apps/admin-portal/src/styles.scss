@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global styles for the Workforce Management admin portal. */
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  background-color: #f4f6fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.text-muted {
+  color: #6b7280;
+}
+
+.page-container {
+  padding: 24px;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
