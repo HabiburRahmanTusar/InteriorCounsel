@@ -28,6 +28,14 @@ import { AuthTokens, AuthUser } from '../../../core/models/auth.model';
         </div>
 
         <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
+          @if (errorMessage()) {
+            <div
+              class="bg-rose-50 border border-rose-100 text-rose-700 rounded-xl p-3 text-xs leading-relaxed"
+            >
+              {{ errorMessage() }}
+            </div>
+          }
+
           <!-- Email field -->
           <div>
             <label
@@ -39,8 +47,33 @@ import { AuthTokens, AuthUser } from '../../../core/models/auth.model';
               formControlName="email"
               autocomplete="email"
               placeholder="admin@company.com"
-              class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
+              [class.border-slate-200]="
+                !(form.controls.email.touched && form.controls.email.invalid)
+              "
+              [class.border-rose-400]="form.controls.email.touched && form.controls.email.invalid"
+              [class.focus:border-indigo-600]="
+                !(form.controls.email.touched && form.controls.email.invalid)
+              "
+              [class.focus:ring-indigo-600]="
+                !(form.controls.email.touched && form.controls.email.invalid)
+              "
+              [class.focus:border-rose-500]="
+                form.controls.email.touched && form.controls.email.invalid
+              "
+              [class.focus:ring-rose-500]="
+                form.controls.email.touched && form.controls.email.invalid
+              "
+              class="w-full border bg-slate-50/50 focus:bg-white focus:ring-1 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
             />
+            @if (form.controls.email.touched && form.controls.email.invalid) {
+              <span class="text-xs text-rose-500 mt-1.5 block">
+                @if (form.controls.email.errors?.['required']) {
+                  Email is required.
+                } @else if (form.controls.email.errors?.['email']) {
+                  Please enter a valid email address.
+                }
+              </span>
+            }
           </div>
 
           <!-- Password field -->
@@ -61,7 +94,25 @@ import { AuthTokens, AuthUser } from '../../../core/models/auth.model';
                 formControlName="password"
                 autocomplete="current-password"
                 placeholder="••••••••"
-                class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl pl-3.5 pr-10 py-2.5 text-sm outline-none transition-all"
+                [class.border-slate-200]="
+                  !(form.controls.password.touched && form.controls.password.invalid)
+                "
+                [class.border-rose-400]="
+                  form.controls.password.touched && form.controls.password.invalid
+                "
+                [class.focus:border-indigo-600]="
+                  !(form.controls.password.touched && form.controls.password.invalid)
+                "
+                [class.focus:ring-indigo-600]="
+                  !(form.controls.password.touched && form.controls.password.invalid)
+                "
+                [class.focus:border-rose-500]="
+                  form.controls.password.touched && form.controls.password.invalid
+                "
+                [class.focus:ring-rose-500]="
+                  form.controls.password.touched && form.controls.password.invalid
+                "
+                class="w-full border bg-slate-50/50 focus:bg-white focus:ring-1 pl-3.5 pr-10 py-2.5 text-sm outline-none transition-all"
               />
               <button
                 type="button"
@@ -108,6 +159,15 @@ import { AuthTokens, AuthUser } from '../../../core/models/auth.model';
                 }
               </button>
             </div>
+            @if (form.controls.password.touched && form.controls.password.invalid) {
+              <span class="text-xs text-rose-500 mt-1.5 block">
+                @if (form.controls.password.errors?.['required']) {
+                  Password is required.
+                } @else if (form.controls.password.errors?.['minlength']) {
+                  Password must be at least 8 characters long.
+                }
+              </span>
+            }
           </div>
 
           <button
@@ -129,6 +189,7 @@ export class LoginComponent {
 
   readonly hide = signal(true);
   readonly loading = signal(false);
+  readonly errorMessage = signal<string | null>(null);
 
   readonly form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -144,6 +205,7 @@ export class LoginComponent {
       this.form.markAllAsTouched();
       return;
     }
+    this.errorMessage.set(null);
     this.loading.set(true);
     const { email, password } = this.form.getRawValue();
     this.auth
@@ -161,6 +223,7 @@ export class LoginComponent {
           this.router.navigate(['/dashboard']);
         }),
         catchError((err) => {
+          this.errorMessage.set(err.error?.message || 'Invalid email or password.');
           this.handleError(err);
           return of(null);
         }),
