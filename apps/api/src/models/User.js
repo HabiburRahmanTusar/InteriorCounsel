@@ -16,6 +16,7 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true, select: false },
     phone: { type: String, trim: true },
     designation: { type: String, trim: true },
+    salary: { type: Number, min: 0, default: 0 },
     role: { type: String, enum: ROLES, default: 'employee' },
     shiftId: { type: mongoose.Schema.Types.ObjectId, ref: 'Shift' },
     officeLocationId: { type: mongoose.Schema.Types.ObjectId, ref: 'OfficeLocation' },

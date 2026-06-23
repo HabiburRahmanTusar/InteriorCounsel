@@ -93,12 +93,18 @@ exports.update = async function update(id, payload) {
 };
 
 exports.remove = async function remove(id) {
-  const user = await User.findByIdAndDelete(id);
+  const user = await User.findById(id);
   if (!user) {
     const error = new Error('User not found');
     error.status = 404;
     throw error;
   }
+  if (user.role === 'admin') {
+    const error = new Error('Cannot delete admin users');
+    error.status = 403;
+    throw error;
+  }
+  await user.deleteOne();
 };
 
 exports.assignShift = async function assignShift(id, shiftId) {
