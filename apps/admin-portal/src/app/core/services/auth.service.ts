@@ -94,6 +94,14 @@ export class AuthService {
     return this.http.post<void>(`${this.baseUrl}/reset-password`, payload);
   }
 
+  changePassword(payload: { oldPassword: string; newPassword: string }): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/change-password`, payload);
+  }
+
+  getMe(): Observable<AuthUser> {
+    return this.http.get<AuthUser>(`${this.baseUrl}/me`);
+  }
+
   // ---- Session helpers ----
 
   setSession(tokens: AuthTokens, user: AuthUser, rememberMe: boolean = false): void {

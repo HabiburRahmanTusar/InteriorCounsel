@@ -33,12 +33,14 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         title: 'Dashboard',
+        canActivate: [roleGuard('admin', 'hr', 'manager')],
         loadComponent: () =>
           import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
       },
       {
         path: 'employees',
         title: 'Employees',
+        canActivate: [roleGuard('admin', 'hr', 'manager')],
         loadComponent: () =>
           import('./features/employees/employee-list.component').then(
             (m) => m.EmployeeListComponent,
@@ -47,6 +49,7 @@ export const routes: Routes = [
       {
         path: 'employees/new',
         title: 'New employee',
+        canActivate: [roleGuard('admin', 'hr')],
         loadComponent: () =>
           import('./features/employees/employee-form.component').then(
             (m) => m.EmployeeFormComponent,
@@ -55,6 +58,7 @@ export const routes: Routes = [
       {
         path: 'employees/:id',
         title: 'Edit employee',
+        canActivate: [roleGuard('admin', 'hr')],
         loadComponent: () =>
           import('./features/employees/employee-form.component').then(
             (m) => m.EmployeeFormComponent,
@@ -63,6 +67,7 @@ export const routes: Routes = [
       {
         path: 'shifts',
         title: 'Shifts',
+        canActivate: [roleGuard('admin', 'hr', 'manager')],
         loadComponent: () =>
           import('./features/shifts/shift-list.component').then((m) => m.ShiftListComponent),
       },
@@ -77,6 +82,7 @@ export const routes: Routes = [
       {
         path: 'reports',
         title: 'Reports',
+        canActivate: [roleGuard('admin', 'hr', 'manager')],
         loadComponent: () =>
           import('./features/reports/report.component').then((m) => m.ReportComponent),
       },
@@ -86,6 +92,20 @@ export const routes: Routes = [
         canActivate: [roleGuard('admin')],
         loadComponent: () =>
           import('./features/settings/settings.component').then((m) => m.SettingsComponent),
+      },
+      {
+        path: 'profile',
+        title: 'My Profile',
+        loadComponent: () =>
+          import('./features/profile/profile.component').then((m) => m.ProfileComponent),
+      },
+      {
+        path: 'change-password',
+        title: 'Change Password',
+        loadComponent: () =>
+          import('./features/change-password/change-password.component').then(
+            (m) => m.ChangePasswordComponent,
+          ),
       },
     ],
   },

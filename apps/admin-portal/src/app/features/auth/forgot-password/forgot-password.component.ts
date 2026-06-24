@@ -77,10 +77,7 @@ import { AuthService } from '../../../core/services/auth.service';
               <span>Send reset link</span>
             </button>
 
-            <a
-              routerLink="/login"
-              class="btn btn-secondary btn-secondary-lg btn-full"
-            >
+            <a routerLink="/login" class="btn btn-secondary btn-secondary-lg btn-full">
               Cancel and return
             </a>
           </form>

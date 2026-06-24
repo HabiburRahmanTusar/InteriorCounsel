@@ -24,5 +24,7 @@ router.post('/logout', auth, ctrl.logout);
 router.post('/refresh-token', validate(schemas.refreshToken), ctrl.refreshToken);
 router.post('/forgot-password', authLimiter, validate(schemas.forgotPassword), ctrl.forgotPassword);
 router.post('/reset-password', authLimiter, validate(schemas.resetPassword), ctrl.resetPassword);
+router.get('/me', auth, ctrl.me);
+router.post('/change-password', auth, validate(schemas.changePassword), ctrl.changePassword);
 
 module.exports = router;

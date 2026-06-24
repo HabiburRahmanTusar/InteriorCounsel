@@ -16,6 +16,10 @@ export function roleGuard(...allowedRoles: string[]): CanActivateFn {
     if (role && allowedRoles.includes(role)) {
       return true;
     }
+
+    if (role === 'employee') {
+      return router.createUrlTree(['/attendance']);
+    }
     return router.createUrlTree(['/dashboard']);
   };
 }

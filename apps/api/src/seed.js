@@ -80,7 +80,7 @@ async function seed() {
 
     // Seed Admin
     const adminUser = await User.create({
-      employeeId: 'EMP0001',
+      employeeId: 'EMP00001',
       name: 'System Admin',
       email: 'admin@attendly.com',
       password: 'password123',
@@ -93,7 +93,7 @@ async function seed() {
 
     // Seed HR Manager
     const hrUser = await User.create({
-      employeeId: 'EMP0002',
+      employeeId: 'EMP00002',
       name: 'Sarah Rahman',
       email: 'hr@attendly.com',
       password: 'password123',
@@ -106,7 +106,7 @@ async function seed() {
 
     // Seed Manager
     const managerUser = await User.create({
-      employeeId: 'EMP0003',
+      employeeId: 'EMP00003',
       name: 'Imran Khan',
       email: 'manager@attendly.com',
       password: 'password123',
@@ -120,7 +120,7 @@ async function seed() {
 
     // Seed Employee
     const employeeUser = await User.create({
-      employeeId: 'EMP0004',
+      employeeId: 'EMP00004',
       name: 'Tanvir Hossain',
       email: 'employee@attendly.com',
       password: 'password123',
@@ -133,8 +133,6 @@ async function seed() {
     });
 
     log.info('Users seeded.');
-
-
 
     // 6. Seed Attendance Logs (5 days of history for employee user)
     log.info('Seeding Attendance records...');

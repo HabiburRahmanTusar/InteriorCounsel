@@ -56,7 +56,9 @@ body {
   @extend .btn;
   background-color: #4f46e5;
   color: #fff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(79, 70, 229, 0.1);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.05),
+    0 0 0 1px rgba(79, 70, 229, 0.1);
 
   &:hover:not(:disabled) {
     background-color: #4338ca;

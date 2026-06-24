@@ -127,3 +127,32 @@ exports.forgotPassword = async function forgotPassword({ email }) {
 exports.resetPassword = async function resetPassword({ resetToken, newPassword }) {
   console.log(`Resetting password with token: ${resetToken}`);
 };
+
+exports.me = async function me(userId) {
+  const user = await User.findById(userId).populate('shiftId').populate('officeLocationId');
+  if (!user) {
+    const error = new Error('User not found');
+    error.status = 404;
+    throw error;
+  }
+  return user.toSafeJSON();
+};
+
+exports.changePassword = async function changePassword(userId, { oldPassword, newPassword }) {
+  const user = await User.findById(userId).select('+password');
+  if (!user) {
+    const error = new Error('User not found');
+    error.status = 404;
+    throw error;
+  }
+
+  const isMatch = await user.comparePassword(oldPassword);
+  if (!isMatch) {
+    const error = new Error('Invalid old password');
+    error.status = 400;
+    throw error;
+  }
+
+  user.password = newPassword;
+  await user.save();
+};

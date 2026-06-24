@@ -228,7 +228,6 @@ export class EmployeeFormComponent implements OnDestroy {
     shiftId: [''],
     officeLocationId: [''],
     status: ['active'],
-    password: [''],
   });
 
   constructor() {
@@ -303,9 +302,6 @@ export class EmployeeFormComponent implements OnDestroy {
     if (!payload.officeLocationId) payload.officeLocationId = null;
     if (!this.isEdit()) {
       delete payload.employeeId;
-      payload.password = 'password123'; // Default password for new employees
-    } else {
-      delete payload.password; // Don't update password on edit
     }
 
     const request$ = this.isEdit()

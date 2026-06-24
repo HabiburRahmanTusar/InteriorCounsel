@@ -27,10 +27,7 @@ import { Employee, UserStatus } from '../../core/models/employee.model';
           <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Employees</h1>
           <p class="text-sm text-slate-500">Manage workforce directory and shift schedules</p>
         </div>
-        <button
-          routerLink="/employees/new"
-          class="btn btn-primary"
-        >
+        <button routerLink="/employees/new" class="btn btn-primary">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             class="h-4 w-4"
@@ -201,12 +198,18 @@ import { Employee, UserStatus } from '../../core/models/employee.model';
                       </span>
                     </td>
                     <td class="px-6 py-4 text-right text-sm space-x-3">
+                      <button
+                        (click)="viewEmployee(employee)"
+                        class="btn-link-outline btn-link-outline-indigo"
+                      >
+                        View
+                      </button>
                       @if (isAdminOrHr()) {
-                          <a
-                            [routerLink]="['/employees', employee.id]"
-                            class="btn-link-outline btn-link-outline-indigo"
-                            >Edit</a
-                          >
+                        <a
+                          [routerLink]="['/employees', employee.id]"
+                          class="btn-link-outline btn-link-outline-indigo"
+                          >Edit</a
+                        >
                         <button
                           (click)="toggleStatus(employee)"
                           class="btn-link-outline"
@@ -259,6 +262,165 @@ import { Employee, UserStatus } from '../../core/models/employee.model';
         </div>
       </div>
     </div>
+
+    <!-- Modal Backdrop -->
+    @if (selectedEmployee()) {
+      <div
+        class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200"
+        (click)="closeModal()"
+      >
+        <!-- Modal Card -->
+        <div
+          class="bg-white border border-slate-200/80 w-full max-w-lg rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200"
+          (click)="$event.stopPropagation()"
+        >
+          <!-- Modal Header -->
+          <div
+            class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between"
+          >
+            <h2 class="text-base font-bold text-slate-900">Employee Details</h2>
+            <button
+              (click)="closeModal()"
+              class="text-slate-400 hover:text-slate-600 rounded-lg p-1 hover:bg-slate-100 transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Modal Content -->
+          <div class="p-6 space-y-6">
+            <!-- Identity block -->
+            <div class="flex items-center gap-4 pb-5 border-b border-slate-100">
+              <div
+                class="w-14 h-14 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xl"
+              >
+                {{ getInitials(selectedEmployee()?.name) }}
+              </div>
+              <div>
+                <h3 class="text-base font-bold text-slate-900">{{ selectedEmployee()?.name }}</h3>
+                <p class="text-xs text-slate-500">
+                  {{ selectedEmployee()?.designation || 'Staff Member' }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Metadata Grid -->
+            <div class="grid grid-cols-2 gap-x-4 gap-y-5 text-sm">
+              <div class="space-y-1">
+                <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider"
+                  >Employee ID</span
+                >
+                <span class="font-semibold text-slate-800">{{
+                  selectedEmployee()?.employeeId
+                }}</span>
+              </div>
+
+              <div class="space-y-1">
+                <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider"
+                  >Role</span
+                >
+                <span
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-100"
+                >
+                  {{ selectedEmployee()?.role }}
+                </span>
+              </div>
+
+              <div class="space-y-1 col-span-2">
+                <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider"
+                  >Email Address</span
+                >
+                <span class="font-medium text-slate-800">{{ selectedEmployee()?.email }}</span>
+              </div>
+
+              <div class="space-y-1">
+                <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider"
+                  >Phone</span
+                >
+                <span class="font-medium text-slate-800">{{
+                  selectedEmployee()?.phone || '—'
+                }}</span>
+              </div>
+
+              <div class="space-y-1">
+                <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider"
+                  >Salary</span
+                >
+                <span class="font-medium text-slate-800">{{
+                  selectedEmployee()?.salary ? '$' + selectedEmployee()?.salary : '—'
+                }}</span>
+              </div>
+
+              <div class="space-y-1">
+                <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider"
+                  >Status</span
+                >
+                <span
+                  class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                  [class]="
+                    selectedEmployee()?.status === 'active'
+                      ? 'bg-emerald-50 text-emerald-700'
+                      : 'bg-rose-50 text-rose-700'
+                  "
+                >
+                  {{ selectedEmployee()?.status }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Shift Block -->
+            <div class="border-t border-slate-100 pt-5 space-y-3">
+              <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider"
+                >Shift Assignment</span
+              >
+              @if (selectedEmployee()?.shiftId) {
+                <div
+                  class="bg-slate-50 border border-slate-100/80 rounded-xl p-3 flex justify-between items-center text-xs"
+                >
+                  <div>
+                    <span class="font-bold text-slate-800 block">{{
+                      getShift(selectedEmployee())?.name
+                    }}</span>
+                    <span class="text-slate-500"
+                      >Grace period: {{ getShift(selectedEmployee())?.gracePeriod }} mins</span
+                    >
+                  </div>
+                  <span
+                    class="font-semibold text-slate-700 bg-white border border-slate-200/80 rounded-lg px-2 py-1"
+                  >
+                    {{ formatTime(getShift(selectedEmployee())?.startTime) }} -
+                    {{ formatTime(getShift(selectedEmployee())?.endTime) }}
+                  </span>
+                </div>
+              } @else {
+                <span class="text-xs text-slate-500">No shift assigned</span>
+              }
+            </div>
+          </div>
+
+          <!-- Modal Footer -->
+          <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+            <button
+              (click)="closeModal()"
+              class="border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-600 rounded-xl px-4 py-2 text-sm font-semibold transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    }
   `,
 })
 export class EmployeeListComponent implements OnDestroy {
@@ -271,6 +433,7 @@ export class EmployeeListComponent implements OnDestroy {
   readonly status = signal('');
   readonly page = signal(1);
   readonly loading = signal(false);
+  readonly selectedEmployee = signal<Employee | null>(null);
 
   readonly employees = signal<Employee[]>([]);
   readonly pagination = computed(() => ({
@@ -380,5 +543,33 @@ export class EmployeeListComponent implements OnDestroy {
         takeUntil(this.destroy$),
       )
       .subscribe();
+  }
+
+  viewEmployee(employee: Employee) {
+    this.selectedEmployee.set(employee);
+  }
+
+  closeModal() {
+    this.selectedEmployee.set(null);
+  }
+
+  getInitials(name?: string): string {
+    return name ? name.charAt(0).toUpperCase() : 'E';
+  }
+
+  getShift(employee: any): any {
+    return employee?.shiftId;
+  }
+
+  formatTime(timeStr?: string): string {
+    if (!timeStr) return '';
+    const [hoursStr, minutesStr] = timeStr.split(':');
+    const hours = parseInt(hoursStr, 10);
+    const minutes = parseInt(minutesStr, 10);
+    if (isNaN(hours) || isNaN(minutes)) return timeStr;
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    const displayMinutes = minutes.toString().padStart(2, '0');
+    return `${displayHours.toString().padStart(2, '0')}:${displayMinutes} ${ampm}`;
   }
 }

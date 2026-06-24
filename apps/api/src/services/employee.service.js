@@ -26,9 +26,7 @@ exports.list = async function list({ page, limit, search, status }) {
 };
 
 exports.getById = async function getById(id) {
-  const user = await User.findById(id)
-    .populate('shiftId')
-    .populate('officeLocationId');
+  const user = await User.findById(id).populate('shiftId').populate('officeLocationId');
   if (!user) {
     const error = new Error('User not found');
     error.status = 404;
@@ -55,7 +53,10 @@ exports.create = async function create(payload) {
       nextNum = parseInt(match[1], 10) + 1;
     }
   }
-  payload.employeeId = `EMP${String(nextNum).padStart(4, '0')}`;
+  payload.employeeId = `EMP${String(nextNum).padStart(5, '0')}`;
+
+  // Set the password to the generated employee ID
+  payload.password = payload.employeeId;
 
   const user = await User.create(payload);
   return user.toSafeJSON();

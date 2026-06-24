@@ -50,3 +50,22 @@ exports.resetPassword = async (req, res, next) => {
     return next(err);
   }
 };
+
+exports.me = async (req, res, next) => {
+  try {
+    const data = await authService.me(req.user.id);
+    return apiResponse.ok(res, data, 'Profile retrieved successfully');
+  } catch (err) {
+    return next(err);
+  }
+};
+
+exports.changePassword = async (req, res, next) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    await authService.changePassword(req.user.id, { oldPassword, newPassword });
+    return apiResponse.ok(res, null, 'Password changed successfully');
+  } catch (err) {
+    return next(err);
+  }
+};

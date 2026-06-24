@@ -16,7 +16,6 @@ exports.create = Joi.object({
   employeeId: Joi.string().alphanum().min(2).max(20),
   name: Joi.string().trim().min(2).max(120).required(),
   email: Joi.string().email().required(),
-  password: Joi.string().min(8).max(128).required(),
   phone: Joi.string().trim().max(30).allow(''),
   designation: Joi.string().trim().max(120).allow(''),
   salary: Joi.number().min(0).allow(null),

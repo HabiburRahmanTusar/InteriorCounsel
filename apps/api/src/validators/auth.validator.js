@@ -20,3 +20,8 @@ exports.resetPassword = Joi.object({
   resetToken: Joi.string().required(),
   newPassword: Joi.string().min(8).max(128).required(),
 });
+
+exports.changePassword = Joi.object({
+  oldPassword: Joi.string().min(8).max(128).required(),
+  newPassword: Joi.string().min(8).max(128).required(),
+});

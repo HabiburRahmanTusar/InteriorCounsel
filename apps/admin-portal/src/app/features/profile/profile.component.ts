@@ -1,0 +1,187 @@
+import { Component, ChangeDetectionStrategy, signal, inject, OnInit } from '@angular/core';
+import { catchError, finalize, of, tap } from 'rxjs';
+
+import { AuthService } from '../../core/services/auth.service';
+
+@Component({
+  selector: 'wfm-profile',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [],
+  template: `
+    <div class="space-y-6 max-w-3xl">
+      <div class="space-y-1">
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">My Profile</h1>
+        <p class="text-sm text-slate-500">View your account details and shift assignments</p>
+      </div>
+
+      @if (loading()) {
+        <div
+          class="bg-white border border-slate-200/80 rounded-2xl p-8 flex justify-center shadow-sm"
+        >
+          <span class="text-sm text-slate-500 font-medium">Loading profile details...</span>
+        </div>
+      } @else if (error()) {
+        <div class="bg-rose-50 border border-rose-100 text-rose-700 rounded-2xl p-4 text-sm">
+          {{ error() }}
+        </div>
+      } @else {
+        <div class="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden">
+          <!-- Banner / Header -->
+          <div class="bg-gradient-to-r from-indigo-500 to-purple-600 h-32 relative">
+            <div class="absolute -bottom-10 left-8">
+              <div class="w-20 h-20 rounded-2xl bg-white p-1 shadow-md">
+                <div
+                  class="w-full h-full bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 font-bold text-3xl"
+                >
+                  {{ userInitial() }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Profile Details -->
+          <div class="pt-14 pb-8 px-8 space-y-8">
+            <div
+              class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-5"
+            >
+              <div>
+                <h2 class="text-xl font-bold text-slate-900">{{ profile()?.name }}</h2>
+                <p class="text-sm text-slate-500">{{ profile()?.designation || 'Staff Member' }}</p>
+              </div>
+              <span
+                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-600 border border-indigo-100 uppercase tracking-wide"
+              >
+                {{ profile()?.role }}
+              </span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="space-y-1">
+                <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider"
+                  >Employee ID</span
+                >
+                <span class="text-sm font-semibold text-slate-800">{{
+                  profile()?.employeeId
+                }}</span>
+              </div>
+
+              <div class="space-y-1">
+                <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider"
+                  >Email Address</span
+                >
+                <span class="text-sm font-medium text-slate-800">{{ profile()?.email }}</span>
+              </div>
+
+              <div class="space-y-1">
+                <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider"
+                  >Phone Number</span
+                >
+                <span class="text-sm font-medium text-slate-800">{{
+                  profile()?.phone || 'Not provided'
+                }}</span>
+              </div>
+
+              <div class="space-y-1">
+                <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider"
+                  >Status</span
+                >
+                <span
+                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100 capitalize"
+                >
+                  {{ profile()?.status }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Shift Information -->
+            <div class="border-t border-slate-100 pt-6 space-y-4">
+              <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                Work Shift Assignment
+              </h3>
+
+              @if (profile()?.shiftId) {
+                <div
+                  class="bg-slate-50 border border-slate-100 rounded-xl p-4 flex flex-col sm:flex-row justify-between gap-4"
+                >
+                  <div>
+                    <h4 class="text-sm font-bold text-slate-800">{{ getShift()?.name }}</h4>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                      Grace Period: {{ getShift()?.gracePeriod }} minutes
+                    </p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="text-sm font-semibold text-slate-700 bg-white border border-slate-200/80 rounded-lg px-2.5 py-1"
+                    >
+                      {{ formatTime(getShift()?.startTime) }}
+                    </span>
+                    <span class="text-slate-400 text-xs">—</span>
+                    <span
+                      class="text-sm font-semibold text-slate-700 bg-white border border-slate-200/80 rounded-lg px-2.5 py-1"
+                    >
+                      {{ formatTime(getShift()?.endTime) }}
+                    </span>
+                  </div>
+                </div>
+              } @else {
+                <div
+                  class="bg-amber-50 border border-amber-100 text-amber-800 rounded-xl p-4 text-xs font-medium"
+                >
+                  No shift assigned yet. Please contact HR or your manager.
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  `,
+})
+export class ProfileComponent implements OnInit {
+  private auth = inject(AuthService);
+
+  readonly profile = signal<any | null>(null);
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
+
+  ngOnInit() {
+    this.auth
+      .getMe()
+      .pipe(
+        tap((res) => {
+          this.profile.set(res);
+        }),
+        catchError((err) => {
+          console.error('Failed to load profile', err);
+          this.error.set('Failed to load profile details. Please try again.');
+          return of(null);
+        }),
+        finalize(() => {
+          this.loading.set(false);
+        }),
+      )
+      .subscribe();
+  }
+
+  userInitial(): string {
+    const name = this.profile()?.name || '';
+    return name ? name.charAt(0).toUpperCase() : 'U';
+  }
+
+  getShift(): any {
+    return this.profile()?.shiftId;
+  }
+
+  formatTime(timeStr: string): string {
+    if (!timeStr) return '';
+    const [hoursStr, minutesStr] = timeStr.split(':');
+    const hours = parseInt(hoursStr, 10);
+    const minutes = parseInt(minutesStr, 10);
+    if (isNaN(hours) || isNaN(minutes)) return timeStr;
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    const displayMinutes = minutes.toString().padStart(2, '0');
+    return `${displayHours.toString().padStart(2, '0')}:${displayMinutes} ${ampm}`;
+  }
+}

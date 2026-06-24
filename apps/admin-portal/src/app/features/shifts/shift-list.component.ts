@@ -18,10 +18,7 @@ import { Shift } from '../../core/models/shift.model';
           <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Shifts</h1>
           <p class="text-sm text-slate-500">Configure standard operating hours and grace periods</p>
         </div>
-        <button
-          (click)="openNewModal()"
-          class="btn btn-primary btn-primary-sm"
-        >
+        <button (click)="openNewModal()" class="btn btn-primary btn-primary-sm">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             class="h-4 w-4"
@@ -239,11 +236,7 @@ import { Shift } from '../../core/models/shift.model';
               >
                 Cancel
               </button>
-              <button
-                type="submit"
-                [disabled]="saving()"
-                class="btn btn-primary btn-primary-sm"
-              >
+              <button type="submit" [disabled]="saving()" class="btn btn-primary btn-primary-sm">
                 {{ saving() ? 'Saving...' : 'Save' }}
               </button>
             </div>
