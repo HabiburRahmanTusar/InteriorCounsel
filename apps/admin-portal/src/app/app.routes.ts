@@ -160,6 +160,13 @@ export const routes: Routes = [
         ],
       },
       {
+        path: 'my-leaves',
+        title: 'My Leaves',
+        canActivate: [roleGuard('employee')],
+        loadComponent: () =>
+          import('./features/leaves/my-leaves.component').then((m) => m.MyLeavesComponent),
+      },
+      {
         path: 'profile',
         title: 'My Profile',
         loadComponent: () =>

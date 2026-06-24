@@ -298,6 +298,28 @@ import { AuthService } from '../../core/services/auth.service';
             </div>
           } @else {
             <a
+              routerLink="/my-leaves"
+              routerLinkActive="bg-indigo-50 text-indigo-600 font-semibold"
+              class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 hover:text-slate-950 px-4 py-3 rounded-xl text-sm font-medium transition-all"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                />
+              </svg>
+              <span>My Leaves</span>
+            </a>
+
+            <a
               routerLink="/profile"
               routerLinkActive="bg-indigo-50 text-indigo-600 font-semibold"
               class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 hover:text-slate-950 px-4 py-3 rounded-xl text-sm font-medium transition-all"

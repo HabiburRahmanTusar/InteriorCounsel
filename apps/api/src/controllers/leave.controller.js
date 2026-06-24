@@ -1,8 +1,46 @@
 const LeaveRequest = require('../models/LeaveRequest');
 const LeaveBalance = require('../models/LeaveBalance');
 const User = require('../models/User');
+const SystemSetting = require('../models/SystemSetting');
+const Holiday = require('../models/Holiday');
 const apiResponse = require('../utils/apiResponse');
 const { dayjs } = require('../utils/time');
+
+async function getWeekends() {
+  const setting = await SystemSetting.findOne({ key: 'work-calendar' });
+  return setting && setting.value && setting.value.weekends ? setting.value.weekends : ['Friday', 'Saturday'];
+}
+
+async function calculateWorkingDaysBetween(startDate, endDate) {
+  const start = dayjs(startDate).tz('Asia/Dhaka').startOf('day');
+  const end = dayjs(endDate).tz('Asia/Dhaka').endOf('day');
+  
+  if (end.isBefore(start)) return 0;
+
+  const weekends = await getWeekends();
+  const holidays = await Holiday.find({
+    date: { $gte: start.toDate(), $lte: end.toDate() }
+  });
+  
+  const holidayDates = new Set(
+    holidays.map((h) => dayjs(h.date).tz('Asia/Dhaka').format('YYYY-MM-DD'))
+  );
+
+  let workingDays = 0;
+  let currentDay = start;
+
+  while (currentDay.isBefore(end) || currentDay.isSame(end, 'day')) {
+    const dayName = currentDay.format('dddd');
+    const dateStr = currentDay.format('YYYY-MM-DD');
+
+    if (!weekends.includes(dayName) && !holidayDates.has(dateStr)) {
+      workingDays++;
+    }
+    currentDay = currentDay.add(1, 'day');
+  }
+
+  return workingDays;
+}
 
 exports.getRequests = async (req, res, next) => {
   try {
@@ -135,6 +173,97 @@ exports.bulkUpdateAllocation = async (req, res, next) => {
     }
     
     return apiResponse.ok(res, { count: operations.length }, `Leave allocation updated for ${operations.length} employees`);
+  } catch (err) {
+    return next(err);
+  }
+};
+
+// --- Employee Endpoints ---
+
+exports.getMyRequests = async (req, res, next) => {
+  try {
+    const requests = await LeaveRequest.find({ employeeId: req.user.id }).sort({ createdAt: -1 });
+    return apiResponse.ok(res, requests);
+  } catch (err) {
+    return next(err);
+  }
+};
+
+exports.getMyBalance = async (req, res, next) => {
+  try {
+    const year = parseInt(req.query.year) || dayjs().year();
+    const balance = await LeaveBalance.findOne({ employeeId: req.user.id, year });
+    
+    return apiResponse.ok(res, {
+      year,
+      allocated: balance ? balance.allocated : 20,
+      used: balance ? balance.used : 0,
+      remaining: balance ? (balance.allocated - balance.used) : 20
+    });
+  } catch (err) {
+    return next(err);
+  }
+};
+
+exports.submitMyRequest = async (req, res, next) => {
+  try {
+    const { startDate, endDate, leaveType, reason } = req.body;
+    const employeeId = req.user.id;
+
+    if (!startDate || !endDate || !reason) {
+      return apiResponse.badRequest(res, 'Start date, end date, and reason are required');
+    }
+
+    const start = dayjs(startDate).tz('Asia/Dhaka').startOf('day');
+    const end = dayjs(endDate).tz('Asia/Dhaka').endOf('day');
+
+    if (end.isBefore(start)) {
+      return apiResponse.badRequest(res, 'End date must be after start date');
+    }
+
+    // Auto-calculate working days
+    const requestedDays = await calculateWorkingDaysBetween(startDate, endDate);
+
+    if (requestedDays <= 0) {
+      return apiResponse.badRequest(res, 'Selected date range contains no working days');
+    }
+
+    // Validation 1: Check balance
+    const year = start.year();
+    const balance = await LeaveBalance.findOne({ employeeId, year });
+    const allocated = balance ? balance.allocated : 20;
+    const used = balance ? balance.used : 0;
+    const remaining = allocated - used;
+
+    if (requestedDays > remaining) {
+      return apiResponse.badRequest(res, `Insufficient leave balance. You are requesting ${requestedDays} days but only have ${remaining} remaining.`);
+    }
+
+    // Validation 2: Check overlapping requests
+    const overlapping = await LeaveRequest.findOne({
+      employeeId,
+      status: { $in: ['Pending', 'Approved'] },
+      $or: [
+        { startDate: { $lte: end.toDate() }, endDate: { $gte: start.toDate() } }
+      ]
+    });
+
+    if (overlapping) {
+      return apiResponse.badRequest(res, 'You already have a Pending or Approved leave request during these dates');
+    }
+
+    const request = new LeaveRequest({
+      employeeId,
+      startDate: start.toDate(),
+      endDate: end.toDate(),
+      leaveType: leaveType || 'Annual',
+      reason,
+      requestedDays,
+      status: 'Pending'
+    });
+
+    await request.save();
+    return apiResponse.created(res, request, 'Leave request submitted successfully');
   } catch (err) {
     return next(err);
   }

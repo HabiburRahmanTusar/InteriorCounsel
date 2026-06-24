@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 export interface LeaveRequest {
@@ -52,5 +53,20 @@ export class LeaveService {
 
   bulkUpdateAllocation(year: number, allocated: number): Observable<any> {
     return this.http.put<any>(`${this.baseUrl}/balances/bulk-allocation`, { year, allocated });
+  }
+
+  // Employee Methods
+  getMyRequests(): Observable<LeaveRequest[]> {
+    return this.http.get<LeaveRequest[]>(`${this.baseUrl}/me/requests`);
+  }
+
+  getMyBalance(year?: number): Observable<LeaveBalance> {
+    let params = new HttpParams();
+    if (year) params = params.set('year', year.toString());
+    return this.http.get<LeaveBalance>(`${this.baseUrl}/me/balance`, { params });
+  }
+
+  submitMyRequest(payload: Partial<LeaveRequest>): Observable<LeaveRequest> {
+    return this.http.post<LeaveRequest>(`${this.baseUrl}/me/request`, payload);
   }
 }

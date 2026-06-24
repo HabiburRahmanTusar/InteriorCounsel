@@ -1,0 +1,347 @@
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
+import { Subject, of, combineLatest } from 'rxjs';
+import { takeUntil, catchError, tap, finalize } from 'rxjs/operators';
+import { LeaveService } from '../../core/services/leave.service';
+import { CalendarService, WorkCalendarSettings, HolidayRecord } from '../../core/services/calendar.service';
+import { LeaveBalance, LeaveRequest } from '../../core/services/leave.service';
+
+@Component({
+  selector: 'app-my-leaves',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  template: `
+    <div class="space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="space-y-1">
+          <h1 class="text-2xl font-bold text-slate-900 tracking-tight">My Leaves</h1>
+          <p class="text-sm text-slate-500">View your leave balance and submit new requests.</p>
+        </div>
+        <button (click)="openRequestModal()" class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          Request Leave
+        </button>
+      </div>
+
+      <!-- Balance Cards -->
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div class="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
+          <div class="p-6">
+            <div class="flex items-center">
+              <div class="flex-shrink-0 rounded-md bg-indigo-50 p-3">
+                <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+                </svg>
+              </div>
+              <div class="ml-4 w-0 flex-1">
+                <dl>
+                  <dt class="truncate text-sm font-medium text-slate-500">Total Allocated</dt>
+                  <dd class="text-2xl font-bold text-slate-900">{{ balance()?.allocated || 0 }}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
+          <div class="p-6">
+            <div class="flex items-center">
+              <div class="flex-shrink-0 rounded-md bg-amber-50 p-3">
+                <svg class="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+              </div>
+              <div class="ml-4 w-0 flex-1">
+                <dl>
+                  <dt class="truncate text-sm font-medium text-slate-500">Used Leaves</dt>
+                  <dd class="text-2xl font-bold text-slate-900">{{ balance()?.used || 0 }}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
+          <div class="p-6">
+            <div class="flex items-center">
+              <div class="flex-shrink-0 rounded-md bg-emerald-50 p-3">
+                <svg class="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+              </div>
+              <div class="ml-4 w-0 flex-1">
+                <dl>
+                  <dt class="truncate text-sm font-medium text-slate-500">Remaining Balance</dt>
+                  <dd class="text-2xl font-bold text-emerald-600">{{ balance()?.remaining || 0 }}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- History Table -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-slate-200">
+            <thead class="bg-slate-50">
+              <tr>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Leave Details</th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Duration</th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Requested On</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 bg-white">
+              @for (req of requests(); track req._id) {
+                <tr class="hover:bg-slate-50/50 transition-colors">
+                  <td class="px-6 py-4">
+                    <div class="flex flex-col">
+                      <span class="text-sm font-semibold text-slate-900">{{ req.leaveType }}</span>
+                      <span class="text-xs text-slate-500 mt-1 max-w-xs truncate" [title]="req.reason">{{ req.reason }}</span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="flex flex-col">
+                      <span class="text-sm font-medium text-slate-900">{{ req.requestedDays }} Days</span>
+                      <span class="text-xs text-slate-500 mt-1">{{ req.startDate | date:'MMM d, y' }} - {{ req.endDate | date:'MMM d, y' }}</span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset"
+                          [ngClass]="{
+                            'bg-amber-50 text-amber-700 ring-amber-600/20': req.status === 'Pending',
+                            'bg-emerald-50 text-emerald-700 ring-emerald-600/20': req.status === 'Approved',
+                            'bg-rose-50 text-rose-700 ring-rose-600/20': req.status === 'Rejected'
+                          }">
+                      {{ req.status }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-sm text-slate-500">
+                    {{ req.createdAt | date:'MMM d, y, h:mm a' }}
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4" class="px-6 py-12 text-center text-sm text-slate-500">
+                    <div class="flex flex-col items-center justify-center">
+                      <svg class="h-10 w-10 text-slate-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      No leave requests found.
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Request Modal -->
+    @if (showRequestModal()) {
+      <div class="relative z-50">
+        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"></div>
+        <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+          <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <div class="relative transform overflow-hidden rounded-xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+              <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                  <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-indigo-50 sm:mx-0 sm:h-10 sm:w-10">
+                    <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                  </div>
+                  <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
+                    <h3 class="text-base font-semibold leading-6 text-slate-900">Request Leave</h3>
+                    <div class="mt-4 space-y-4">
+                      
+                      <div class="grid grid-cols-2 gap-4">
+                        <div>
+                          <label class="block text-sm font-medium leading-6 text-slate-900">Start Date</label>
+                          <input type="date" [(ngModel)]="newRequest.startDate" (change)="calculateDays()" class="mt-2 block w-full rounded-md border-0 py-1.5 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                        </div>
+                        <div>
+                          <label class="block text-sm font-medium leading-6 text-slate-900">End Date</label>
+                          <input type="date" [(ngModel)]="newRequest.endDate" (change)="calculateDays()" class="mt-2 block w-full rounded-md border-0 py-1.5 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                        </div>
+                      </div>
+
+                      <div class="bg-slate-50 p-3 rounded-md flex justify-between items-center border border-slate-200">
+                        <span class="text-sm font-medium text-slate-700">Calculated Working Days:</span>
+                        <span class="text-lg font-bold" [class.text-indigo-600]="calculatedDays() > 0" [class.text-rose-600]="calculatedDays() <= 0 || calculatedDays() > (balance()?.remaining || 0)">
+                          {{ calculatedDays() }}
+                        </span>
+                      </div>
+                      <div *if="calculatedDays() > (balance()?.remaining || 0)" class="text-xs text-rose-600">
+                        Warning: This exceeds your remaining balance of {{ balance()?.remaining || 0 }} days.
+                      </div>
+
+                      <div>
+                        <label class="block text-sm font-medium leading-6 text-slate-900">Leave Type</label>
+                        <select [(ngModel)]="newRequest.leaveType" class="mt-2 block w-full rounded-md border-0 py-1.5 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                          <option value="Annual">Annual Leave</option>
+                          <option value="Sick">Sick Leave</option>
+                          <option value="Casual">Casual Leave</option>
+                          <option value="Unpaid">Unpaid Leave</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label class="block text-sm font-medium leading-6 text-slate-900">Reason</label>
+                        <textarea [(ngModel)]="newRequest.reason" rows="3" class="mt-2 block w-full rounded-md border-0 py-1.5 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="Please provide a brief reason..."></textarea>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-slate-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                <button type="button" 
+                  [disabled]="saving() || calculatedDays() <= 0 || calculatedDays() > (balance()?.remaining || 0)" 
+                  (click)="submitRequest()" 
+                  class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50 sm:ml-3 sm:w-auto">
+                  {{ saving() ? 'Submitting...' : 'Submit Request' }}
+                </button>
+                <button type="button" (click)="closeRequestModal()" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:mt-0 sm:w-auto">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  `
+})
+export class MyLeavesComponent implements OnInit, OnDestroy {
+  private leaveService = inject(LeaveService);
+  private calendarService = inject(CalendarService);
+  private toastr = inject(ToastrService);
+  private destroy$ = new Subject<void>();
+
+  balance = signal<LeaveBalance | null>(null);
+  requests = signal<LeaveRequest[]>([]);
+  showRequestModal = signal(false);
+  saving = signal(false);
+
+  newRequest: Partial<LeaveRequest> = { leaveType: 'Annual' };
+  calculatedDays = signal(0);
+
+  private weekends: string[] = ['Friday', 'Saturday'];
+  private holidays: string[] = [];
+
+  ngOnInit() {
+    this.loadData();
+    this.loadCalendarData();
+  }
+
+  loadData() {
+    this.leaveService.getMyBalance().pipe(
+      tap(b => this.balance.set(b)),
+      takeUntil(this.destroy$)
+    ).subscribe();
+
+    this.leaveService.getMyRequests().pipe(
+      tap(reqs => this.requests.set(reqs)),
+      takeUntil(this.destroy$)
+    ).subscribe();
+  }
+
+  loadCalendarData() {
+    combineLatest([
+      this.calendarService.getWorkCalendarSettings(),
+      this.calendarService.getHolidays()
+    ]).pipe(
+      tap(([settings, holidays]) => {
+        if (settings && settings.weekends) {
+          this.weekends = settings.weekends;
+        }
+        this.holidays = holidays.map(h => new Date(h.date).toISOString().split('T')[0]);
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe();
+  }
+
+  openRequestModal() {
+    this.newRequest = { leaveType: 'Annual' };
+    this.calculatedDays.set(0);
+    this.showRequestModal.set(true);
+  }
+
+  closeRequestModal() {
+    this.showRequestModal.set(false);
+  }
+
+  calculateDays() {
+    if (!this.newRequest.startDate || !this.newRequest.endDate) {
+      this.calculatedDays.set(0);
+      return;
+    }
+
+    const start = new Date(this.newRequest.startDate);
+    const end = new Date(this.newRequest.endDate);
+    
+    if (end < start) {
+      this.calculatedDays.set(0);
+      return;
+    }
+
+    let workingDays = 0;
+    let currentDay = new Date(start);
+
+    while (currentDay <= end) {
+      const dayName = currentDay.toLocaleDateString('en-US', { weekday: 'long' });
+      // Important to use local timezone for date string matching
+      const dateStr = [
+        currentDay.getFullYear(),
+        ('0' + (currentDay.getMonth() + 1)).slice(-2),
+        ('0' + currentDay.getDate()).slice(-2)
+      ].join('-');
+
+      if (!this.weekends.includes(dayName) && !this.holidays.includes(dateStr)) {
+        workingDays++;
+      }
+      currentDay.setDate(currentDay.getDate() + 1);
+    }
+
+    this.calculatedDays.set(workingDays);
+  }
+
+  submitRequest() {
+    if (!this.newRequest.startDate || !this.newRequest.endDate || !this.newRequest.reason) {
+      this.toastr.warning('Please fill all required fields');
+      return;
+    }
+
+    if (this.calculatedDays() <= 0) {
+      this.toastr.warning('Selected date range contains no working days');
+      return;
+    }
+
+    this.saving.set(true);
+    this.leaveService.submitMyRequest(this.newRequest).pipe(
+      tap(() => {
+        this.toastr.success('Leave request submitted successfully');
+        this.closeRequestModal();
+        this.loadData();
+      }),
+      catchError(err => {
+        this.toastr.error(err.error?.message || 'Failed to submit leave request');
+        return of(null);
+      }),
+      finalize(() => this.saving.set(false)),
+      takeUntil(this.destroy$)
+    ).subscribe();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+}
