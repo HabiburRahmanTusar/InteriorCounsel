@@ -357,9 +357,11 @@ import { Employee, UserStatus } from '../../core/models/employee.model';
                 <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider"
                   >Salary</span
                 >
-                <span class="font-medium text-slate-800">{{
-                  selectedEmployee()?.salary ? '$' + selectedEmployee()?.salary : '—'
-                }}</span>
+                <p class="font-medium text-slate-900 mt-0.5">
+                  {{
+                  selectedEmployee()?.salary ? '৳' + selectedEmployee()?.salary?.toLocaleString('en-US') : '—'
+                  }}
+                </p>
               </div>
 
               <div class="space-y-1">

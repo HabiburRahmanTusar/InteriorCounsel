@@ -78,10 +78,10 @@ import { SalaryService, SalaryOverviewRecord } from '../../core/services/salary.
                       <span class="block text-xs text-slate-500">{{ record.employeeId?.employeeId }} &bull; {{ record.employeeId?.designation }}</span>
                     </td>
                     <td class="px-6 py-4 text-sm text-slate-700 font-medium">
-                      \${{ record.baseSalary.toLocaleString('en-US') }}
+                      ৳{{ record.baseSalary.toLocaleString('en-US') }}
                     </td>
                     <td class="px-6 py-4 text-sm text-slate-700">
-                      \${{ record.dailySalary.toLocaleString('en-US') }}
+                      ৳{{ record.dailySalary.toLocaleString('en-US') }}
                     </td>
                     <td class="px-6 py-4 text-sm text-slate-700">
                       {{ record.workingDays }}
@@ -95,11 +95,11 @@ import { SalaryService, SalaryOverviewRecord } from '../../core/services/salary.
                     <td class="px-6 py-4 text-sm text-rose-600 font-semibold">
                       {{ record.deductedDays }}
                     </td>
-                    <td class="px-6 py-4 text-sm text-rose-600 font-bold">
-                      -\${{ record.deductionAmount.toLocaleString('en-US') }}
+                    <td class="px-6 py-4 text-sm font-medium text-rose-600">
+                      -৳{{ record.deductionAmount.toLocaleString('en-US') }}
                     </td>
-                    <td class="px-6 py-4 text-sm text-emerald-600 font-extrabold">
-                      \${{ record.finalPayableSalary.toLocaleString('en-US') }}
+                    <td class="px-6 py-4 text-sm font-bold text-indigo-600">
+                      ৳{{ record.finalPayableSalary.toLocaleString('en-US') }}
                     </td>
                   </tr>
                 }
