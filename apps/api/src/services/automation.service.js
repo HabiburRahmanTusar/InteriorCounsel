@@ -275,13 +275,14 @@ async function recalculateSalary(employeeId, monthStr) {
   const deductions = await DeductionLog.find({ employeeId, month: monthStr });
   const lateDeductedDays = deductions.reduce((sum, log) => sum + (log.deductedDays || 0), 0);
 
-  const totalDeductedDays = lateDeductedDays + unpaidAbsenceDays;
+  // Only late penalties are deducted from salary; absent days are not deducted
+  const totalDeductedDays = lateDeductedDays;
 
   // 6. Perform financial calculation
   const baseSalary = user.salary || 0;
   const dailySalary = Number((baseSalary / workingDays).toFixed(2));
   let deductionAmount = Number(Math.min(baseSalary, totalDeductedDays * dailySalary).toFixed(2));
-  
+
   // Year-end encashment logic
   let leaveEncashmentAmount = 0;
   if (dayjs(monthStr).format('MM') === '12') {

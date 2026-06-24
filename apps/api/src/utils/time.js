@@ -6,9 +6,11 @@
 const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
 const timezone = require('dayjs/plugin/timezone');
+const isBetween = require('dayjs/plugin/isBetween');
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
+dayjs.extend(isBetween);
 
 /**
  * Returns "On Time" or "Late" given a check-in instant and shift config.

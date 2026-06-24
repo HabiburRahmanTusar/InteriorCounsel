@@ -134,12 +134,12 @@ describe('Payroll & Deduction Automation Engine', () => {
     expect(record.workingDays).toBe(22);
     expect(record.attendedDays).toBe(3); // 3 checked in days
     expect(record.lateDays).toBe(3);
-    // Deducted days = late penalty (1) + absent days (22 working days - 3 attended days = 19)
-    // total deducted days = 1 + 19 = 20 days.
-    expect(record.deductedDays).toBe(20);
+    // Deducted days = late penalty (1). Absent days (19) are not deducted from salary.
+    expect(record.deductedDays).toBe(1);
+    expect(record.unpaidAbsenceDays).toBe(19);
 
     const dailySalary = Number((30000 / 22).toFixed(2));
-    const expectedDeduction = Number((20 * dailySalary).toFixed(2));
+    const expectedDeduction = Number((1 * dailySalary).toFixed(2));
     expect(record.deductionAmount).toBe(expectedDeduction);
     expect(record.finalPayableSalary).toBe(Number((30000 - expectedDeduction).toFixed(2)));
   });
