@@ -9,9 +9,14 @@ const { dayjs } = require('../utils/time');
 /**
  * Helper to fetch configured weekends (fallback to Friday & Saturday)
  */
-async function getWeekends() {
+async function getWorkCalendarSetting() {
   const setting = await SystemSetting.findOne({ key: 'work-calendar' });
-  return setting && setting.value && setting.value.weekends ? setting.value.weekends : ['Friday', 'Saturday'];
+  return setting && setting.value ? setting.value : {};
+}
+
+async function getWeekends() {
+  const setting = await getWorkCalendarSetting();
+  return setting.weekends || ['Friday', 'Saturday'];
 }
 
 /**
@@ -84,6 +89,17 @@ async function evaluateLateDeductions(employeeId, monthStr) {
   const user = await User.findById(employeeId);
   if (!user || user.role === 'admin') return 0;
 
+  // 1. Check if SalaryRecord is already Paid/locked or if it's a past month
+  const currentMonthStr = dayjs().tz('Asia/Dhaka').format('YYYY-MM');
+  if (monthStr < currentMonthStr) {
+    return 0; // Strictly prevent recalculating historical/past months
+  }
+
+  const existingRecord = await SalaryRecord.findOne({ employeeId, month: monthStr });
+  if (existingRecord && existingRecord.status === 'Paid') {
+    return 0; // Skip deduction recalculation for locked records
+  }
+
   const startOfMonth = dayjs(monthStr).tz('Asia/Dhaka').startOf('month').toDate();
   const endOfMonth = dayjs(monthStr).tz('Asia/Dhaka').endOf('month').toDate();
 
@@ -96,39 +112,28 @@ async function evaluateLateDeductions(employeeId, monthStr) {
 
   if (allAttendances.length === 0) return 0;
 
-  // 2. Get existing DeductionLogs for this month to find already-linked lates
-  const deductionLogs = await DeductionLog.find({
-    employeeId,
-    month: monthStr,
-  });
+  // 2. Clear existing DeductionLogs for this month so we can recalculate from scratch
+  await DeductionLog.deleteMany({ employeeId, month: monthStr });
 
-  const processedAttendanceIds = new Set();
-  for (const log of deductionLogs) {
-    for (const attId of log.linkedAttendance) {
-      processedAttendanceIds.add(attId.toString());
-    }
-  }
-
-  // 3. Find consecutive lates among unlinked records
+  // 3. Find consecutive lates
   let logsCreated = 0;
   let consecutiveLates = [];
 
   const workingDays = await calculateWorkingDays(monthStr, user);
   const dailySalary = workingDays > 0 ? (user.salary || 0) / workingDays : 0;
 
+  const calendarSetting = await getWorkCalendarSetting();
+  const threshold = calendarSetting.consecutiveLatesPenaltyThreshold || 3;
+
   for (const record of allAttendances) {
-    if (processedAttendanceIds.has(record._id.toString())) {
-      consecutiveLates = []; // Reset after already processed lates
-      continue;
-    }
 
     if (record.checkIn.status === 'Late') {
       consecutiveLates.push(record);
-      if (consecutiveLates.length === 3) {
-        // Trigger deduction for 3 consecutive lates
+      if (consecutiveLates.length === threshold) {
+        // Trigger deduction for consecutive lates
         await DeductionLog.create({
           employeeId,
-          triggerReason: '3 consecutive late entries',
+          triggerReason: `${threshold} consecutive late entries`,
           deductedDays: 1,
           deductedAmount: Number(dailySalary.toFixed(2)),
           linkedAttendance: consecutiveLates.map(c => c._id),
@@ -157,8 +162,14 @@ async function recalculateSalary(employeeId, monthStr) {
   const user = await User.findById(employeeId);
   if (!user || user.role === 'admin') return null;
 
-  // 1. Check if record is Paid
+  // 1. Check if record is Paid or if it's a past month
+  const currentMonthStr = dayjs().tz('Asia/Dhaka').format('YYYY-MM');
   const existingRecord = await SalaryRecord.findOne({ employeeId, month: monthStr });
+
+  if (monthStr < currentMonthStr) {
+    return existingRecord; // Strictly prevent recalculating historical/past months
+  }
+
   if (existingRecord && existingRecord.status === 'Paid') {
     return existingRecord; // Locked
   }

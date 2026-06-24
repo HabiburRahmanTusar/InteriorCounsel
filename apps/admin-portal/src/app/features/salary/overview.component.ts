@@ -91,7 +91,7 @@ import { SalaryService, SalaryOverviewRecord } from '../../core/services/salary.
                 <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Employee ID</th>
                 <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Name</th>
                 <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Base Salary</th>
-                <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Working Days</th>
+                <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Attendance Stats</th>
                 <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Deductions</th>
                 <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Payable Salary</th>
                 <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Status</th>
@@ -122,7 +122,13 @@ import { SalaryService, SalaryOverviewRecord } from '../../core/services/salary.
                     <td class="px-6 py-4 text-sm font-medium text-slate-900">{{ record.employeeId?.employeeId }}</td>
                     <td class="px-6 py-4 text-sm text-slate-700 font-semibold">{{ record.employeeId?.name }}</td>
                     <td class="px-6 py-4 text-sm text-slate-700">৳{{ record.baseSalary?.toLocaleString('en-US') }}</td>
-                    <td class="px-6 py-4 text-sm text-slate-700">{{ record.workingDays }} / {{ record.attendedDays }} / {{ record.lateDays }}</td>
+                    <td class="px-6 py-4">
+                      <div class="flex flex-col gap-1.5">
+                        <span class="text-xs text-slate-600 flex items-center justify-between w-28"><span>Total:</span> <strong class="text-slate-900">{{ record.workingDays }}</strong></span>
+                        <span class="text-xs text-emerald-600 flex items-center justify-between w-28"><span>Attended:</span> <strong class="text-emerald-700">{{ record.attendedDays }}</strong></span>
+                        <span class="text-xs text-amber-600 flex items-center justify-between w-28"><span>Late:</span> <strong class="text-amber-700">{{ record.lateDays }}</strong></span>
+                      </div>
+                    </td>
                     <td class="px-6 py-4 text-sm font-medium">
                       @if (record.deductedDays > 0) {
                         <span class="text-rose-600">

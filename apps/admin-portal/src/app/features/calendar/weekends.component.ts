@@ -22,6 +22,21 @@ import { CalendarService, WorkCalendarSettings } from '../../core/services/calen
             <span class="text-sm font-medium">Loading settings...</span>
           </div>
         } @else {
+          <div class="space-y-4 border-b border-slate-100 pb-6">
+            <h3 class="text-sm font-bold text-slate-900">Late Penalty Configuration</h3>
+            <p class="text-xs text-slate-500">Define how many consecutive late days trigger a 1-day salary deduction.</p>
+            <div class="flex items-center gap-4">
+              <input
+                type="number"
+                min="1"
+                [value]="penaltyThreshold()"
+                (change)="updatePenaltyThreshold($event)"
+                class="block w-24 rounded-lg border-0 py-2 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+              />
+              <span class="text-sm font-medium text-slate-700">Consecutive Lates = 1 Day Deduction</span>
+            </div>
+          </div>
+
           <div class="space-y-4">
             <h3 class="text-sm font-bold text-slate-900">Select Weekend Days</h3>
             <p class="text-xs text-slate-500">These days will be excluded from dynamic working days and daily salary calculations.</p>
@@ -66,6 +81,7 @@ export class WeekendSettingsComponent implements OnDestroy {
   readonly saving = signal(false);
   readonly settings = signal<WorkCalendarSettings | null>(null);
   readonly selectedWeekends = signal<string[]>([]);
+  readonly penaltyThreshold = signal<number>(3);
 
   readonly daysOfWeek = [
     'Monday',
@@ -93,6 +109,7 @@ export class WeekendSettingsComponent implements OnDestroy {
         tap((data) => {
           this.settings.set(data);
           this.selectedWeekends.set(data.weekends || []);
+          this.penaltyThreshold.set(data.consecutiveLatesPenaltyThreshold || 3);
         }),
         catchError((err) => {
           console.error('Failed to load weekends settings', err);
@@ -126,7 +143,8 @@ export class WeekendSettingsComponent implements OnDestroy {
     this.saving.set(true);
     const updated: WorkCalendarSettings = {
       ...currentSettings,
-      weekends: this.selectedWeekends()
+      weekends: this.selectedWeekends(),
+      consecutiveLatesPenaltyThreshold: this.penaltyThreshold()
     };
 
     this.calendarService
@@ -144,5 +162,13 @@ export class WeekendSettingsComponent implements OnDestroy {
         takeUntil(this.destroy$)
       )
       .subscribe();
+  }
+
+  updatePenaltyThreshold(event: Event) {
+    const target = event.target as HTMLInputElement;
+    const value = parseInt(target.value, 10);
+    if (!isNaN(value) && value > 0) {
+      this.penaltyThreshold.set(value);
+    }
   }
 }

@@ -31,6 +31,7 @@ exports.getWorkCalendar = async function getWorkCalendar() {
         officeEndTime: '18:00',
         gracePeriod: 15,
         lateResetsMonthly: true,
+        consecutiveLatesPenaltyThreshold: 3,
       };
 };
 

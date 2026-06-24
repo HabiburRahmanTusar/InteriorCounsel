@@ -10,6 +10,7 @@ export interface WorkCalendarSettings {
   officeEndTime: string;
   gracePeriod: number;
   lateResetsMonthly: boolean;
+  consecutiveLatesPenaltyThreshold: number;
 }
 
 export interface HolidayRecord {
