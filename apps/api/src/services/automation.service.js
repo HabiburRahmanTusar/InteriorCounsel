@@ -4,6 +4,8 @@ const Holiday = require('../models/Holiday');
 const DeductionLog = require('../models/DeductionLog');
 const SalaryRecord = require('../models/SalaryRecord');
 const SystemSetting = require('../models/SystemSetting');
+const LeaveRequest = require('../models/LeaveRequest');
+const LeaveBalance = require('../models/LeaveBalance');
 const { dayjs } = require('../utils/time');
 
 /**
@@ -212,7 +214,15 @@ async function recalculateSalary(employeeId, monthStr) {
     attendances.map((a) => dayjs(a.attendanceDate).tz('Asia/Dhaka').format('YYYY-MM-DD'))
   );
 
-  let absentDays = 0;
+  const leaveRequests = await LeaveRequest.find({
+    employeeId,
+    status: 'Approved',
+    startDate: { $lte: endOfMonth },
+    endDate: { $gte: startOfMonth }
+  });
+
+  let unpaidAbsenceDays = 0;
+  let approvedLeaveDays = 0;
   let currentDay = dayjs(monthStr).tz('Asia/Dhaka').startOf('month');
   const endOfMonthDhaka = dayjs(monthStr).tz('Asia/Dhaka').endOf('month');
 
@@ -238,9 +248,22 @@ async function recalculateSalary(employeeId, monthStr) {
       continue;
     }
 
-    // If it was a working day but employee did not check in, they are absent
+    // If it was a working day but employee did not check in
     if (!attendanceDates.has(dateStr)) {
-      absentDays++;
+      // Check if they are on approved leave
+      let isOnLeave = false;
+      for (const req of leaveRequests) {
+        if (currentDay.isBetween(dayjs(req.startDate).tz('Asia/Dhaka').startOf('day'), dayjs(req.endDate).tz('Asia/Dhaka').endOf('day'), null, '[]')) {
+          isOnLeave = true;
+          break;
+        }
+      }
+
+      if (isOnLeave) {
+        approvedLeaveDays++;
+      } else {
+        unpaidAbsenceDays++;
+      }
     }
 
     currentDay = currentDay.add(1, 'day');
@@ -252,14 +275,25 @@ async function recalculateSalary(employeeId, monthStr) {
   const deductions = await DeductionLog.find({ employeeId, month: monthStr });
   const lateDeductedDays = deductions.reduce((sum, log) => sum + (log.deductedDays || 0), 0);
 
-  // Base salary is fixed; only penalty deductions count. Absences do not trigger a pay reduction.
-  const totalDeductedDays = lateDeductedDays;
+  const totalDeductedDays = lateDeductedDays + unpaidAbsenceDays;
 
   // 6. Perform financial calculation
   const baseSalary = user.salary || 0;
   const dailySalary = Number((baseSalary / workingDays).toFixed(2));
-  const deductionAmount = Number(Math.min(baseSalary, totalDeductedDays * dailySalary).toFixed(2));
-  const finalPayableSalary = Number((baseSalary - deductionAmount).toFixed(2));
+  let deductionAmount = Number(Math.min(baseSalary, totalDeductedDays * dailySalary).toFixed(2));
+  
+  // Year-end encashment logic
+  let leaveEncashmentAmount = 0;
+  if (dayjs(monthStr).format('MM') === '12') {
+    const year = dayjs(monthStr).year();
+    const balance = await LeaveBalance.findOne({ employeeId, year });
+    const remainingLeaves = balance ? (balance.allocated - balance.used) : 20; // fallback default
+    if (remainingLeaves > 0) {
+      leaveEncashmentAmount = Number((remainingLeaves * dailySalary).toFixed(2));
+    }
+  }
+
+  const finalPayableSalary = Number((baseSalary - deductionAmount + leaveEncashmentAmount).toFixed(2));
 
   // 7. Upsert salary record
   const record = await SalaryRecord.findOneAndUpdate(
@@ -270,10 +304,13 @@ async function recalculateSalary(employeeId, monthStr) {
       workingDays,
       attendedDays,
       lateDays,
-      deductedDays: totalDeductedDays,
+      deductedDays: lateDeductedDays, // just the late penalties
+      unpaidAbsenceDays,
+      approvedLeaveDays,
       baseSalary,
       dailySalary,
       deductionAmount,
+      leaveEncashmentAmount,
       finalPayableSalary,
       status: 'Draft',
       processedAt: new Date(),

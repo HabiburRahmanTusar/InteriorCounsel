@@ -93,6 +93,7 @@ import { SalaryService, SalaryOverviewRecord } from '../../core/services/salary.
                 <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Base Salary</th>
                 <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Attendance Stats</th>
                 <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Deductions</th>
+                <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Encashment</th>
                 <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Payable Salary</th>
                 <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Status</th>
                 <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4 text-right">Actions</th>
@@ -124,15 +125,29 @@ import { SalaryService, SalaryOverviewRecord } from '../../core/services/salary.
                     <td class="px-6 py-4 text-sm text-slate-700">৳{{ record.baseSalary?.toLocaleString('en-US') }}</td>
                     <td class="px-6 py-4">
                       <div class="flex flex-col gap-1.5">
-                        <span class="text-xs text-slate-600 flex items-center justify-between w-28"><span>Total:</span> <strong class="text-slate-900">{{ record.workingDays }}</strong></span>
-                        <span class="text-xs text-emerald-600 flex items-center justify-between w-28"><span>Attended:</span> <strong class="text-emerald-700">{{ record.attendedDays }}</strong></span>
-                        <span class="text-xs text-amber-600 flex items-center justify-between w-28"><span>Late:</span> <strong class="text-amber-700">{{ record.lateDays }}</strong></span>
+                        <span class="text-xs text-slate-600 flex items-center justify-between w-32"><span>Total:</span> <strong class="text-slate-900">{{ record.workingDays }}</strong></span>
+                        <span class="text-xs text-emerald-600 flex items-center justify-between w-32"><span>Attended:</span> <strong class="text-emerald-700">{{ record.attendedDays }}</strong></span>
+                        <span class="text-xs text-indigo-600 flex items-center justify-between w-32"><span>Approved Leave:</span> <strong class="text-indigo-700">{{ record.approvedLeaveDays || 0 }}</strong></span>
+                        <span class="text-xs text-amber-600 flex items-center justify-between w-32"><span>Late:</span> <strong class="text-amber-700">{{ record.lateDays }}</strong></span>
+                        <span class="text-xs text-rose-600 flex items-center justify-between w-32"><span>Unpaid Absent:</span> <strong class="text-rose-700">{{ record.unpaidAbsenceDays || 0 }}</strong></span>
                       </div>
                     </td>
                     <td class="px-6 py-4 text-sm font-medium">
-                      @if (record.deductedDays > 0) {
+                      @if (record.deductedDays > 0 || record.unpaidAbsenceDays > 0) {
                         <span class="text-rose-600">
-                          -৳{{ record.deductionAmount?.toLocaleString('en-US') }} ({{ record.deductedDays }} days)
+                          -৳{{ record.deductionAmount?.toLocaleString('en-US') }} 
+                          <span class="block text-xs font-normal text-rose-400 mt-0.5">
+                            ({{ record.deductedDays }} late, {{ record.unpaidAbsenceDays || 0 }} absent)
+                          </span>
+                        </span>
+                      } @else {
+                        <span class="text-slate-400">—</span>
+                      }
+                    </td>
+                    <td class="px-6 py-4 text-sm font-medium">
+                      @if (record.leaveEncashmentAmount > 0) {
+                        <span class="text-emerald-600">
+                          +৳{{ record.leaveEncashmentAmount?.toLocaleString('en-US') }}
                         </span>
                       } @else {
                         <span class="text-slate-400">—</span>

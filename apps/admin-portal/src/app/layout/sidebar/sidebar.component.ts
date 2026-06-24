@@ -235,6 +235,67 @@ import { AuthService } from '../../core/services/auth.service';
                 </div>
               }
             </div>
+
+            <!-- Leave Management Dropdown -->
+            <div class="space-y-1">
+              <button
+                (click)="toggleLeaves()"
+                [class.bg-slate-50]="leavesOpen()"
+                [class.text-slate-950]="leavesOpen()"
+                class="w-full flex items-center justify-between text-slate-600 hover:bg-slate-50 hover:text-slate-950 px-4 py-3 rounded-xl text-sm font-medium transition-all"
+              >
+                <div class="flex items-center gap-3">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                    />
+                  </svg>
+                  <span>Leave Management</span>
+                </div>
+                <svg
+                  [class.rotate-180]="leavesOpen()"
+                  class="h-4 w-4 transform transition-transform"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+
+              @if (leavesOpen()) {
+                <div class="pl-8 flex flex-col gap-1.5 animate-in slide-in-from-top-1 duration-150">
+                  <a
+                    routerLink="/leaves/requests"
+                    routerLinkActive="text-indigo-600 font-semibold bg-indigo-50/50"
+                    class="text-slate-600 hover:text-slate-950 px-4 py-2 rounded-lg text-xs font-medium transition-colors"
+                  >
+                    Leave Requests
+                  </a>
+                  <a
+                    routerLink="/leaves/balances"
+                    routerLinkActive="text-indigo-600 font-semibold bg-indigo-50/50"
+                    class="text-slate-600 hover:text-slate-950 px-4 py-2 rounded-lg text-xs font-medium transition-colors"
+                  >
+                    Leave Balances
+                  </a>
+                </div>
+              }
+            </div>
           } @else {
             <a
               routerLink="/profile"
@@ -320,8 +381,14 @@ export class SidebarComponent {
 
   readonly currentRole = this.auth.currentRole;
   readonly loggingOut = signal(false);
-  readonly salaryOpen = signal(false);
+  readonly settingsOpen = signal(false);
   readonly calendarOpen = signal(false);
+  readonly leavesOpen = signal(false);
+  readonly salaryOpen = signal(false);
+
+  toggleSettings() {
+    this.settingsOpen.update((v) => !v);
+  }
 
   toggleSalary() {
     this.salaryOpen.update((v) => !v);
@@ -329,6 +396,10 @@ export class SidebarComponent {
 
   toggleCalendar() {
     this.calendarOpen.update((v) => !v);
+  }
+
+  toggleLeaves() {
+    this.leavesOpen.update((v) => !v);
   }
 
   logout() {

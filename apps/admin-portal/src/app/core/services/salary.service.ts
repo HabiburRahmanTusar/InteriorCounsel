@@ -19,9 +19,12 @@ export interface SalaryOverviewRecord {
   attendedDays: number;
   lateDays: number;
   deductedDays: number;
+  unpaidAbsenceDays: number;
+  approvedLeaveDays: number;
   baseSalary: number;
   dailySalary: number;
   deductionAmount: number;
+  leaveEncashmentAmount: number;
   finalPayableSalary: number;
   status: 'Draft' | 'Paid';
   processedAt: string;

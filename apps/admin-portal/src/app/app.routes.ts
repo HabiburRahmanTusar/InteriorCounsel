@@ -38,6 +38,28 @@ export const routes: Routes = [
           import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
       },
       {
+        path: 'leaves',
+        canActivate: [roleGuard('admin', 'hr')],
+        children: [
+          {
+            path: 'requests',
+            title: 'Leave Requests',
+            loadComponent: () =>
+              import('./features/leaves/requests.component').then(
+                (m) => m.LeaveRequestsComponent,
+              ),
+          },
+          {
+            path: 'balances',
+            title: 'Leave Balances',
+            loadComponent: () =>
+              import('./features/leaves/balances.component').then(
+                (m) => m.LeaveBalancesComponent,
+              ),
+          },
+        ],
+      },
+      {
         path: 'employees',
         title: 'Employees',
         canActivate: [roleGuard('admin', 'hr', 'manager')],
