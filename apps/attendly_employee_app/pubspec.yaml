@@ -1,0 +1,57 @@
+name: attendly_employee
+version: 1.0.0+1
+publish_to: none
+description: Attendly Employee Attendance App - GPS-based check-in/out with offline support
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # State Management
+  provider: ^6.1.1
+  
+  # Network
+  dio: ^5.4.0
+  connectivity_plus: ^5.0.2
+  
+  # Storage
+  flutter_secure_storage: ^9.0.0
+  sqflite: ^2.3.0
+  path: ^1.8.3
+  
+  # Location
+  geolocator: ^10.1.0
+  geocoding: ^2.1.1
+  
+  # UI
+  google_fonts: ^6.1.0
+  flutter_svg: ^2.0.9
+  shimmer: ^3.0.0
+  lottie: ^3.0.0
+  
+  # Utils
+  intl: ^0.19.0
+  permission_handler: ^11.1.0
+  url_launcher: ^6.2.2
+  device_info_plus: ^9.1.1
+  share_plus: ^7.2.1
+  
+  # Notifications
+  flutter_local_notifications: ^16.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/login_illustration.png
+    - assets/images/empty_attendance.png
+    - assets/images/offline_illustration.png
+    - assets/images/success_location.png
+
