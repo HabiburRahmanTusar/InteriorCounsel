@@ -14,7 +14,7 @@ exports.monthly = async function monthly({ month }) {
   const end = dayjs(month).endOf('month').toDate();
   const daysInMonth = dayjs(month).daysInMonth();
 
-  const userQuery = { status: 'active' };
+  const userQuery = { status: 'active', role: { $ne: 'admin' } };
 
   const users = await User.find(userQuery);
   const userIds = users.map((u) => u._id);
@@ -54,7 +54,7 @@ exports.exportReport = async function exportReport({ format, from, to }) {
   const start = dayjs(from).startOf('day').toDate();
   const end = dayjs(to).endOf('day').toDate();
 
-  const userQuery = { status: 'active' };
+  const userQuery = { status: 'active', role: { $ne: 'admin' } };
 
   const users = await User.find(userQuery);
   const userIds = users.map((u) => u._id);

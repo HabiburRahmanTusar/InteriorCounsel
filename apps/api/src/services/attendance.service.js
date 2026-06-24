@@ -124,7 +124,7 @@ exports.daily = async function daily({ date }) {
   // Use Asia/Dhaka or convert the date string to start of day in Dhaka
   const targetDate = dayjs(date).tz('Asia/Dhaka').startOf('day').toDate();
 
-  const userQuery = { status: 'active' };
+  const userQuery = { status: 'active', role: { $ne: 'admin' } };
 
   const users = await User.find(userQuery).populate('shiftId');
   const attendanceLogs = await Attendance.find({ attendanceDate: targetDate });
