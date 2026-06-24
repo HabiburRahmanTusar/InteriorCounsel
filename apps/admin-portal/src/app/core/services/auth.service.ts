@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { tap, shareReplay, finalize } from 'rxjs/operators';
 
 import { environment } from '../../../environments/environment';
 import { AuthTokens, LoginPayload, AuthUser } from '../models/auth.model';
@@ -17,6 +17,7 @@ export class AuthService {
 
   private readonly _accessToken = signal<string | null>(null);
   private readonly _user = signal<AuthUser | null>(null);
+  private refreshInProgress$: Observable<AuthTokens> | null = null;
 
   readonly accessToken = this._accessToken.asReadonly();
   readonly currentUser = this._user.asReadonly();
@@ -40,14 +41,49 @@ export class AuthService {
   }
 
   logout(): Observable<void> {
-    const refreshToken = localStorage.getItem('refreshToken');
+    const refreshToken =
+      localStorage.getItem('refreshToken') || sessionStorage.getItem('refreshToken');
     return this.http
       .post<void>(`${this.baseUrl}/logout`, { refreshToken })
-      .pipe(tap(() => this.clearSession()));
+      .pipe(finalize(() => this.clearSession()));
   }
 
   refreshToken(refreshToken: string): Observable<AuthTokens> {
     return this.http.post<AuthTokens>(`${this.baseUrl}/refresh-token`, { refreshToken });
+  }
+
+  refreshSession(): Observable<AuthTokens> {
+    if (this.refreshInProgress$) {
+      return this.refreshInProgress$;
+    }
+
+    const refreshToken =
+      localStorage.getItem('refreshToken') || sessionStorage.getItem('refreshToken');
+    if (!refreshToken) {
+      return throwError(() => new Error('No refresh token available'));
+    }
+
+    this.refreshInProgress$ = this.http
+      .post<AuthTokens>(`${this.baseUrl}/refresh-token`, { refreshToken })
+      .pipe(
+        tap((tokens: any) => {
+          const user: AuthUser = {
+            id: tokens.id || '',
+            employeeId: tokens.employeeId || '',
+            name: tokens.name || this.currentUser()?.name || '',
+            email: tokens.email || this.currentUser()?.email || '',
+            role: tokens.role || this.currentUser()?.role || 'admin',
+          };
+          const rememberMe = localStorage.getItem('refreshToken') !== null;
+          this.setSession(tokens, user, rememberMe);
+        }),
+        shareReplay(1),
+        finalize(() => {
+          this.refreshInProgress$ = null;
+        }),
+      );
+
+    return this.refreshInProgress$;
   }
 
   forgotPassword(email: string): Observable<void> {
