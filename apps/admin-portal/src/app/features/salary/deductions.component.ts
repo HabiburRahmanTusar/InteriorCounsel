@@ -70,7 +70,7 @@ import { SalaryService, DeductionLogRecord } from '../../core/services/salary.se
                       -{{ log.deductedDays }} day
                     </td>
                     <td class="px-6 py-4 text-sm font-medium text-rose-600">
-                      -৳{{ log.deductedAmount.toLocaleString('en-US', {minimumFractionDigits: 2}) }}
+                      -৳{{ log.deductedAmount?.toLocaleString('en-US', {minimumFractionDigits: 2}) }}
                     </td>
                     <td class="px-6 py-4 text-right text-sm">
                       <button

@@ -53,7 +53,7 @@ import { SalaryService, SalaryOverviewRecord } from '../../core/services/salary.
           </div>
           <div>
             <p class="text-sm font-semibold text-slate-500 mb-1">Total Payout</p>
-            <span class="text-2xl font-bold text-slate-900">৳{{ totalPayout().toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) }}</span>
+            <span class="text-2xl font-bold text-slate-900">৳{{ totalPayout()?.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) }}</span>
           </div>
         </div>
 
@@ -65,7 +65,7 @@ import { SalaryService, SalaryOverviewRecord } from '../../core/services/salary.
           </div>
           <div>
             <p class="text-sm font-semibold text-slate-500 mb-1">Total Deductions</p>
-            <span class="text-2xl font-bold text-slate-900">৳{{ totalDeductions().toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) }}</span>
+            <span class="text-2xl font-bold text-slate-900">৳{{ totalDeductions()?.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) }}</span>
           </div>
         </div>
 
@@ -121,19 +121,19 @@ import { SalaryService, SalaryOverviewRecord } from '../../core/services/salary.
                   <tr class="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
                     <td class="px-6 py-4 text-sm font-medium text-slate-900">{{ record.employeeId?.employeeId }}</td>
                     <td class="px-6 py-4 text-sm text-slate-700 font-semibold">{{ record.employeeId?.name }}</td>
-                    <td class="px-6 py-4 text-sm text-slate-700">৳{{ record.baseSalary.toLocaleString('en-US') }}</td>
+                    <td class="px-6 py-4 text-sm text-slate-700">৳{{ record.baseSalary?.toLocaleString('en-US') }}</td>
                     <td class="px-6 py-4 text-sm text-slate-700">{{ record.workingDays }} / {{ record.attendedDays }} / {{ record.lateDays }}</td>
                     <td class="px-6 py-4 text-sm font-medium">
                       @if (record.deductedDays > 0) {
                         <span class="text-rose-600">
-                          -৳{{ record.deductionAmount.toLocaleString('en-US') }} ({{ record.deductedDays }} days)
+                          -৳{{ record.deductionAmount?.toLocaleString('en-US') }} ({{ record.deductedDays }} days)
                         </span>
                       } @else {
                         <span class="text-slate-400">—</span>
                       }
                     </td>
                     <td class="px-6 py-4 text-sm font-bold text-indigo-600">
-                      ৳{{ record.finalPayableSalary.toLocaleString('en-US') }}
+                      ৳{{ record.finalPayableSalary?.toLocaleString('en-US') }}
                     </td>
                     <td class="px-6 py-4 text-sm">
                       <span
