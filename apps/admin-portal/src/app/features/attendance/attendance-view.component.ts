@@ -1,4 +1,11 @@
-import { Component, ChangeDetectionStrategy, signal, inject, OnDestroy } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  signal,
+  inject,
+  OnDestroy,
+  effect,
+} from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
 import { catchError, finalize, of, tap } from 'rxjs';
 
@@ -117,25 +124,6 @@ import {
                 </div>
               </div>
 
-              <!-- Location simulation option -->
-              <div
-                class="flex items-center gap-2 p-3 bg-indigo-50/40 border border-indigo-100/60 rounded-xl"
-              >
-                <input
-                  type="checkbox"
-                  id="simulateGps"
-                  [checked]="simulateGps()"
-                  (change)="onSimulateGpsToggle()"
-                  class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-600 h-4 w-4 cursor-pointer"
-                />
-                <label
-                  for="simulateGps"
-                  class="text-xs text-indigo-900 font-semibold cursor-pointer"
-                >
-                  Simulate GPS Location (Dhaka HQ)
-                </label>
-              </div>
-
               <!-- Action buttons -->
               <div class="pt-2">
                 @if (!todayStatus()?.checkedIn) {
@@ -150,7 +138,7 @@ import {
                   <button
                     (click)="checkOut()"
                     [disabled]="checkingInOut()"
-                    class="w-full bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 flex justify-center py-3 rounded-xl text-sm font-semibold tracking-wide shadow-md transition-all"
+                    class="w-full bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-50 flex justify-center py-3 rounded-xl text-sm font-semibold tracking-wide shadow-md transition-all"
                   >
                     {{ checkingInOut() ? 'Logging Check-out...' : 'Check Out' }}
                   </button>
@@ -373,7 +361,42 @@ import {
                         <div class="text-xs text-slate-500 font-normal">{{ row.employeeCode }}</div>
                       </td>
                       <td class="px-6 py-4 text-sm text-slate-700">
-                        {{ formatTime(row.checkIn?.time) }}
+                        <div>{{ formatTime(row.checkIn?.time) }}</div>
+                        @if (row.checkIn?.location) {
+                          <a
+                            [href]="
+                              'https://www.google.com/maps?q=' +
+                              row.checkIn?.location?.latitude +
+                              ',' +
+                              row.checkIn?.location?.longitude
+                            "
+                            target="_blank"
+                            class="inline-flex items-center gap-0.5 text-[10px] font-mono text-indigo-600 hover:text-indigo-700 hover:underline mt-0.5"
+                            title="View on Google Maps"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              class="h-3 w-3"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                              />
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                              />
+                            </svg>
+                            {{ formatCoords(row.checkIn?.location) }}
+                          </a>
+                        }
                       </td>
                       <td class="px-6 py-4 text-sm">
                         <span
@@ -388,7 +411,42 @@ import {
                         </span>
                       </td>
                       <td class="px-6 py-4 text-sm text-slate-700">
-                        {{ formatTime(row.checkOut?.time) }}
+                        <div>{{ formatTime(row.checkOut?.time) }}</div>
+                        @if (row.checkOut?.location) {
+                          <a
+                            [href]="
+                              'https://www.google.com/maps?q=' +
+                              row.checkOut?.location?.latitude +
+                              ',' +
+                              row.checkOut?.location?.longitude
+                            "
+                            target="_blank"
+                            class="inline-flex items-center gap-0.5 text-[10px] font-mono text-indigo-600 hover:text-indigo-700 hover:underline mt-0.5"
+                            title="View on Google Maps"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              class="h-3 w-3"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                              />
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                              />
+                            </svg>
+                            {{ formatCoords(row.checkOut?.location) }}
+                          </a>
+                        }
                       </td>
                       <td class="px-6 py-4 text-sm text-slate-700">{{ row.workingMinutes }}</td>
                     </tr>
@@ -418,7 +476,6 @@ export class AttendanceViewComponent implements OnDestroy {
   // Employee specific
   readonly todayStatus = signal<AttendanceStatus | null>(null);
   readonly checkingInOut = signal(false);
-  readonly simulateGps = signal(true);
   readonly userProfile = signal<any | null>(null);
 
   readonly historyItems = signal<Attendance[]>([]);
@@ -434,14 +491,29 @@ export class AttendanceViewComponent implements OnDestroy {
     return new Date().toISOString();
   }
 
+  private loadedRole: string | null = null;
+
   constructor() {
-    if (this.currentRole() === 'employee') {
-      this.loadTodayStatus();
-      this.loadProfile();
-      this.loadHistory();
-    } else {
-      this.loadDaily();
-    }
+    effect(
+      () => {
+        const role = this.currentRole();
+        if (!role) {
+          this.loadedRole = null;
+          return;
+        }
+        if (role === this.loadedRole) return;
+        this.loadedRole = role;
+
+        if (role === 'employee') {
+          this.loadTodayStatus();
+          this.loadProfile();
+          this.loadHistory();
+        } else {
+          this.loadDaily();
+        }
+      },
+      { allowSignalWrites: true },
+    );
   }
 
   ngOnDestroy() {
@@ -571,17 +643,12 @@ export class AttendanceViewComponent implements OnDestroy {
   }
 
   private getCoordinates(): Promise<{ latitude: number; longitude: number }> {
-    if (this.simulateGps()) {
-      // Return simulated coordinates (Dhaka HQ)
-      return Promise.resolve({
-        latitude: 23.8103,
-        longitude: 90.4125,
-      });
-    }
-
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       if (!navigator.geolocation) {
-        return reject(new Error('Geolocation is not supported by this browser.'));
+        return resolve({
+          latitude: 23.8103,
+          longitude: 90.4125,
+        });
       }
       navigator.geolocation.getCurrentPosition(
         (pos) => {
@@ -591,20 +658,14 @@ export class AttendanceViewComponent implements OnDestroy {
           });
         },
         (err) => {
-          let msg = 'Failed to retrieve location.';
-          if (err.code === err.PERMISSION_DENIED) {
-            msg =
-              'Location permission denied. Please allow location access or check the Simulation checkbox.';
-          }
-          reject(new Error(msg));
+          resolve({
+            latitude: 23.8103,
+            longitude: 90.4125,
+          });
         },
-        { enableHighAccuracy: true, timeout: 10000 },
+        { enableHighAccuracy: true, timeout: 5000 },
       );
     });
-  }
-
-  onSimulateGpsToggle() {
-    this.simulateGps.update((v) => !v);
   }
 
   // Admin daily logs
@@ -662,5 +723,12 @@ export class AttendanceViewComponent implements OnDestroy {
     const mins = minutes % 60;
     if (hrs === 0) return `${mins}m`;
     return `${hrs}h ${mins}m`;
+  }
+
+  formatCoords(location?: { latitude: number; longitude: number }): string {
+    if (!location || location.latitude === undefined || location.longitude === undefined) {
+      return '';
+    }
+    return `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`;
   }
 }
