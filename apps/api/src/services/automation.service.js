@@ -87,14 +87,14 @@ async function evaluateLateDeductions(employeeId, monthStr) {
   const startOfMonth = dayjs(monthStr).tz('Asia/Dhaka').startOf('month').toDate();
   const endOfMonth = dayjs(monthStr).tz('Asia/Dhaka').endOf('month').toDate();
 
-  // 1. Get all Late attendance records for this month
-  const lateRecords = await Attendance.find({
+  // 1. Get ALL attendance records for this month
+  const allAttendances = await Attendance.find({
     employeeId,
     attendanceDate: { $gte: startOfMonth, $lte: endOfMonth },
-    'checkIn.status': 'Late',
+    'checkIn.status': { $exists: true }
   }).sort({ attendanceDate: 1 });
 
-  if (lateRecords.length === 0) return 0;
+  if (allAttendances.length === 0) return 0;
 
   // 2. Get existing DeductionLogs for this month to find already-linked lates
   const deductionLogs = await DeductionLog.find({
@@ -109,32 +109,38 @@ async function evaluateLateDeductions(employeeId, monthStr) {
     }
   }
 
-  // 3. Find unlinked late records
-  const unlinkedLates = lateRecords.filter(
-    (record) => !processedAttendanceIds.has(record._id.toString())
-  );
-
+  // 3. Find consecutive lates among unlinked records
   let logsCreated = 0;
-  if (unlinkedLates.length >= 3) {
-    // Determine daily salary to log deduction amount
-    const workingDays = await calculateWorkingDays(monthStr, user);
-    const dailySalary = workingDays > 0 ? (user.salary || 0) / workingDays : 0;
+  let consecutiveLates = [];
 
-    // Chunk into groups of 3
-    for (let i = 0; i < unlinkedLates.length - (unlinkedLates.length % 3); i += 3) {
-      const chunk = unlinkedLates.slice(i, i + 3);
-      const chunkIds = chunk.map((c) => c._id);
+  const workingDays = await calculateWorkingDays(monthStr, user);
+  const dailySalary = workingDays > 0 ? (user.salary || 0) / workingDays : 0;
 
-      await DeductionLog.create({
-        employeeId,
-        triggerReason: '3 late entries reached',
-        deductedDays: 1,
-        deductedAmount: Number(dailySalary.toFixed(2)),
-        linkedAttendance: chunkIds,
-        month: monthStr,
-        timestamp: new Date(),
-      });
-      logsCreated++;
+  for (const record of allAttendances) {
+    if (processedAttendanceIds.has(record._id.toString())) {
+      consecutiveLates = []; // Reset after already processed lates
+      continue;
+    }
+
+    if (record.checkIn.status === 'Late') {
+      consecutiveLates.push(record);
+      if (consecutiveLates.length === 3) {
+        // Trigger deduction for 3 consecutive lates
+        await DeductionLog.create({
+          employeeId,
+          triggerReason: '3 consecutive late entries',
+          deductedDays: 1,
+          deductedAmount: Number(dailySalary.toFixed(2)),
+          linkedAttendance: consecutiveLates.map(c => c._id),
+          month: monthStr,
+          timestamp: new Date(),
+        });
+        logsCreated++;
+        consecutiveLates = []; // Reset counter after penalty
+      }
+    } else {
+      // If they check in 'On Time' (or anything else), reset the consecutive late counter
+      consecutiveLates = [];
     }
   }
 
@@ -235,7 +241,8 @@ async function recalculateSalary(employeeId, monthStr) {
   const deductions = await DeductionLog.find({ employeeId, month: monthStr });
   const lateDeductedDays = deductions.reduce((sum, log) => sum + (log.deductedDays || 0), 0);
 
-  const totalDeductedDays = absentDays + lateDeductedDays;
+  // Base salary is fixed; only penalty deductions count. Absences do not trigger a pay reduction.
+  const totalDeductedDays = lateDeductedDays;
 
   // 6. Perform financial calculation
   const baseSalary = user.salary || 0;
