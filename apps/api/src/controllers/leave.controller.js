@@ -116,3 +116,26 @@ exports.updateAllocation = async (req, res, next) => {
     return next(err);
   }
 };
+
+exports.bulkUpdateAllocation = async (req, res, next) => {
+  try {
+    const { year, allocated } = req.body;
+    const activeEmployees = await User.find({ role: { $ne: 'admin' }, status: 'active' });
+    
+    const operations = activeEmployees.map(emp => ({
+      updateOne: {
+        filter: { employeeId: emp._id, year },
+        update: { $set: { allocated } },
+        upsert: true
+      }
+    }));
+
+    if (operations.length > 0) {
+      await LeaveBalance.bulkWrite(operations);
+    }
+    
+    return apiResponse.ok(res, { count: operations.length }, `Leave allocation updated for ${operations.length} employees`);
+  } catch (err) {
+    return next(err);
+  }
+};

@@ -18,13 +18,21 @@ import { LeaveService, LeaveBalance } from '../../core/services/leave.service';
           <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Leave Balances</h1>
           <p class="text-sm text-slate-500">View and adjust annual leave quotas for employees.</p>
         </div>
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-slate-600 font-medium">Year:</span>
-          <select [(ngModel)]="selectedYear" (change)="loadData()" class="block rounded-lg border-0 py-1.5 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm">
-            <option [value]="currentYear - 1">{{ currentYear - 1 }}</option>
-            <option [value]="currentYear">{{ currentYear }}</option>
-            <option [value]="currentYear + 1">{{ currentYear + 1 }}</option>
-          </select>
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200/60">
+            <input type="number" [(ngModel)]="bulkAllocated" placeholder="Days" class="w-16 rounded border-0 py-1 px-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm" />
+            <button (click)="bulkSaveAllocation()" [disabled]="saving()" class="text-sm font-medium text-indigo-600 hover:text-indigo-700 disabled:opacity-50">
+              Assign to All
+            </button>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-sm text-slate-600 font-medium">Year:</span>
+            <select [(ngModel)]="selectedYear" (change)="loadData()" class="block rounded-lg border-0 py-1.5 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm">
+              <option [value]="currentYear - 1">{{ currentYear - 1 }}</option>
+              <option [value]="currentYear">{{ currentYear }}</option>
+              <option [value]="currentYear + 1">{{ currentYear + 1 }}</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -119,6 +127,7 @@ export class LeaveBalancesComponent implements OnInit, OnDestroy {
   
   currentYear = new Date().getFullYear();
   selectedYear = this.currentYear;
+  bulkAllocated = 20;
 
   showEditModal = signal(false);
   editingBalance: LeaveBalance | null = null;
@@ -176,5 +185,29 @@ export class LeaveBalancesComponent implements OnInit, OnDestroy {
         finalize(() => this.saving.set(false)),
         takeUntil(this.destroy$)
       ).subscribe();
+  }
+
+  bulkSaveAllocation() {
+    if (!this.bulkAllocated || this.bulkAllocated < 0) {
+      this.toastr.warning('Please enter a valid number of days');
+      return;
+    }
+    
+    if (confirm(`Are you sure you want to assign ${this.bulkAllocated} leave days to ALL employees for ${this.selectedYear}?`)) {
+      this.saving.set(true);
+      this.leaveService.bulkUpdateAllocation(this.selectedYear, this.bulkAllocated)
+        .pipe(
+          tap((res) => {
+            this.toastr.success(`Successfully assigned ${this.bulkAllocated} days to ${res.count} employees`);
+            this.loadData();
+          }),
+          catchError(err => {
+            this.toastr.error('Failed to bulk assign leave days');
+            return of(null);
+          }),
+          finalize(() => this.saving.set(false)),
+          takeUntil(this.destroy$)
+        ).subscribe();
+    }
   }
 }

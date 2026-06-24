@@ -13,5 +13,6 @@ router.put('/requests/:id/status', rbac('admin', 'hr'), ctrl.updateRequestStatus
 
 router.get('/balances', rbac('admin', 'hr'), ctrl.getBalances);
 router.put('/balances/allocation', rbac('admin', 'hr'), ctrl.updateAllocation);
+router.put('/balances/bulk-allocation', rbac('admin', 'hr'), ctrl.bulkUpdateAllocation);
 
 module.exports = router;
