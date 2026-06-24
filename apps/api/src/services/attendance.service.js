@@ -85,8 +85,8 @@ exports.checkOut = async function checkOut({ userId, latitude, longitude }) {
     throw error;
   }
 
-  const status = checkOutStatus(new Date(), user.shiftId);
   const checkOutTime = new Date();
+  const status = checkOutStatus(checkOutTime, user.shiftId, record.checkIn.time);
   const minutes = workingMinutes(record.checkIn.time, checkOutTime);
 
   record.checkOut = {
@@ -126,17 +126,54 @@ exports.daily = async function daily({ date }) {
 
   const userQuery = { status: 'active' };
 
-  const users = await User.find(userQuery);
+  const users = await User.find(userQuery).populate('shiftId');
   const attendanceLogs = await Attendance.find({ attendanceDate: targetDate });
 
   const logMap = new Map(attendanceLogs.map((log) => [log.employeeId.toString(), log]));
 
+  const todayDhaka = dayjs().tz('Asia/Dhaka').startOf('day');
+  const targetDhaka = dayjs(date).tz('Asia/Dhaka').startOf('day');
+  const nowDhaka = dayjs().tz('Asia/Dhaka');
+
   const rows = users.map((user) => {
     const log = logMap.get(user._id.toString());
+
+    let status = '—';
+    if (log?.checkIn) {
+      status = log.checkIn.status;
+    } else {
+      if (user.shiftId) {
+        if (targetDhaka.isAfter(todayDhaka)) {
+          status = '—';
+        } else if (targetDhaka.isBefore(todayDhaka)) {
+          status = 'Absent';
+        } else {
+          // Today: check if shift is over
+          const [eh, em] = user.shiftId.endTime.split(':').map(Number);
+          let shiftEnd = targetDhaka.hour(eh).minute(em).second(0).millisecond(0);
+
+          const [sh, sm] = user.shiftId.startTime.split(':').map(Number);
+          const isOvernight = eh < sh || (eh === sh && em < sm);
+          if (isOvernight) {
+            shiftEnd = shiftEnd.add(1, 'day');
+          }
+
+          if (nowDhaka.isAfter(shiftEnd)) {
+            status = 'Absent';
+          } else {
+            status = 'Not Checked In';
+          }
+        }
+      } else {
+        status = '—';
+      }
+    }
+
     return {
       employeeId: user._id,
       employeeName: user.name,
       employeeCode: user.employeeId,
+      status,
       checkIn: log?.checkIn
         ? {
             time: log.checkIn.time,

@@ -196,10 +196,10 @@ export class DashboardComponent implements OnDestroy {
           let late = 0;
           let early = 0;
           for (const row of rows) {
-            if (row.checkIn) {
+            if (row.status === 'On Time' || row.status === 'Late') {
               present++;
-              if (row.checkIn.status === 'Late') late++;
-            } else {
+              if (row.status === 'Late') late++;
+            } else if (row.status === 'Absent') {
               absent++;
             }
             if (row.checkOut?.status === 'Early Leave') early++;

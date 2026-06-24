@@ -26,10 +26,18 @@ function checkInStatus(checkInUtc, shift) {
   return checkInLocal.isAfter(thresholdLocal) ? 'Late' : 'On Time';
 }
 
-function checkOutStatus(checkOutUtc, shift) {
+function checkOutStatus(checkOutUtc, shift, checkInUtc) {
   const checkOutLocal = dayjs(checkOutUtc).tz('Asia/Dhaka');
   const [eh, em] = shift.endTime.split(':').map(Number);
-  const shiftEndLocal = checkOutLocal.hour(eh).minute(em).second(0).millisecond(0);
+
+  const baseLocal = checkInUtc ? dayjs(checkInUtc).tz('Asia/Dhaka') : checkOutLocal;
+  let shiftEndLocal = baseLocal.hour(eh).minute(em).second(0).millisecond(0);
+
+  const [sh, sm] = shift.startTime.split(':').map(Number);
+  const isOvernight = eh < sh || (eh === sh && em < sm);
+  if (isOvernight) {
+    shiftEndLocal = shiftEndLocal.add(1, 'day');
+  }
 
   return checkOutLocal.isBefore(shiftEndLocal) ? 'Early Leave' : 'Normal';
 }
