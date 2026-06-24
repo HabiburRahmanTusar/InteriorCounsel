@@ -157,7 +157,8 @@ import { Shift } from '../../core/models/shift.model';
                   <option value="">No shift assigned</option>
                   @for (shift of shifts(); track shift.id) {
                     <option [value]="shift.id">
-                      {{ shift.name }} ({{ shift.startTime }} - {{ shift.endTime }})
+                      {{ shift.name }} ({{ formatTime(shift.startTime) }} -
+                      {{ formatTime(shift.endTime) }})
                     </option>
                   }
                 </select>
@@ -189,20 +190,12 @@ import { Shift } from '../../core/models/shift.model';
           </div>
 
           <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
-              <button
-                type="button"
-                (click)="cancel()"
-                class="btn btn-secondary btn-secondary-sm"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                [disabled]="saving()"
-                class="btn btn-primary btn-primary-sm"
-              >
-                {{ saving() ? 'Saving...' : 'Save' }}
-              </button>
+            <button type="button" (click)="cancel()" class="btn btn-secondary btn-secondary-sm">
+              Cancel
+            </button>
+            <button type="submit" [disabled]="saving()" class="btn btn-primary btn-primary-sm">
+              {{ saving() ? 'Saving...' : 'Save' }}
+            </button>
           </div>
         </form>
       </div>
@@ -330,6 +323,18 @@ export class EmployeeFormComponent implements OnDestroy {
         takeUntil(this.destroy$),
       )
       .subscribe();
+  }
+
+  formatTime(timeStr: string): string {
+    if (!timeStr) return '';
+    const [hoursStr, minutesStr] = timeStr.split(':');
+    const hours = parseInt(hoursStr, 10);
+    const minutes = parseInt(minutesStr, 10);
+    if (isNaN(hours) || isNaN(minutes)) return timeStr;
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    const displayMinutes = minutes.toString().padStart(2, '0');
+    return `${displayHours.toString().padStart(2, '0')}:${displayMinutes} ${ampm}`;
   }
 
   cancel() {
