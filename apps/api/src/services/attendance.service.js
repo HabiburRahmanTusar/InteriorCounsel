@@ -1,6 +1,5 @@
 const User = require('../models/User');
 const Attendance = require('../models/Attendance');
-const { isWithinOfficeRadius } = require('../utils/haversine');
 const { checkInStatus, checkOutStatus, workingMinutes, dayjs } = require('../utils/time');
 
 exports.getStatus = async function getStatus(userId) {
@@ -26,19 +25,6 @@ exports.checkIn = async function checkIn({ userId, latitude, longitude }) {
   }
   if (!user.shiftId) {
     const error = new Error('User has no assigned shift');
-    error.status = 400;
-    throw error;
-  }
-  if (!user.officeLocationId) {
-    const error = new Error('User has no assigned office location');
-    error.status = 400;
-    throw error;
-  }
-
-  // Geofence check
-  const withinFence = isWithinOfficeRadius({ latitude, longitude }, user.officeLocationId);
-  if (!withinFence) {
-    const error = new Error('Out of office geofence bounds');
     error.status = 400;
     throw error;
   }
@@ -81,19 +67,6 @@ exports.checkOut = async function checkOut({ userId, latitude, longitude }) {
   }
   if (!user.shiftId) {
     const error = new Error('User has no assigned shift');
-    error.status = 400;
-    throw error;
-  }
-  if (!user.officeLocationId) {
-    const error = new Error('User has no assigned office location');
-    error.status = 400;
-    throw error;
-  }
-
-  // Geofence check
-  const withinFence = isWithinOfficeRadius({ latitude, longitude }, user.officeLocationId);
-  if (!withinFence) {
-    const error = new Error('Out of office geofence bounds');
     error.status = 400;
     throw error;
   }
