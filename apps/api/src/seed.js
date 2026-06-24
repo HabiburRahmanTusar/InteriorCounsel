@@ -88,6 +88,8 @@ async function seed() {
       phone: '+8801700000003',
       designation: 'Engineering Manager',
       role: 'manager',
+      salary: 95000,
+      joiningDate: new Date('2025-01-15'),
       shiftId: dayShift._id,
       status: 'active',
     });
@@ -101,6 +103,8 @@ async function seed() {
       phone: '+8801700000004',
       designation: 'Senior Developer',
       role: 'employee',
+      salary: 65000,
+      joiningDate: new Date('2025-03-10'),
       shiftId: dayShift._id,
       status: 'active',
     });

@@ -21,6 +21,9 @@ exports.create = Joi.object({
   salary: Joi.number().min(0).allow(null),
   role: Joi.string().valid('admin', 'hr', 'manager', 'employee').default('employee'),
   shiftId: idSchema,
+  status: Joi.string().valid('active', 'inactive').default('active'),
+  joiningDate: Joi.date().iso().allow(null, ''),
+  resignationDate: Joi.date().iso().allow(null, ''),
 });
 
 exports.update = Joi.object({
@@ -33,6 +36,8 @@ exports.update = Joi.object({
   shiftId: idSchema,
   status: Joi.string().valid('active', 'inactive'),
   password: Joi.string().min(8).max(128),
+  joiningDate: Joi.date().iso().allow(null, ''),
+  resignationDate: Joi.date().iso().allow(null, ''),
 }).min(1);
 
 exports.assignShift = Joi.object({

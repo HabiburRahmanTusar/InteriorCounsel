@@ -116,55 +116,125 @@ import { AuthService } from '../../core/services/auth.service';
           </a>
 
           @if (currentRole() !== 'employee') {
-            <a
-              routerLink="/reports"
-              routerLinkActive="bg-indigo-50 text-indigo-600 font-semibold"
-              class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 hover:text-slate-950 px-4 py-3 rounded-xl text-sm font-medium transition-all"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+            <!-- Salary Dropdown -->
+            <div class="flex flex-col gap-1">
+              <button
+                (click)="toggleSalary()"
+                type="button"
+                class="w-full flex items-center justify-between text-slate-600 hover:bg-slate-50 hover:text-slate-950 px-4 py-3 rounded-xl text-sm font-medium transition-all text-left"
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-              <span>Reports</span>
-            </a>
+                <div class="flex items-center gap-3">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 8c-1.657 0-3 .8-3 1.8 0 .9 1.343 1.2 3 1.5s3 .6 3 1.5c0 .9-1.343 1.8-3 1.8m0-5.4v-1.8m0 5.4v1.8M3 12a9 9 0 1118 0 9 9 0 01-18 0z"
+                    />
+                  </svg>
+                  <span>Salary</span>
+                </div>
+                <svg
+                  [class.rotate-180]="salaryOpen()"
+                  class="h-4 w-4 transform transition-transform"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
 
-            <a
-              routerLink="/settings"
-              routerLinkActive="bg-indigo-50 text-indigo-600 font-semibold"
-              class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 hover:text-slate-950 px-4 py-3 rounded-xl text-sm font-medium transition-all"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+              @if (salaryOpen()) {
+                <div class="pl-8 flex flex-col gap-1.5 animate-in slide-in-from-top-1 duration-150">
+                  <a
+                    routerLink="/salary/overview"
+                    routerLinkActive="text-indigo-600 font-semibold bg-indigo-50/50"
+                    class="text-slate-600 hover:text-slate-950 px-4 py-2 rounded-lg text-xs font-medium transition-colors"
+                  >
+                    Salary Overview
+                  </a>
+                  <a
+                    routerLink="/salary/reports"
+                    routerLinkActive="text-indigo-600 font-semibold bg-indigo-50/50"
+                    class="text-slate-600 hover:text-slate-950 px-4 py-2 rounded-lg text-xs font-medium transition-colors"
+                  >
+                    Salary Reports
+                  </a>
+                  <a
+                    routerLink="/salary/deductions"
+                    routerLinkActive="text-indigo-600 font-semibold bg-indigo-50/50"
+                    class="text-slate-600 hover:text-slate-950 px-4 py-2 rounded-lg text-xs font-medium transition-colors"
+                  >
+                    Deduction History
+                  </a>
+                </div>
+              }
+            </div>
+
+            <!-- Work Calendar Dropdown -->
+            <div class="flex flex-col gap-1">
+              <button
+                (click)="toggleCalendar()"
+                type="button"
+                class="w-full flex items-center justify-between text-slate-600 hover:bg-slate-50 hover:text-slate-950 px-4 py-3 rounded-xl text-sm font-medium transition-all text-left"
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                />
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
-              <span>Settings</span>
-            </a>
+                <div class="flex items-center gap-3">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                  <span>Work Calendar</span>
+                </div>
+                <svg
+                  [class.rotate-180]="calendarOpen()"
+                  class="h-4 w-4 transform transition-transform"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+
+              @if (calendarOpen()) {
+                <div class="pl-8 flex flex-col gap-1.5 animate-in slide-in-from-top-1 duration-150">
+                  <a
+                    routerLink="/calendar/weekends"
+                    routerLinkActive="text-indigo-600 font-semibold bg-indigo-50/50"
+                    class="text-slate-600 hover:text-slate-950 px-4 py-2 rounded-lg text-xs font-medium transition-colors"
+                  >
+                    Weekend Settings
+                  </a>
+                </div>
+              }
+            </div>
           } @else {
             <a
               routerLink="/profile"
@@ -250,6 +320,16 @@ export class SidebarComponent {
 
   readonly currentRole = this.auth.currentRole;
   readonly loggingOut = signal(false);
+  readonly salaryOpen = signal(false);
+  readonly calendarOpen = signal(false);
+
+  toggleSalary() {
+    this.salaryOpen.update((v) => !v);
+  }
+
+  toggleCalendar() {
+    this.calendarOpen.update((v) => !v);
+  }
 
   logout() {
     this.loggingOut.set(true);

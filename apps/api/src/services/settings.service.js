@@ -20,3 +20,24 @@ exports.updateCompany = async function updateCompany(payload) {
     { upsert: true, new: true },
   );
 };
+
+exports.getWorkCalendar = async function getWorkCalendar() {
+  const doc = await SystemSetting.findOne({ key: 'work-calendar' });
+  return doc
+    ? doc.value
+    : {
+        weekends: ['Friday', 'Saturday'],
+        officeStartTime: '09:00',
+        officeEndTime: '18:00',
+        gracePeriod: 15,
+        lateResetsMonthly: true,
+      };
+};
+
+exports.updateWorkCalendar = async function updateWorkCalendar(payload) {
+  await SystemSetting.findOneAndUpdate(
+    { key: 'work-calendar' },
+    { key: 'work-calendar', value: payload },
+    { upsert: true, new: true },
+  );
+};

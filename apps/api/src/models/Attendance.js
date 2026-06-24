@@ -23,6 +23,7 @@ const checkInSchema = new mongoose.Schema(
     time: { type: Date, required: true },
     status: { type: String, enum: CHECK_IN_STATUSES, required: true },
     location: geoPointSchema,
+    lateMinutes: { type: Number, default: 0 },
   },
   { _id: false },
 );

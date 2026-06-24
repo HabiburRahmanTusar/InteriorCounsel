@@ -39,7 +39,10 @@ exports.checkIn = async function checkIn({ userId, latitude, longitude }) {
     throw error;
   }
 
-  const status = checkInStatus(new Date(), user.shiftId);
+  const checkInTime = new Date();
+  const status = checkInStatus(checkInTime, user.shiftId);
+  const { getLateMinutes } = require('../utils/time');
+  const lateMinutes = getLateMinutes(checkInTime, user.shiftId);
 
   const record = await Attendance.findOneAndUpdate(
     { employeeId: userId, attendanceDate: localToday },
@@ -47,13 +50,21 @@ exports.checkIn = async function checkIn({ userId, latitude, longitude }) {
       employeeId: userId,
       attendanceDate: localToday,
       checkIn: {
-        time: new Date(),
+        time: checkInTime,
         status,
         location: { latitude, longitude },
+        lateMinutes,
       },
     },
     { upsert: true, new: true },
   );
+
+  // Trigger automation asynchronously
+  const automationService = require('./automation.service');
+  const monthStr = dayjs(localToday).tz('Asia/Dhaka').format('YYYY-MM');
+  automationService.evaluateLateDeductions(userId, monthStr)
+    .then(() => automationService.recalculateSalary(userId, monthStr))
+    .catch((err) => console.error('Automation error after check-in:', err));
 
   return record;
 };
@@ -96,6 +107,12 @@ exports.checkOut = async function checkOut({ userId, latitude, longitude }) {
   };
   record.workingMinutes = minutes;
   await record.save();
+
+  // Trigger automation recalculation asynchronously
+  const automationService = require('./automation.service');
+  const monthStr = dayjs(localToday).tz('Asia/Dhaka').format('YYYY-MM');
+  automationService.recalculateSalary(userId, monthStr)
+    .catch((err) => console.error('Automation error after check-out:', err));
 
   return record;
 };

@@ -19,6 +19,8 @@ const userSchema = new mongoose.Schema(
     salary: { type: Number, min: 0, default: 0 },
     role: { type: String, enum: ROLES, default: 'employee' },
     shiftId: { type: mongoose.Schema.Types.ObjectId, ref: 'Shift' },
+    joiningDate: { type: Date, default: Date.now },
+    resignationDate: { type: Date },
     status: { type: String, enum: USER_STATUSES, default: 'active' },
   },
   { timestamps: true },

@@ -27,3 +27,21 @@ exports.updateCompany = async (req, res, next) => {
     return next(err);
   }
 };
+
+exports.getWorkCalendar = async (req, res, next) => {
+  try {
+    const data = await settingsService.getWorkCalendar();
+    return apiResponse.ok(res, data);
+  } catch (err) {
+    return next(err);
+  }
+};
+
+exports.updateWorkCalendar = async (req, res, next) => {
+  try {
+    await settingsService.updateWorkCalendar(req.body);
+    return apiResponse.ok(res, null, 'Work calendar settings updated');
+  } catch (err) {
+    return next(err);
+  }
+};

@@ -13,6 +13,8 @@ export interface Employee {
   role: UserRole;
   shiftId?: string;
   status: UserStatus;
+  joiningDate?: string;
+  resignationDate?: string;
   createdAt: string;
   updatedAt: string;
 }

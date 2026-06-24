@@ -11,5 +11,7 @@ router.use('/shifts', require('./shift.routes'));
 router.use('/attendance', require('./attendance.routes'));
 router.use('/reports', require('./report.routes'));
 router.use('/settings', require('./settings.routes'));
+router.use('/holidays', require('./holiday.routes'));
+router.use('/salary', require('./salary.routes'));
 
 module.exports = router;

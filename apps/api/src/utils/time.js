@@ -53,4 +53,15 @@ function workingMinutes(checkInUtc, checkOutUtc) {
   return Math.max(0, Math.round((checkOutUtc - checkInUtc) / 60000));
 }
 
-module.exports = { dayjs, checkInStatus, checkOutStatus, workingMinutes };
+function getLateMinutes(checkInUtc, shift) {
+  const checkInLocal = dayjs(checkInUtc).tz('Asia/Dhaka');
+  const [sh, sm] = shift.startTime.split(':').map(Number);
+  const shiftStartLocal = checkInLocal.hour(sh).minute(sm).second(0).millisecond(0);
+
+  if (checkInLocal.isAfter(shiftStartLocal)) {
+    return Math.max(0, checkInLocal.diff(shiftStartLocal, 'minute'));
+  }
+  return 0;
+}
+
+module.exports = { dayjs, checkInStatus, checkOutStatus, workingMinutes, getLateMinutes };

@@ -94,6 +94,50 @@ export const routes: Routes = [
           import('./features/settings/settings.component').then((m) => m.SettingsComponent),
       },
       {
+        path: 'salary',
+        canActivate: [roleGuard('admin', 'hr')],
+        children: [
+          {
+            path: 'overview',
+            title: 'Salary Overview',
+            loadComponent: () =>
+              import('./features/salary/overview.component').then(
+                (m) => m.SalaryOverviewComponent,
+              ),
+          },
+          {
+            path: 'reports',
+            title: 'Salary Reports',
+            loadComponent: () =>
+              import('./features/salary/reports.component').then(
+                (m) => m.SalaryReportsComponent,
+              ),
+          },
+          {
+            path: 'deductions',
+            title: 'Deduction History',
+            loadComponent: () =>
+              import('./features/salary/deductions.component').then(
+                (m) => m.DeductionHistoryComponent,
+              ),
+          },
+        ],
+      },
+      {
+        path: 'calendar',
+        canActivate: [roleGuard('admin', 'hr')],
+        children: [
+          {
+            path: 'weekends',
+            title: 'Weekend Settings',
+            loadComponent: () =>
+              import('./features/calendar/weekends.component').then(
+                (m) => m.WeekendSettingsComponent,
+              ),
+          },
+        ],
+      },
+      {
         path: 'profile',
         title: 'My Profile',
         loadComponent: () =>

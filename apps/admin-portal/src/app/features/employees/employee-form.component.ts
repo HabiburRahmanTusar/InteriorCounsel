@@ -106,6 +106,8 @@ import { Shift } from '../../core/models/shift.model';
                 class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
               />
             </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
               <label
                 class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5"
@@ -140,6 +142,64 @@ import { Shift } from '../../core/models/shift.model';
                   </svg>
                 </div>
               </div>
+            </div>
+            <div>
+              <label
+                class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5"
+                >Status</label
+              >
+              <div class="relative">
+                <select
+                  formControlName="status"
+                  class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all appearance-none cursor-pointer pr-10"
+                >
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+                <div
+                  class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label
+                class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5"
+                >Joining Date</label
+              >
+              <input
+                type="date"
+                formControlName="joiningDate"
+                class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
+              />
+            </div>
+            <div>
+              <label
+                class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5"
+                >Resignation Date</label
+              >
+              <input
+                type="date"
+                formControlName="resignationDate"
+                class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
+              />
             </div>
           </div>
 
@@ -227,6 +287,8 @@ export class EmployeeFormComponent implements OnDestroy {
     role: ['employee'],
     shiftId: [''],
     status: ['active'],
+    joiningDate: [''],
+    resignationDate: [''],
   });
 
   constructor() {
@@ -276,6 +338,8 @@ export class EmployeeFormComponent implements OnDestroy {
             role: emp.role,
             shiftId: (emp.shiftId as any)?._id || emp.shiftId || '',
             status: emp.status,
+            joiningDate: emp.joiningDate ? emp.joiningDate.split('T')[0] : '',
+            resignationDate: emp.resignationDate ? emp.resignationDate.split('T')[0] : '',
           });
         }),
         catchError((err) => {
@@ -297,6 +361,8 @@ export class EmployeeFormComponent implements OnDestroy {
     const raw = this.form.getRawValue();
     const payload: any = { ...raw };
     if (!payload.shiftId) payload.shiftId = null;
+    if (!payload.joiningDate) payload.joiningDate = null;
+    if (!payload.resignationDate) payload.resignationDate = null;
     if (!this.isEdit()) {
       delete payload.employeeId;
     }
