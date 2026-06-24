@@ -8,7 +8,7 @@
 const mongoose = require('mongoose');
 
 const CHECK_IN_STATUSES = ['On Time', 'Late'];
-const CHECK_OUT_STATUSES = ['Normal', 'Early Leave'];
+const CHECK_OUT_STATUSES = ['Normal', 'Early Leave', 'Late Checkout'];
 
 const geoPointSchema = new mongoose.Schema(
   {

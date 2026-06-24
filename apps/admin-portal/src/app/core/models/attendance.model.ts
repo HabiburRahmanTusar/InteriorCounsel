@@ -1,5 +1,5 @@
 export type CheckInStatus = 'On Time' | 'Late';
-export type CheckOutStatus = 'Normal' | 'Early Leave';
+export type CheckOutStatus = 'Normal' | 'Early Leave' | 'Late Checkout';
 
 export interface GeoPoint {
   latitude: number;

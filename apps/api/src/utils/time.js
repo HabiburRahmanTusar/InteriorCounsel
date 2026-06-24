@@ -41,7 +41,16 @@ function checkOutStatus(checkOutUtc, shift, checkInUtc) {
     shiftEndLocal = shiftEndLocal.add(1, 'day');
   }
 
-  return checkOutLocal.isBefore(shiftEndLocal) ? 'Early Leave' : 'Normal';
+  if (checkOutLocal.isBefore(shiftEndLocal)) {
+    return 'Early Leave';
+  }
+
+  const overtimeMinutes = checkOutLocal.diff(shiftEndLocal, 'minute');
+  if (overtimeMinutes > 120) {
+    return 'Late Checkout';
+  }
+
+  return 'Normal';
 }
 
 /**
