@@ -132,7 +132,7 @@ import {
                   for="simulateGps"
                   class="text-xs text-indigo-900 font-semibold cursor-pointer"
                 >
-                  Simulate at Office ({{ userProfile()?.officeLocationId?.name || 'Dhaka HQ' }})
+                  Simulate GPS Location (Dhaka HQ)
                 </label>
               </div>
 
@@ -572,14 +572,7 @@ export class AttendanceViewComponent implements OnDestroy {
 
   private getCoordinates(): Promise<{ latitude: number; longitude: number }> {
     if (this.simulateGps()) {
-      const office = this.userProfile()?.officeLocationId;
-      if (office && typeof office.latitude === 'number' && typeof office.longitude === 'number') {
-        return Promise.resolve({
-          latitude: office.latitude,
-          longitude: office.longitude,
-        });
-      }
-      // Fallback office coordinates (Dhaka HQ)
+      // Return simulated coordinates (Dhaka HQ)
       return Promise.resolve({
         latitude: 23.8103,
         longitude: 90.4125,

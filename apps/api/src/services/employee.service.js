@@ -16,7 +16,6 @@ exports.list = async function list({ page, limit, search, status }) {
     .skip((page - 1) * limit)
     .limit(limit)
     .populate('shiftId')
-    .populate('officeLocationId')
     .sort({ createdAt: -1 });
 
   return {
@@ -26,7 +25,8 @@ exports.list = async function list({ page, limit, search, status }) {
 };
 
 exports.getById = async function getById(id) {
-  const user = await User.findById(id).populate('shiftId').populate('officeLocationId');
+  const user = await User.findById(id)
+    .populate('shiftId');
   if (!user) {
     const error = new Error('User not found');
     error.status = 404;

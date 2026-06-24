@@ -129,7 +129,7 @@ exports.resetPassword = async function resetPassword({ resetToken, newPassword }
 };
 
 exports.me = async function me(userId) {
-  const user = await User.findById(userId).populate('shiftId').populate('officeLocationId');
+  const user = await User.findById(userId).populate('shiftId');
   if (!user) {
     const error = new Error('User not found');
     error.status = 404;

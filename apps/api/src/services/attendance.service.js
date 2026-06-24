@@ -17,7 +17,7 @@ exports.getStatus = async function getStatus(userId) {
 };
 
 exports.checkIn = async function checkIn({ userId, latitude, longitude }) {
-  const user = await User.findById(userId).populate('shiftId').populate('officeLocationId');
+  const user = await User.findById(userId).populate('shiftId');
   if (!user) {
     const error = new Error('User not found');
     error.status = 404;
@@ -59,7 +59,7 @@ exports.checkIn = async function checkIn({ userId, latitude, longitude }) {
 };
 
 exports.checkOut = async function checkOut({ userId, latitude, longitude }) {
-  const user = await User.findById(userId).populate('shiftId').populate('officeLocationId');
+  const user = await User.findById(userId).populate('shiftId');
   if (!user) {
     const error = new Error('User not found');
     error.status = 404;

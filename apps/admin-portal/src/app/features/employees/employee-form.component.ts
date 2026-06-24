@@ -226,7 +226,6 @@ export class EmployeeFormComponent implements OnDestroy {
     salary: [0],
     role: ['employee'],
     shiftId: [''],
-    officeLocationId: [''],
     status: ['active'],
   });
 
@@ -276,7 +275,6 @@ export class EmployeeFormComponent implements OnDestroy {
             salary: emp.salary ?? 0,
             role: emp.role,
             shiftId: (emp.shiftId as any)?._id || emp.shiftId || '',
-            officeLocationId: (emp.officeLocationId as any)?._id || emp.officeLocationId || '',
             status: emp.status,
           });
         }),
@@ -299,7 +297,6 @@ export class EmployeeFormComponent implements OnDestroy {
     const raw = this.form.getRawValue();
     const payload: any = { ...raw };
     if (!payload.shiftId) payload.shiftId = null;
-    if (!payload.officeLocationId) payload.officeLocationId = null;
     if (!this.isEdit()) {
       delete payload.employeeId;
     }

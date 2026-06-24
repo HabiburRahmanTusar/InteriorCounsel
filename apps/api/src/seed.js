@@ -14,7 +14,6 @@ const { connectDatabase, disconnectDatabase } = require('./config/db');
 // Models
 const User = require('./models/User');
 const Shift = require('./models/Shift');
-const OfficeLocation = require('./models/OfficeLocation');
 const Attendance = require('./models/Attendance');
 
 // Custom logger fallback
@@ -33,12 +32,7 @@ async function seed() {
   try {
     // 1. Clear Existing Data
     log.info('Clearing old database records...');
-    await Promise.all([
-      User.deleteMany({}),
-      Shift.deleteMany({}),
-      OfficeLocation.deleteMany({}),
-      Attendance.deleteMany({}),
-    ]);
+    await Promise.all([User.deleteMany({}), Shift.deleteMany({}), Attendance.deleteMany({})]);
     log.info('Database cleared.');
 
     // 2. Seed Shifts
@@ -58,23 +52,6 @@ async function seed() {
     });
     log.info('Shifts seeded successfully.');
 
-    // 3. Seed Office Locations
-    log.info('Seeding Office Locations...');
-    const dhakaHq = await OfficeLocation.create({
-      name: 'Dhaka HQ',
-      latitude: 23.8103,
-      longitude: 90.4125,
-      radius: 150,
-    });
-
-    const chittagongBranch = await OfficeLocation.create({
-      name: 'Chittagong Branch',
-      latitude: 22.3569,
-      longitude: 91.7832,
-      radius: 100,
-    });
-    log.info('Office Locations seeded.');
-
     // 4. Seed Users (Scaffolding / Passwords hashed automatically via User model pre-save hook)
     log.info('Seeding Users...');
 
@@ -87,7 +64,6 @@ async function seed() {
       phone: '+8801700000001',
       designation: 'IT Director',
       role: 'admin',
-      officeLocationId: dhakaHq._id,
       status: 'active',
     });
 
@@ -100,7 +76,6 @@ async function seed() {
       phone: '+8801700000002',
       designation: 'HR Executive',
       role: 'hr',
-      officeLocationId: dhakaHq._id,
       status: 'active',
     });
 
@@ -114,7 +89,6 @@ async function seed() {
       designation: 'Engineering Manager',
       role: 'manager',
       shiftId: dayShift._id,
-      officeLocationId: dhakaHq._id,
       status: 'active',
     });
 
@@ -128,7 +102,6 @@ async function seed() {
       designation: 'Senior Developer',
       role: 'employee',
       shiftId: dayShift._id,
-      officeLocationId: dhakaHq._id,
       status: 'active',
     });
 

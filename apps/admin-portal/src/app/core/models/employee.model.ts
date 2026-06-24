@@ -12,7 +12,6 @@ export interface Employee {
   salary?: number;
   role: UserRole;
   shiftId?: string;
-  officeLocationId?: string;
   status: UserStatus;
   createdAt: string;
   updatedAt: string;

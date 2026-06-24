@@ -3,7 +3,6 @@ import { Subject, takeUntil } from 'rxjs';
 import { catchError, finalize, of, tap } from 'rxjs';
 
 import { SettingsService } from '../../core/services/settings.service';
-import { OfficeLocation } from '../../core/models/office-location.model';
 
 @Component({
   selector: 'wfm-settings',
@@ -14,26 +13,13 @@ import { OfficeLocation } from '../../core/models/office-location.model';
     <div class="space-y-6 max-w-4xl">
       <div class="space-y-1">
         <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Settings</h1>
-        <p class="text-sm text-slate-500">
-          Configure regional preferences, office geography, and validation rules
-        </p>
+        <p class="text-sm text-slate-500">Configure regional preferences and validation rules</p>
       </div>
 
       <!-- Settings Card -->
       <div class="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-sm">
         <!-- Tab Headers -->
         <div class="flex border-b border-slate-200 bg-slate-50/50 px-6">
-          <button
-            (click)="activeTab.set('office')"
-            [class]="
-              activeTab() === 'office'
-                ? 'border-indigo-600 text-indigo-600 font-semibold'
-                : 'border-transparent text-slate-500 hover:text-slate-950'
-            "
-            class="px-4 py-4 border-b-2 text-sm font-medium transition-all outline-none"
-          >
-            Office locations
-          </button>
           <button
             (click)="activeTab.set('rules')"
             [class]="
@@ -60,66 +46,9 @@ import { OfficeLocation } from '../../core/models/office-location.model';
 
         <!-- Tab Body -->
         <div class="p-6 md:p-8">
-          @if (activeTab() === 'office') {
-            <div class="space-y-4">
-              <div
-                class="bg-slate-50 border border-slate-100 rounded-xl p-4 flex gap-3 text-slate-600"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5 text-indigo-500 shrink-0 mt-0.5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                  />
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-                <div class="space-y-1">
-                  <h5 class="text-sm font-semibold text-slate-900">Geofencing parameters</h5>
-                  <p class="text-xs text-slate-500 leading-relaxed">
-                    Manage office locations (name, GPS coordinates, radius in metres). A Leaflet map
-                    picker will be integrated in Phase 2.
-                  </p>
-                </div>
-              </div>
-
-              @if (locationsLoading()) {
-                <div class="text-sm text-slate-500">Loading locations...</div>
-              } @else if (locations().length === 0) {
-                <div class="text-sm text-slate-500">No office locations configured.</div>
-              } @else {
-                <div class="space-y-3">
-                  @for (loc of locations(); track loc.id) {
-                    <div
-                      class="border border-slate-200 rounded-xl p-4 flex items-center justify-between"
-                    >
-                      <div>
-                        <div class="text-sm font-semibold text-slate-900">{{ loc.name }}</div>
-                        <div class="text-xs text-slate-500">
-                          {{ loc.latitude }}, {{ loc.longitude }} — radius {{ loc.radius }}m
-                        </div>
-                      </div>
-                    </div>
-                  }
-                </div>
-              }
-            </div>
-          }
-
           @if (activeTab() === 'rules') {
             <div class="space-y-6">
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                   <label
                     class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5"
@@ -129,18 +58,6 @@ import { OfficeLocation } from '../../core/models/office-location.model';
                     type="number"
                     [value]="rules()['defaultGracePeriodMinutes'] ?? 15"
                     (input)="onGracePeriodInput($event)"
-                    class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
-                  />
-                </div>
-                <div>
-                  <label
-                    class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5"
-                    >Default office radius (m)</label
-                  >
-                  <input
-                    type="number"
-                    [value]="rules()['defaultOfficeRadiusMeters'] ?? 200"
-                    (input)="onOfficeRadiusInput($event)"
                     class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
                   />
                 </div>
@@ -221,35 +138,19 @@ export class SettingsComponent implements OnDestroy {
   private settingsService = inject(SettingsService);
   private destroy$ = new Subject<void>();
 
-  readonly activeTab = signal('office');
-  readonly locationsLoading = signal(false);
-  readonly locations = signal<OfficeLocation[]>([]);
+  readonly activeTab = signal('rules');
   readonly rules = signal<Record<string, any>>({});
   readonly company = signal<Record<string, any>>({});
   readonly savingRules = signal(false);
   readonly savingCompany = signal(false);
 
   constructor() {
-    this.loadOfficeLocations();
     this.loadCompany();
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  loadOfficeLocations() {
-    this.locationsLoading.set(true);
-    this.settingsService
-      .listOfficeLocations()
-      .pipe(
-        tap((data) => this.locations.set(data)),
-        catchError(() => of([])),
-        finalize(() => this.locationsLoading.set(false)),
-        takeUntil(this.destroy$),
-      )
-      .subscribe();
   }
 
   loadCompany() {
@@ -272,11 +173,6 @@ export class SettingsComponent implements OnDestroy {
     this.updateRule('defaultGracePeriodMinutes', Number(value));
   }
 
-  onOfficeRadiusInput(event: Event) {
-    const value = (event.target as HTMLInputElement).value;
-    this.updateRule('defaultOfficeRadiusMeters', Number(value));
-  }
-
   onTimezoneInput(event: Event) {
     const value = (event.target as HTMLInputElement).value;
     this.updateRule('defaultTimezone', value);
@@ -286,7 +182,6 @@ export class SettingsComponent implements OnDestroy {
     this.savingRules.set(true);
     const payload = {
       defaultGracePeriodMinutes: this.rules()['defaultGracePeriodMinutes'] ?? 15,
-      defaultOfficeRadiusMeters: this.rules()['defaultOfficeRadiusMeters'] ?? 200,
       defaultTimezone: this.rules()['defaultTimezone'] ?? 'UTC+6',
     };
     this.settingsService

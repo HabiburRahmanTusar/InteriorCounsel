@@ -13,13 +13,6 @@ const router = express.Router();
 
 router.use(auth, rbac('admin'));
 
-router.get('/office-locations', ctrl.listOfficeLocations);
-router.post('/office-locations', validate(schemas.createOfficeLocation), ctrl.createOfficeLocation);
-router.put(
-  '/office-locations/:id',
-  validate(schemas.updateOfficeLocation),
-  ctrl.updateOfficeLocation,
-);
 router.put(
   '/attendance-rules',
   validate(schemas.updateAttendanceRules),
