@@ -76,6 +76,51 @@ import {
 
             <!-- Card Content -->
             <div class="p-6 space-y-6">
+              <!-- Shift Info Banner -->
+              @if (userProfile()?.shiftId) {
+                <div class="space-y-2">
+                  <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    Your Shift Info
+                  </span>
+                  <div class="p-4 bg-indigo-50/40 border border-indigo-100/50 rounded-xl space-y-2">
+                    <div class="flex items-center gap-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4 text-indigo-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <span class="text-xs font-bold text-slate-800">
+                        {{ userProfile()?.shiftId?.name }}
+                      </span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span class="text-slate-400 block font-semibold">Hours</span>
+                        <span class="text-slate-700 font-bold">
+                          {{ format12Hour(userProfile()?.shiftId?.startTime) }} -
+                          {{ format12Hour(userProfile()?.shiftId?.endTime) }}
+                        </span>
+                      </div>
+                      <div>
+                        <span class="text-slate-400 block font-semibold">Grace Time</span>
+                        <span class="text-slate-700 font-bold">
+                          {{ userProfile()?.shiftId?.gracePeriod }} mins
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+
               <!-- Times Summary -->
               <div class="grid grid-cols-2 gap-4">
                 <div class="space-y-1.5 p-3.5 bg-slate-50 border border-slate-100 rounded-xl">
@@ -730,5 +775,19 @@ export class AttendanceViewComponent implements OnDestroy {
       return '';
     }
     return `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`;
+  }
+
+  format12Hour(timeStr?: string): string {
+    if (!timeStr) return '';
+    const parts = timeStr.split(':');
+    if (parts.length !== 2) return timeStr;
+    let hour = parseInt(parts[0], 10);
+    const minute = parts[1];
+    if (isNaN(hour)) return timeStr;
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    hour = hour % 12;
+    hour = hour ? hour : 12;
+    const strHour = hour < 10 ? `0${hour}` : `${hour}`;
+    return `${strHour}:${minute} ${ampm}`;
   }
 }

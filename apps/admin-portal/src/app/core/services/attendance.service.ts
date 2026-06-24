@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { Attendance, AttendanceStatus, DailyAttendanceRow } from '../models/attendance.model';
@@ -35,9 +35,16 @@ export class AttendanceService {
     if (params.to) httpParams = httpParams.set('to', params.to);
     httpParams = httpParams.set('page', params.page ?? 1);
     httpParams = httpParams.set('limit', params.limit ?? 20);
-    return this.http.get<{ items: Attendance[]; total: number }>(`${this.baseUrl}/history`, {
-      params: httpParams,
-    });
+    return this.http
+      .get<any>(`${this.baseUrl}/history`, {
+        params: httpParams,
+      })
+      .pipe(
+        map((res) => ({
+          items: res.data || [],
+          total: res.pagination?.total || 0,
+        })),
+      );
   }
 
   daily(date: string): Observable<DailyAttendanceRow[]> {
