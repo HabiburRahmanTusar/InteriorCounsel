@@ -8,7 +8,6 @@ const salaryRecordSchema = new mongoose.Schema(
     attendedDays: { type: Number, required: true, default: 0 },
     lateDays: { type: Number, required: true, default: 0 },
     deductedDays: { type: Number, required: true, default: 0 },
-    unpaidAbsenceDays: { type: Number, default: 0 },
     approvedLeaveDays: { type: Number, default: 0 },
     baseSalary: { type: Number, required: true, default: 0 },
     dailySalary: { type: Number, required: true, default: 0 },

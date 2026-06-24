@@ -129,15 +129,14 @@ import { SalaryService, SalaryOverviewRecord } from '../../core/services/salary.
                         <span class="text-xs text-emerald-600 flex items-center justify-between w-32"><span>Attended:</span> <strong class="text-emerald-700">{{ record.attendedDays }}</strong></span>
                         <span class="text-xs text-indigo-600 flex items-center justify-between w-32"><span>Approved Leave:</span> <strong class="text-indigo-700">{{ record.approvedLeaveDays || 0 }}</strong></span>
                         <span class="text-xs text-amber-600 flex items-center justify-between w-32"><span>Late:</span> <strong class="text-amber-700">{{ record.lateDays }}</strong></span>
-                        <span class="text-xs text-rose-600 flex items-center justify-between w-32"><span>Unpaid Absent:</span> <strong class="text-rose-700">{{ record.unpaidAbsenceDays || 0 }}</strong></span>
                       </div>
                     </td>
                     <td class="px-6 py-4 text-sm font-medium">
-                      @if (record.deductedDays > 0 || record.unpaidAbsenceDays > 0) {
+                      @if (record.deductedDays > 0) {
                         <span class="text-rose-600">
                           -৳{{ record.deductionAmount?.toLocaleString('en-US') }} 
                           <span class="block text-xs font-normal text-rose-400 mt-0.5">
-                            ({{ record.deductedDays }} late, {{ record.unpaidAbsenceDays || 0 }} absent)
+                            ({{ record.deductedDays }} late)
                           </span>
                         </span>
                       } @else {

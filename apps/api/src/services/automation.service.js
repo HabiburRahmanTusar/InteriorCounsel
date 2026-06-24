@@ -221,7 +221,6 @@ async function recalculateSalary(employeeId, monthStr) {
     endDate: { $gte: startOfMonth }
   });
 
-  let unpaidAbsenceDays = 0;
   let approvedLeaveDays = 0;
   let currentDay = dayjs(monthStr).tz('Asia/Dhaka').startOf('month');
   const endOfMonthDhaka = dayjs(monthStr).tz('Asia/Dhaka').endOf('month');
@@ -261,8 +260,6 @@ async function recalculateSalary(employeeId, monthStr) {
 
       if (isOnLeave) {
         approvedLeaveDays++;
-      } else {
-        unpaidAbsenceDays++;
       }
     }
 
@@ -305,8 +302,7 @@ async function recalculateSalary(employeeId, monthStr) {
       workingDays,
       attendedDays,
       lateDays,
-      deductedDays: lateDeductedDays, // just the late penalties
-      unpaidAbsenceDays,
+      deductedDays: lateDeductedDays,
       approvedLeaveDays,
       baseSalary,
       dailySalary,

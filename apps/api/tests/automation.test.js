@@ -136,7 +136,6 @@ describe('Payroll & Deduction Automation Engine', () => {
     expect(record.lateDays).toBe(3);
     // Deducted days = late penalty (1). Absent days (19) are not deducted from salary.
     expect(record.deductedDays).toBe(1);
-    expect(record.unpaidAbsenceDays).toBe(19);
 
     const dailySalary = Number((30000 / 22).toFixed(2));
     const expectedDeduction = Number((1 * dailySalary).toFixed(2));
