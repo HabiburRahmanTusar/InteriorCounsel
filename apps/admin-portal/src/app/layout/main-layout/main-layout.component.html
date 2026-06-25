@@ -1,0 +1,17 @@
+<div class="flex h-screen overflow-hidden bg-slate-50">
+  <!-- Sidebar -->
+  <aside class="w-64 border-r border-slate-200 bg-white hidden md:flex flex-col">
+    <wfm-sidebar class="h-full"></wfm-sidebar>
+  </aside>
+
+  <!-- Main container -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <!-- Header -->
+    <wfm-header></wfm-header>
+
+    <!-- Main content area -->
+    <main class="flex-1 overflow-y-auto p-6 md:p-8">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

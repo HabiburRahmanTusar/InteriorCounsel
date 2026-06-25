@@ -48,7 +48,11 @@ export class LeaveService {
   }
 
   updateAllocation(employeeId: string, year: number, allocated: number): Observable<LeaveBalance> {
-    return this.http.put<LeaveBalance>(`${this.baseUrl}/balances/allocation`, { employeeId, year, allocated });
+    return this.http.put<LeaveBalance>(`${this.baseUrl}/balances/allocation`, {
+      employeeId,
+      year,
+      allocated,
+    });
   }
 
   bulkUpdateAllocation(year: number, allocated: number): Observable<any> {

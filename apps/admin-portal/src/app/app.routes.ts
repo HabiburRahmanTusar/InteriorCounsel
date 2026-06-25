@@ -45,17 +45,13 @@ export const routes: Routes = [
             path: 'requests',
             title: 'Leave Requests',
             loadComponent: () =>
-              import('./features/leaves/requests.component').then(
-                (m) => m.LeaveRequestsComponent,
-              ),
+              import('./features/leaves/requests.component').then((m) => m.LeaveRequestsComponent),
           },
           {
             path: 'balances',
             title: 'Leave Balances',
             loadComponent: () =>
-              import('./features/leaves/balances.component').then(
-                (m) => m.LeaveBalancesComponent,
-              ),
+              import('./features/leaves/balances.component').then((m) => m.LeaveBalancesComponent),
           },
         ],
       },
@@ -123,17 +119,13 @@ export const routes: Routes = [
             path: 'overview',
             title: 'Salary Overview',
             loadComponent: () =>
-              import('./features/salary/overview.component').then(
-                (m) => m.SalaryOverviewComponent,
-              ),
+              import('./features/salary/overview.component').then((m) => m.SalaryOverviewComponent),
           },
           {
             path: 'reports',
             title: 'Salary Reports',
             loadComponent: () =>
-              import('./features/salary/reports.component').then(
-                (m) => m.SalaryReportsComponent,
-              ),
+              import('./features/salary/reports.component').then((m) => m.SalaryReportsComponent),
           },
           {
             path: 'deductions',
