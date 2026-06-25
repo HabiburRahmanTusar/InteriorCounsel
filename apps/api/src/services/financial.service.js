@@ -60,6 +60,11 @@ exports.list = async function list({ page = 1, limit = 10, search, month, year, 
     sort.period = -1;
   }
 
+  // Tertiary/Secondary sort by createdAt descending to ensure deterministic order for multiple entries
+  if (sortBy !== 'createdAt') {
+    sort.createdAt = -1;
+  }
+
   const total = await FinancialRecord.countDocuments(query);
   const items = await FinancialRecord.find(query)
     .sort(sort)
@@ -73,11 +78,11 @@ exports.list = async function list({ page = 1, limit = 10, search, month, year, 
 };
 
 /**
- * Fetch the latest created record.
+ * Fetch the last updated financial record.
  */
 exports.getLatest = async function getLatest() {
-  // Sort by createdAt descending to get the most recently created record
-  return await FinancialRecord.findOne().sort({ createdAt: -1 });
+  // Sort by updatedAt descending to get the most recently updated/created record
+  return await FinancialRecord.findOne().sort({ updatedAt: -1 });
 };
 
 /**

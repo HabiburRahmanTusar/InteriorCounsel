@@ -102,8 +102,9 @@ export class FinancialComponent implements OnDestroy {
         tap((res) => {
           const latest = res.data;
           if (latest) {
-            // Populate form with latest values, but keep period as the current month
+            // Populate form with latest values
             this.form.patchValue({
+              period: latest.period,
               monthlySales: latest.monthlySales,
               monthlyProfit: latest.monthlyProfit,
               outstandingDue: latest.outstandingDue,
