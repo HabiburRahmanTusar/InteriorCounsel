@@ -73,7 +73,7 @@ exports.pay = async (req, res, next) => {
 
     const populated = await SalaryRecord.findById(record._id).populate(
       'employeeId',
-      'name employeeId designation status email salary'
+      'name employeeId designation status email salary',
     );
 
     return apiResponse.ok(res, populated, 'Salary marked as Paid successfully');

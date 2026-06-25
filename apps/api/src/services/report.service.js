@@ -196,3 +196,378 @@ exports.exportReport = async function exportReport({ format, from, to }) {
     contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   };
 };
+
+function formatWorkingHours(minutes) {
+  if (!minutes) return '0h';
+  const hrs = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hrs === 0) return `${mins}m`;
+  return `${hrs}h ${mins}m`;
+}
+
+exports.employeeWise = async function employeeWise({ employeeId, from, to }) {
+  const LeaveRequest = require('../models/LeaveRequest');
+  const Holiday = require('../models/Holiday');
+  const automationService = require('./automation.service');
+
+  const fromDate = dayjs(from).tz('Asia/Dhaka').startOf('day');
+  const toDate = dayjs(to).tz('Asia/Dhaka').startOf('day');
+
+  const user = await User.findById(employeeId).populate('shiftId');
+  if (!user) {
+    const error = new Error('Employee not found');
+    error.status = 404;
+    throw error;
+  }
+  const shift = user.shiftId;
+
+  let shiftRequiredMinutes = 0;
+  if (shift) {
+    const [sh, sm] = shift.startTime.split(':').map(Number);
+    const [eh, em] = shift.endTime.split(':').map(Number);
+    let startMins = sh * 60 + sm;
+    let endMins = eh * 60 + em;
+    if (endMins < startMins) {
+      endMins += 24 * 60;
+    }
+    shiftRequiredMinutes = endMins - startMins;
+  }
+
+  const weekends = await automationService.getWeekends();
+
+  const holidays = await Holiday.find({
+    date: { $gte: fromDate.toDate(), $lte: toDate.endOf('day').toDate() },
+  });
+  const holidayMap = new Map(
+    holidays.map((h) => [dayjs(h.date).tz('Asia/Dhaka').format('YYYY-MM-DD'), h.name]),
+  );
+
+  const leaveRequests = await LeaveRequest.find({
+    employeeId,
+    status: 'Approved',
+    startDate: { $lte: toDate.endOf('day').toDate() },
+    endDate: { $gte: fromDate.toDate() },
+  });
+
+  const attendances = await Attendance.find({
+    employeeId,
+    attendanceDate: { $gte: fromDate.toDate(), $lte: toDate.endOf('day').toDate() },
+  });
+  const attendanceMap = new Map(
+    attendances.map((a) => [dayjs(a.attendanceDate).tz('Asia/Dhaka').format('YYYY-MM-DD'), a]),
+  );
+
+  const joining = dayjs(user.joiningDate || user.createdAt)
+    .tz('Asia/Dhaka')
+    .startOf('day');
+  const resignation = user.resignationDate
+    ? dayjs(user.resignationDate).tz('Asia/Dhaka').endOf('day')
+    : null;
+
+  let current = fromDate;
+  const dates = [];
+  while (current.isBefore(toDate) || current.isSame(toDate, 'day')) {
+    dates.push(current);
+    current = current.add(1, 'day');
+  }
+
+  const rows = [];
+  let totalPresent = 0;
+  let totalAbsent = 0;
+  let totalLate = 0;
+  let totalWorkingMinutes = 0;
+
+  for (const date of dates) {
+    const dateStr = date.format('YYYY-MM-DD');
+    const dayName = date.format('dddd');
+    const isWeekend = weekends.includes(dayName);
+    const holidayName = holidayMap.get(dateStr);
+    const log = attendanceMap.get(dateStr);
+
+    let approvedLeave = null;
+    for (const req of leaveRequests) {
+      const sDate = dayjs(req.startDate).tz('Asia/Dhaka').startOf('day');
+      const eDate = dayjs(req.endDate).tz('Asia/Dhaka').endOf('day');
+      if (date.isBetween(sDate, eDate, null, '[]')) {
+        approvedLeave = req;
+        break;
+      }
+    }
+
+    let status = '—';
+    let checkInTime = '—';
+    let checkOutTime = '—';
+    let workingHours = '—';
+    let overtimeHours = '—';
+    let remarks = '—';
+    let workingMins = 0;
+
+    // Check contract status bounds
+    if (date.isBefore(joining, 'day') || (resignation && date.isAfter(resignation, 'day'))) {
+      status = '—';
+      remarks = 'Not Employed / Inactive';
+    } else if (log?.checkIn) {
+      checkInTime = dayjs(log.checkIn.time).tz('Asia/Dhaka').format('hh:mm A');
+
+      if (log.checkOut) {
+        checkOutTime = dayjs(log.checkOut.time).tz('Asia/Dhaka').format('hh:mm A');
+        workingMins = log.workingMinutes || 0;
+        workingHours = formatWorkingHours(workingMins);
+
+        if (shift) {
+          const [eh, em] = shift.endTime.split(':').map(Number);
+          const checkInLocal = dayjs(log.checkIn.time).tz('Asia/Dhaka');
+          const checkOutLocal = dayjs(log.checkOut.time).tz('Asia/Dhaka');
+          let shiftEndLocal = checkInLocal.hour(eh).minute(em).second(0).millisecond(0);
+          const [sh, sm] = shift.startTime.split(':').map(Number);
+          const isOvernight = eh < sh || (eh === sh && em < sm);
+          if (isOvernight) {
+            shiftEndLocal = shiftEndLocal.add(1, 'day');
+          }
+          if (checkOutLocal.isAfter(shiftEndLocal)) {
+            const otMins = checkOutLocal.diff(shiftEndLocal, 'minute');
+            overtimeHours = formatWorkingHours(otMins);
+          }
+        }
+      }
+
+      if (log.checkOut) {
+        if (shiftRequiredMinutes > 0 && workingMins < shiftRequiredMinutes / 2) {
+          status = 'Half-Day';
+          remarks = `Short hours: ${workingMins} mins worked (Shift requires ${shiftRequiredMinutes} mins)`;
+        } else if (log.checkIn.status === 'Late') {
+          status = 'Late';
+          remarks = `Late check-in by ${log.checkIn.lateMinutes || 0} mins`;
+          totalLate++;
+        } else {
+          status = 'Present';
+          remarks = 'On Time check-in';
+        }
+      } else {
+        const todayStr = dayjs().tz('Asia/Dhaka').format('YYYY-MM-DD');
+        if (dateStr === todayStr) {
+          if (log.checkIn.status === 'Late') {
+            status = 'Late';
+            remarks = 'Late check-in, check-out pending';
+            totalLate++;
+          } else {
+            status = 'Present';
+            remarks = 'Checked in, check-out pending';
+          }
+        } else {
+          status = 'Half-Day';
+          remarks = 'Missing check-out';
+        }
+      }
+
+      if (status === 'Present' || status === 'Late') {
+        totalPresent++;
+      }
+      totalWorkingMinutes += workingMins;
+
+      if (isWeekend) {
+        remarks = `Weekend work. ${remarks}`;
+      } else if (holidayName) {
+        remarks = `Holiday work (${holidayName}). ${remarks}`;
+      }
+    } else {
+      if (approvedLeave) {
+        status = 'Leave';
+        remarks = `Approved Leave: ${approvedLeave.reason}`;
+      } else if (isWeekend) {
+        status = 'Weekend';
+        remarks = 'Weekend';
+      } else if (holidayName) {
+        status = 'Holiday';
+        remarks = `Public Holiday: ${holidayName}`;
+      } else {
+        if (date.isBefore(dayjs().tz('Asia/Dhaka').startOf('day'))) {
+          status = 'Absent';
+          remarks = 'Absent';
+          totalAbsent++;
+        } else {
+          status = '—';
+          remarks = '—';
+        }
+      }
+    }
+
+    rows.push({
+      employeeId: user.employeeId,
+      employeeName: user.name,
+      date: dateStr,
+      checkInTime,
+      checkOutTime,
+      workingHours,
+      overtimeHours,
+      status,
+      remarks,
+    });
+  }
+
+  return {
+    items: rows,
+    summary: {
+      totalPresentDays: totalPresent,
+      totalAbsentDays: totalAbsent,
+      totalLateDays: totalLate,
+      totalWorkingHours: formatWorkingHours(totalWorkingMinutes),
+    },
+  };
+};
+
+exports.exportEmployeeWise = async function exportEmployeeWise({ format, employeeId, from, to }) {
+  const { items, summary } = await exports.employeeWise({ employeeId, from, to });
+
+  const user = await User.findById(employeeId);
+  const employeeName = user ? user.name : 'Employee';
+
+  if (format === 'csv') {
+    const headers = [
+      'Employee ID',
+      'Employee Name',
+      'Date',
+      'Check-In Time',
+      'Check-Out Time',
+      'Working Hours',
+      'Overtime Hours',
+      'Status',
+      'Remarks',
+    ];
+    const csvRows = [headers.join(',')];
+    for (const item of items) {
+      const values = [
+        `"${item.employeeId}"`,
+        `"${item.employeeName.replace(/"/g, '""')}"`,
+        item.date,
+        item.checkInTime,
+        item.checkOutTime,
+        item.workingHours,
+        item.overtimeHours,
+        item.status,
+        `"${item.remarks.replace(/"/g, '""')}"`,
+      ];
+      csvRows.push(values.join(','));
+    }
+    csvRows.push('');
+    csvRows.push(`Total Present Days,${summary.totalPresentDays}`);
+    csvRows.push(`Total Absent Days,${summary.totalAbsentDays}`);
+    csvRows.push(`Total Late Days,${summary.totalLateDays}`);
+    csvRows.push(`Total Working Hours,${summary.totalWorkingHours}`);
+
+    return { buffer: Buffer.from(csvRows.join('\n'), 'utf-8'), contentType: 'text/csv' };
+  }
+
+  if (format === 'pdf') {
+    const doc = new PDFDocument({ margin: 30 });
+    const buffers = [];
+    doc.on('data', buffers.push.bind(buffers));
+
+    doc.fontSize(20).text('Employee Wise Attendance Report', { align: 'center' });
+    doc.moveDown();
+    doc
+      .fontSize(12)
+      .text(`Employee: ${employeeName} (${items[0]?.employeeId || ''})`, { align: 'center' });
+    doc.text(`Date Range: ${from} to ${to}`, { align: 'center' });
+    doc.moveDown();
+
+    doc.fontSize(11).text('Summary Statistics:', { underline: true });
+    doc.fontSize(10).text(`Total Present Days: ${summary.totalPresentDays}`);
+    doc.text(`Total Absent Days: ${summary.totalAbsentDays}`);
+    doc.text(`Total Late Days: ${summary.totalLateDays}`);
+    doc.text(`Total Working Hours: ${summary.totalWorkingHours}`);
+    doc.moveDown(2);
+
+    doc.fontSize(9);
+    let y = doc.y;
+    doc.text('Date', 30, y);
+    doc.text('Check-In', 90, y);
+    doc.text('Check-Out', 150, y);
+    doc.text('Worked', 210, y);
+    doc.text('Overtime', 270, y);
+    doc.text('Status', 330, y);
+    doc.text('Remarks', 400, y);
+    doc
+      .moveTo(30, y + 12)
+      .lineTo(570, y + 12)
+      .stroke();
+
+    y += 20;
+    for (const item of items) {
+      if (y > 700) {
+        doc.addPage();
+        y = 40;
+        doc.text('Date', 30, y);
+        doc.text('Check-In', 90, y);
+        doc.text('Check-Out', 150, y);
+        doc.text('Worked', 210, y);
+        doc.text('Overtime', 270, y);
+        doc.text('Status', 330, y);
+        doc.text('Remarks', 400, y);
+        doc
+          .moveTo(30, y + 12)
+          .lineTo(570, y + 12)
+          .stroke();
+        y += 20;
+      }
+      doc.text(item.date, 30, y);
+      doc.text(item.checkInTime, 90, y);
+      doc.text(item.checkOutTime, 150, y);
+      doc.text(item.workingHours, 210, y);
+      doc.text(item.overtimeHours, 270, y);
+      doc.text(item.status, 330, y);
+      doc.text(item.remarks.substring(0, 30), 400, y);
+      y += 18;
+    }
+
+    doc.end();
+    const buffer = await new Promise((resolve) => {
+      doc.on('end', () => {
+        resolve(Buffer.concat(buffers));
+      });
+    });
+    return { buffer, contentType: 'application/pdf' };
+  }
+
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet('Employee Attendance');
+
+  sheet.columns = [
+    { header: 'Employee ID', key: 'empId', width: 15 },
+    { header: 'Employee Name', key: 'empName', width: 25 },
+    { header: 'Date', key: 'date', width: 15 },
+    { header: 'Check-In Time', key: 'checkIn', width: 15 },
+    { header: 'Check-Out Time', key: 'checkOut', width: 15 },
+    { header: 'Working Hours', key: 'workingHours', width: 15 },
+    { header: 'Overtime Hours', key: 'overtimeHours', width: 15 },
+    { header: 'Status', key: 'status', width: 15 },
+    { header: 'Remarks', key: 'remarks', width: 35 },
+  ];
+
+  for (const item of items) {
+    sheet.addRow({
+      empId: item.employeeId,
+      empName: item.employeeName,
+      date: item.date,
+      checkIn: item.checkInTime,
+      checkOut: item.checkOutTime,
+      workingHours: item.workingHours,
+      overtimeHours: item.overtimeHours,
+      status: item.status,
+      remarks: item.remarks,
+    });
+  }
+
+  sheet.addRow([]);
+  sheet.addRow(['Summary Statistics']);
+  sheet.addRow(['Total Present Days', summary.totalPresentDays]);
+  sheet.addRow(['Total Absent Days', summary.totalAbsentDays]);
+  sheet.addRow(['Total Late Days', summary.totalLateDays]);
+  sheet.addRow(['Total Working Hours', summary.totalWorkingHours]);
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  return {
+    buffer,
+    contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  };
+};

@@ -17,7 +17,7 @@ const salaryRecordSchema = new mongoose.Schema(
     status: { type: String, enum: ['Draft', 'Paid'], default: 'Draft' },
     processedAt: { type: Date, default: Date.now },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 salaryRecordSchema.index({ employeeId: 1, month: 1 }, { unique: true });

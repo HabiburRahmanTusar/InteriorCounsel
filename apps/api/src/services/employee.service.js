@@ -31,8 +31,7 @@ exports.list = async function list({ page, limit, search, status }) {
 };
 
 exports.getById = async function getById(id) {
-  const user = await User.findById(id)
-    .populate('shiftId');
+  const user = await User.findById(id).populate('shiftId');
   if (!user) {
     const error = new Error('User not found');
     error.status = 404;

@@ -19,3 +19,16 @@ exports.exportReport = Joi.object({
   from: Joi.date().iso().required(),
   to: Joi.date().iso().required(),
 }).default({});
+
+exports.employeeWise = Joi.object({
+  employeeId: Joi.string().hex().length(24).required(),
+  from: Joi.date().iso().required(),
+  to: Joi.date().iso().required(),
+}).default({});
+
+exports.exportEmployeeWise = Joi.object({
+  format: Joi.string().valid('excel', 'csv', 'pdf').required(),
+  employeeId: Joi.string().hex().length(24).required(),
+  from: Joi.date().iso().required(),
+  to: Joi.date().iso().required(),
+}).default({});

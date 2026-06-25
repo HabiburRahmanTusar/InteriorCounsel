@@ -16,5 +16,11 @@ router.use(auth, rbac('admin', 'hr'));
 router.get('/daily', validate(schemas.daily, 'query'), ctrl.daily);
 router.get('/monthly', validate(schemas.monthly, 'query'), ctrl.monthly);
 router.get('/export', validate(schemas.exportReport, 'query'), ctrl.exportReport);
+router.get('/employee-wise', validate(schemas.employeeWise, 'query'), ctrl.employeeWise);
+router.get(
+  '/employee-wise/export',
+  validate(schemas.exportEmployeeWise, 'query'),
+  ctrl.exportEmployeeWise,
+);
 
 module.exports = router;

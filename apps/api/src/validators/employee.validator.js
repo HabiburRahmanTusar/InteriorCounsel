@@ -7,7 +7,7 @@ const idSchema = Joi.string().hex().length(24).allow(null).empty('').default(nul
 
 exports.list = Joi.object({
   page: Joi.number().integer().min(1).default(1),
-  limit: Joi.number().integer().min(1).max(200).default(20),
+  limit: Joi.number().integer().min(1).max(1000).default(20),
   search: Joi.string().trim().allow(''),
   status: Joi.string().valid('active', 'inactive'),
 }).default({});

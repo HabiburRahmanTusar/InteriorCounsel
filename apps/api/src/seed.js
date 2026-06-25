@@ -43,7 +43,7 @@ async function seed() {
       SalaryRecord.deleteMany({}),
       DeductionLog.deleteMany({}),
       SystemSetting.deleteMany({}),
-      Holiday.deleteMany({})
+      Holiday.deleteMany({}),
     ]);
     log.info('Database cleared.');
 

@@ -10,7 +10,7 @@ const leaveRequestSchema = new mongoose.Schema(
     status: { type: String, enum: ['Pending', 'Approved', 'Rejected'], default: 'Pending' },
     requestedDays: { type: Number, required: true }, // The number of working days taken
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 leaveRequestSchema.index({ employeeId: 1, startDate: 1 });

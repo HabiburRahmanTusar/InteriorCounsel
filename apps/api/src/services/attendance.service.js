@@ -62,7 +62,8 @@ exports.checkIn = async function checkIn({ userId, latitude, longitude }) {
   // Trigger automation asynchronously
   const automationService = require('./automation.service');
   const monthStr = dayjs(localToday).tz('Asia/Dhaka').format('YYYY-MM');
-  automationService.evaluateLateDeductions(userId, monthStr)
+  automationService
+    .evaluateLateDeductions(userId, monthStr)
     .then(() => automationService.recalculateSalary(userId, monthStr))
     .catch((err) => console.error('Automation error after check-in:', err));
 
@@ -111,7 +112,8 @@ exports.checkOut = async function checkOut({ userId, latitude, longitude }) {
   // Trigger automation recalculation asynchronously
   const automationService = require('./automation.service');
   const monthStr = dayjs(localToday).tz('Asia/Dhaka').format('YYYY-MM');
-  automationService.recalculateSalary(userId, monthStr)
+  automationService
+    .recalculateSalary(userId, monthStr)
     .catch((err) => console.error('Automation error after check-out:', err));
 
   return record;

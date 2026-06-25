@@ -10,7 +10,7 @@ const deductionLogSchema = new mongoose.Schema(
     month: { type: String, required: true, match: /^\d{4}-\d{2}$/ }, // YYYY-MM
     timestamp: { type: Date, default: Date.now },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Indexes for fast lookups

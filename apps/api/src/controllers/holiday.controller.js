@@ -34,9 +34,9 @@ exports.create = async (req, res, next) => {
 
     // Trigger asynchronous recalculation for all active employees for this month
     const monthStr = dayjs(dateParsed).format('YYYY-MM');
-    automationService.evaluateAllActive(monthStr).catch((err) =>
-      console.error('Failed to trigger recalculation after adding holiday:', err)
-    );
+    automationService
+      .evaluateAllActive(monthStr)
+      .catch((err) => console.error('Failed to trigger recalculation after adding holiday:', err));
 
     return apiResponse.created(res, item, 'Holiday created successfully');
   } catch (err) {
@@ -58,9 +58,11 @@ exports.remove = async (req, res, next) => {
 
     // Trigger recalculation for the affected month
     const monthStr = dayjs(dateParsed).format('YYYY-MM');
-    automationService.evaluateAllActive(monthStr).catch((err) =>
-      console.error('Failed to trigger recalculation after removing holiday:', err)
-    );
+    automationService
+      .evaluateAllActive(monthStr)
+      .catch((err) =>
+        console.error('Failed to trigger recalculation after removing holiday:', err),
+      );
 
     return apiResponse.noContent(res);
   } catch (err) {

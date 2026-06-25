@@ -34,13 +34,15 @@ async function calculateWorkingDays(monthStr, user) {
   const weekends = await getWeekends();
   const holidays = await Holiday.find({});
   const holidayDates = new Set(
-    holidays.map((h) => dayjs(h.date).tz('Asia/Dhaka').format('YYYY-MM-DD'))
+    holidays.map((h) => dayjs(h.date).tz('Asia/Dhaka').format('YYYY-MM-DD')),
   );
 
   const startOfMonth = dayjs(monthStr).tz('Asia/Dhaka').startOf('month');
   const endOfMonth = dayjs(monthStr).tz('Asia/Dhaka').endOf('month');
 
-  const joining = dayjs(user.joiningDate || user.createdAt).tz('Asia/Dhaka').startOf('day');
+  const joining = dayjs(user.joiningDate || user.createdAt)
+    .tz('Asia/Dhaka')
+    .startOf('day');
   const resignation = user.resignationDate
     ? dayjs(user.resignationDate).tz('Asia/Dhaka').endOf('day')
     : null;
@@ -109,7 +111,7 @@ async function evaluateLateDeductions(employeeId, monthStr) {
   const allAttendances = await Attendance.find({
     employeeId,
     attendanceDate: { $gte: startOfMonth, $lte: endOfMonth },
-    'checkIn.status': { $exists: true }
+    'checkIn.status': { $exists: true },
   }).sort({ attendanceDate: 1 });
 
   if (allAttendances.length === 0) return 0;
@@ -128,7 +130,6 @@ async function evaluateLateDeductions(employeeId, monthStr) {
   const threshold = calendarSetting.consecutiveLatesPenaltyThreshold || 3;
 
   for (const record of allAttendances) {
-
     if (record.checkIn.status === 'Late') {
       consecutiveLates.push(record);
       if (consecutiveLates.length === threshold) {
@@ -138,7 +139,7 @@ async function evaluateLateDeductions(employeeId, monthStr) {
           triggerReason: `${threshold} consecutive late entries`,
           deductedDays: 1,
           deductedAmount: Number(dailySalary.toFixed(2)),
-          linkedAttendance: consecutiveLates.map(c => c._id),
+          linkedAttendance: consecutiveLates.map((c) => c._id),
           month: monthStr,
           timestamp: new Date(),
         });
@@ -202,23 +203,25 @@ async function recalculateSalary(employeeId, monthStr) {
   const weekends = await getWeekends();
   const holidays = await Holiday.find({});
   const holidayDates = new Set(
-    holidays.map((h) => dayjs(h.date).tz('Asia/Dhaka').format('YYYY-MM-DD'))
+    holidays.map((h) => dayjs(h.date).tz('Asia/Dhaka').format('YYYY-MM-DD')),
   );
 
-  const joining = dayjs(user.joiningDate || user.createdAt).tz('Asia/Dhaka').startOf('day');
+  const joining = dayjs(user.joiningDate || user.createdAt)
+    .tz('Asia/Dhaka')
+    .startOf('day');
   const resignation = user.resignationDate
     ? dayjs(user.resignationDate).tz('Asia/Dhaka').endOf('day')
     : null;
 
   const attendanceDates = new Set(
-    attendances.map((a) => dayjs(a.attendanceDate).tz('Asia/Dhaka').format('YYYY-MM-DD'))
+    attendances.map((a) => dayjs(a.attendanceDate).tz('Asia/Dhaka').format('YYYY-MM-DD')),
   );
 
   const leaveRequests = await LeaveRequest.find({
     employeeId,
     status: 'Approved',
     startDate: { $lte: endOfMonth },
-    endDate: { $gte: startOfMonth }
+    endDate: { $gte: startOfMonth },
   });
 
   let approvedLeaveDays = 0;
@@ -252,7 +255,14 @@ async function recalculateSalary(employeeId, monthStr) {
       // Check if they are on approved leave
       let isOnLeave = false;
       for (const req of leaveRequests) {
-        if (currentDay.isBetween(dayjs(req.startDate).tz('Asia/Dhaka').startOf('day'), dayjs(req.endDate).tz('Asia/Dhaka').endOf('day'), null, '[]')) {
+        if (
+          currentDay.isBetween(
+            dayjs(req.startDate).tz('Asia/Dhaka').startOf('day'),
+            dayjs(req.endDate).tz('Asia/Dhaka').endOf('day'),
+            null,
+            '[]',
+          )
+        ) {
           isOnLeave = true;
           break;
         }
@@ -285,13 +295,15 @@ async function recalculateSalary(employeeId, monthStr) {
   if (dayjs(monthStr).format('MM') === '12') {
     const year = dayjs(monthStr).year();
     const balance = await LeaveBalance.findOne({ employeeId, year });
-    const remainingLeaves = balance ? (balance.allocated - balance.used) : 20; // fallback default
+    const remainingLeaves = balance ? balance.allocated - balance.used : 20; // fallback default
     if (remainingLeaves > 0) {
       leaveEncashmentAmount = Number((remainingLeaves * dailySalary).toFixed(2));
     }
   }
 
-  const finalPayableSalary = Number((baseSalary - deductionAmount + leaveEncashmentAmount).toFixed(2));
+  const finalPayableSalary = Number(
+    (baseSalary - deductionAmount + leaveEncashmentAmount).toFixed(2),
+  );
 
   // 7. Upsert salary record
   const record = await SalaryRecord.findOneAndUpdate(
@@ -312,7 +324,7 @@ async function recalculateSalary(employeeId, monthStr) {
       status: 'Draft',
       processedAt: new Date(),
     },
-    { upsert: true, new: true }
+    { upsert: true, new: true },
   );
 
   return record;

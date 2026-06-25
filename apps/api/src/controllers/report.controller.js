@@ -56,3 +56,50 @@ exports.exportReport = async (req, res, next) => {
     return next(err);
   }
 };
+
+exports.employeeWise = async (req, res, next) => {
+  try {
+    const { employeeId, from, to } = req.query;
+    if (!employeeId || !from || !to) {
+      const error = new Error('employeeId, from, and to parameters are required');
+      error.status = 400;
+      throw error;
+    }
+    const data = await reportService.employeeWise({ employeeId, from, to });
+    return apiResponse.ok(res, data);
+  } catch (err) {
+    return next(err);
+  }
+};
+
+exports.exportEmployeeWise = async (req, res, next) => {
+  try {
+    const { format, employeeId, from, to } = req.query;
+    if (!employeeId || !from || !to) {
+      const error = new Error('employeeId, from, and to parameters are required');
+      error.status = 400;
+      throw error;
+    }
+    const { buffer, contentType } = await reportService.exportEmployeeWise({
+      format: format || 'excel',
+      employeeId,
+      from,
+      to,
+    });
+    res.setHeader('Content-Type', contentType);
+
+    const User = require('../models/User');
+    const user = await User.findById(employeeId);
+    const empCode = user ? user.employeeId : 'EMP';
+
+    let filename = `employee-report-${empCode}-${from}-${to}`;
+    if (format === 'csv') filename += '.csv';
+    else if (format === 'pdf') filename += '.pdf';
+    else filename += '.xlsx';
+
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    return res.send(buffer);
+  } catch (err) {
+    return next(err);
+  }
+};

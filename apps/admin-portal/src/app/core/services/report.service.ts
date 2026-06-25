@@ -47,4 +47,29 @@ export class ReportService {
       responseType: 'blob',
     });
   }
+
+  employeeWise(params: { employeeId: string; from: string; to: string }): Observable<any> {
+    const httpParams = new HttpParams()
+      .set('employeeId', params.employeeId)
+      .set('from', params.from)
+      .set('to', params.to);
+    return this.http.get(`${this.baseUrl}/employee-wise`, { params: httpParams });
+  }
+
+  exportEmployeeWise(params: {
+    format: 'excel' | 'csv' | 'pdf';
+    employeeId: string;
+    from: string;
+    to: string;
+  }): Observable<Blob> {
+    const httpParams = new HttpParams()
+      .set('format', params.format)
+      .set('employeeId', params.employeeId)
+      .set('from', params.from)
+      .set('to', params.to);
+    return this.http.get(`${this.baseUrl}/employee-wise/export`, {
+      params: httpParams,
+      responseType: 'blob',
+    });
+  }
 }

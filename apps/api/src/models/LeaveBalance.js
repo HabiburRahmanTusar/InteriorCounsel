@@ -7,7 +7,7 @@ const leaveBalanceSchema = new mongoose.Schema(
     allocated: { type: Number, required: true, default: 20 },
     used: { type: Number, required: true, default: 0 },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 leaveBalanceSchema.index({ employeeId: 1, year: 1 }, { unique: true });

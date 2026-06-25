@@ -18,15 +18,20 @@ async function start() {
 
   // Start daily payroll evaluation scheduler
   const automationService = require('./services/automation.service');
-  automationService.evaluateAllActive()
+  automationService
+    .evaluateAllActive()
     .then(() => logger.info('Startup automation evaluation completed'))
-    .catch(err => logger.error('Startup automation evaluation failed', err));
+    .catch((err) => logger.error('Startup automation evaluation failed', err));
 
-  const intervalId = setInterval(() => {
-    automationService.evaluateAllActive()
-      .then(() => logger.info('Scheduled automation evaluation completed'))
-      .catch(err => logger.error('Scheduled automation evaluation failed', err));
-  }, 12 * 60 * 60 * 1000); // 12 hours
+  const intervalId = setInterval(
+    () => {
+      automationService
+        .evaluateAllActive()
+        .then(() => logger.info('Scheduled automation evaluation completed'))
+        .catch((err) => logger.error('Scheduled automation evaluation failed', err));
+    },
+    12 * 60 * 60 * 1000,
+  ); // 12 hours
 
   const shutdown = async (signal) => {
     logger.info(`${signal} received — shutting down gracefully`);
