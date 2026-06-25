@@ -64,9 +64,9 @@
                   {{ formatTimestamp(log.timestamp) }}
                 </td>
                 <td class="px-6 py-4 text-sm font-semibold text-slate-900">
-                  <span class="block text-slate-950 font-bold">{{ log.employeeId?.name }}</span>
+                  <span class="block text-slate-950 font-bold">{{ log.employeeId.name }}</span>
                   <span class="block text-xs text-slate-500 font-normal">{{
-                    log.employeeId?.employeeId
+                    log.employeeId.employeeId
                   }}</span>
                 </td>
                 <td class="px-6 py-4 text-sm text-slate-700 font-medium">
@@ -76,7 +76,7 @@
                   -{{ log.deductedDays }} day
                 </td>
                 <td class="px-6 py-4 text-sm font-medium text-rose-600">
-                  -৳{{ log.deductedAmount?.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
+                  -৳{{ log.deductedAmount.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
                 </td>
                 <td class="px-6 py-4 text-right text-sm">
                   <button

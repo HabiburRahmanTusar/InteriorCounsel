@@ -1,4 +1,10 @@
 const User = require('../models/User');
+const Attendance = require('../models/Attendance');
+const DeductionLog = require('../models/DeductionLog');
+const LeaveBalance = require('../models/LeaveBalance');
+const LeaveRequest = require('../models/LeaveRequest');
+const SalaryRecord = require('../models/SalaryRecord');
+const RefreshToken = require('../models/RefreshToken');
 
 exports.list = async function list({ page, limit, search, status }) {
   const query = {};
@@ -105,7 +111,17 @@ exports.remove = async function remove(id) {
     error.status = 403;
     throw error;
   }
-  await user.deleteOne();
+
+  // Delete all related employee data cascade
+  await Promise.all([
+    Attendance.deleteMany({ employeeId: id }),
+    DeductionLog.deleteMany({ employeeId: id }),
+    LeaveBalance.deleteMany({ employeeId: id }),
+    LeaveRequest.deleteMany({ employeeId: id }),
+    SalaryRecord.deleteMany({ employeeId: id }),
+    RefreshToken.deleteMany({ userId: id }),
+    user.deleteOne(),
+  ]);
 };
 
 exports.assignShift = async function assignShift(id, shiftId) {
