@@ -344,7 +344,14 @@ exports.employeeWise = async function employeeWise({ employeeId, from, to }) {
       }
 
       if (log.checkOut) {
-        if (shiftRequiredMinutes > 0 && workingMins < shiftRequiredMinutes / 2) {
+        const isOnTime = log.checkIn.status === 'On Time';
+        const isEarlyLeave = log.checkOut.status === 'Early Leave';
+
+        if (
+          shiftRequiredMinutes > 0 &&
+          workingMins < shiftRequiredMinutes / 2 &&
+          !(isOnTime && !isEarlyLeave)
+        ) {
           status = 'Half-Day';
           remarks = `Short hours: ${workingMins} mins worked (Shift requires ${shiftRequiredMinutes} mins)`;
         } else if (log.checkIn.status === 'Late') {
