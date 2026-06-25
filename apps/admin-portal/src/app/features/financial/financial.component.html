@@ -1,0 +1,585 @@
+<div class="space-y-6">
+  <!-- Page Header -->
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div class="space-y-1">
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
+        Financial Summary
+      </h1>
+      <p class="text-sm text-slate-500">
+        Enter, track, and manage company financial records including sales, profits, balances, and subsidies.
+      </p>
+    </div>
+    @if (!isEdit()) {
+      <button
+        (click)="loadLatest()"
+        [disabled]="latestLoading() || saving()"
+        type="button"
+        class="border border-indigo-200 bg-indigo-50/50 hover:bg-indigo-50 text-indigo-700 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors flex items-center gap-2"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-4 w-4"
+          [class.animate-spin]="latestLoading()"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3 3L22 4"
+          />
+        </svg>
+        <span>Autofill Latest Data</span>
+      </button>
+    }
+  </div>
+
+  <!-- Financial Data Entry Form -->
+  <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">
+    <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
+      <div
+        class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+        [ngClass]="isEdit() ? 'bg-amber-50 border border-amber-100 text-amber-600' : 'bg-indigo-50 border border-indigo-100 text-indigo-600'"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          />
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-base font-bold text-slate-900">
+          {{ isEdit() ? 'Edit Financial Record' : 'Create Financial Record' }}
+        </h3>
+        <p class="text-xs text-slate-500">
+          {{ isEdit() ? 'Modify values for the selected month/period below.' : 'Manually input or update monthly financial statements.' }}
+        </p>
+      </div>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+        <!-- Month/Period -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+            Month / Period <span class="text-rose-500">*</span>
+          </label>
+          <input
+            type="month"
+            formControlName="period"
+            [readonly]="isEdit()"
+            class="w-full border border-slate-200 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all cursor-pointer"
+            [ngClass]="{
+              'bg-slate-50/50 text-slate-500 cursor-not-allowed': isEdit(),
+              'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('period')?.touched && form.get('period')?.invalid
+            }"
+          />
+          @if (form.get('period')?.touched && form.get('period')?.invalid) {
+            <p class="text-xs text-rose-600 mt-1">Period is required in YYYY-MM format.</p>
+          }
+        </div>
+
+        <!-- Monthly Sales Amount -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+            Monthly Sales Amount ($) <span class="text-rose-500">*</span>
+          </label>
+          <input
+            type="number"
+            formControlName="monthlySales"
+            min="0"
+            class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
+            [ngClass]="{
+              'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('monthlySales')?.touched && form.get('monthlySales')?.invalid
+            }"
+          />
+          @if (form.get('monthlySales')?.touched && form.get('monthlySales')?.invalid) {
+            <p class="text-xs text-rose-600 mt-1">Sales amount is required and must be &gt;= 0.</p>
+          }
+        </div>
+
+        <!-- Monthly Profit Amount -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+            Monthly Profit Amount ($) <span class="text-rose-500">*</span>
+          </label>
+          <input
+            type="number"
+            formControlName="monthlyProfit"
+            class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
+            [ngClass]="{
+              'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('monthlyProfit')?.touched && form.get('monthlyProfit')?.invalid
+            }"
+          />
+          @if (form.get('monthlyProfit')?.touched && form.get('monthlyProfit')?.invalid) {
+            <p class="text-xs text-rose-600 mt-1">Profit amount is required.</p>
+          }
+        </div>
+
+        <!-- Outstanding Due Amount -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+            Outstanding Due Amount ($) <span class="text-rose-500">*</span>
+          </label>
+          <input
+            type="number"
+            formControlName="outstandingDue"
+            min="0"
+            class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
+            [ngClass]="{
+              'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('outstandingDue')?.touched && form.get('outstandingDue')?.invalid
+            }"
+          />
+          @if (form.get('outstandingDue')?.touched && form.get('outstandingDue')?.invalid) {
+            <p class="text-xs text-rose-600 mt-1">Outstanding due is required and must be &gt;= 0.</p>
+          }
+        </div>
+
+        <!-- Bills Pending Collection -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+            Bills Pending Collection ($) <span class="text-rose-500">*</span>
+          </label>
+          <input
+            type="number"
+            formControlName="billsPendingCollection"
+            min="0"
+            class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
+            [ngClass]="{
+              'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('billsPendingCollection')?.touched && form.get('billsPendingCollection')?.invalid
+            }"
+          />
+          @if (form.get('billsPendingCollection')?.touched && form.get('billsPendingCollection')?.invalid) {
+            <p class="text-xs text-rose-600 mt-1">Bills pending collection is required and must be &gt;= 0.</p>
+          }
+        </div>
+
+        <!-- Previous Profit Share Balance -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+            Prev Profit Share Balance ($) <span class="text-rose-500">*</span>
+          </label>
+          <input
+            type="number"
+            formControlName="prevProfitShareBalance"
+            class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
+            [ngClass]="{
+              'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('prevProfitShareBalance')?.touched && form.get('prevProfitShareBalance')?.invalid
+            }"
+          />
+          @if (form.get('prevProfitShareBalance')?.touched && form.get('prevProfitShareBalance')?.invalid) {
+            <p class="text-xs text-rose-600 mt-1">Previous balance is required.</p>
+          }
+        </div>
+
+        <!-- Recent Profit Amount -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+            Recent Profit Amount ($) <span class="text-rose-500">*</span>
+          </label>
+          <input
+            type="number"
+            formControlName="recentProfit"
+            class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
+            [ngClass]="{
+              'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('recentProfit')?.touched && form.get('recentProfit')?.invalid
+            }"
+          />
+          @if (form.get('recentProfit')?.touched && form.get('recentProfit')?.invalid) {
+            <p class="text-xs text-rose-600 mt-1">Recent profit is required.</p>
+          }
+        </div>
+
+        <!-- Current Total Balance -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+            Current Total Balance ($) <span class="text-rose-500">*</span>
+          </label>
+          <input
+            type="number"
+            formControlName="currentTotalBalance"
+            class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
+            [ngClass]="{
+              'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('currentTotalBalance')?.touched && form.get('currentTotalBalance')?.invalid
+            }"
+          />
+          @if (form.get('currentTotalBalance')?.touched && form.get('currentTotalBalance')?.invalid) {
+            <p class="text-xs text-rose-600 mt-1">Current total balance is required.</p>
+          }
+        </div>
+
+        <!-- Monthly Subsidy Amount -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+            Monthly Subsidy Amount ($) <span class="text-rose-500">*</span>
+          </label>
+          <input
+            type="number"
+            formControlName="monthlySubsidy"
+            min="0"
+            class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
+            [ngClass]="{
+              'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('monthlySubsidy')?.touched && form.get('monthlySubsidy')?.invalid
+            }"
+          />
+          @if (form.get('monthlySubsidy')?.touched && form.get('monthlySubsidy')?.invalid) {
+            <p class="text-xs text-rose-600 mt-1">Subsidy amount is required and must be &gt;= 0.</p>
+          }
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+        @if (isEdit()) {
+          <button
+            (click)="cancelEdit()"
+            [disabled]="saving()"
+            type="button"
+            class="border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-50 text-slate-600 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors"
+          >
+            Cancel Edit
+          </button>
+        }
+        <button
+          [disabled]="saving()"
+          type="submit"
+          class="btn btn-primary px-5 py-2.5 text-sm font-semibold"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            [class.animate-spin]="saving()"
+          >
+            @if (saving()) {
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3 3L22 4"
+              />
+            } @else {
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5 13l4 4L19 7"
+              />
+            }
+          </svg>
+          <span>{{ saving() ? 'Saving...' : (isEdit() ? 'Update Record' : 'Save Record') }}</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Filters Card -->
+  <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">
+    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+      <h3 class="text-base font-bold text-slate-900">Historical Records filters</h3>
+      <button
+        (click)="resetFilters()"
+        class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors"
+      >
+        Clear All Filters
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
+      <!-- Search Input -->
+      <div class="lg:col-span-2">
+        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+          Search Month or Year
+        </label>
+        <div class="relative">
+          <input
+            type="text"
+            [value]="search()"
+            (input)="onSearch($event)"
+            placeholder="Search e.g. June, 2026..."
+            class="w-full border border-slate-200 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl pl-9 pr-4 py-2.5 text-sm outline-none transition-all"
+          />
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4.5 w-4.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Year Selector -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+          Select Year
+        </label>
+        <div class="relative">
+          <select
+            [value]="filterYear()"
+            (change)="onYearChange($event)"
+            class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all appearance-none cursor-pointer pr-10"
+          >
+            <option value="">All Years</option>
+            @for (y of years; track y) {
+              <option [value]="y">{{ y }}</option>
+            }
+          </select>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Month Selector -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+          Select Month
+        </label>
+        <div class="relative">
+          <select
+            [value]="filterMonth()"
+            (change)="onMonthChange($event)"
+            class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all appearance-none cursor-pointer pr-10"
+          >
+            <option value="">All Months</option>
+            @for (m of months; track m.value) {
+              <option [value]="m.value">{{ m.name }}</option>
+            }
+          </select>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Range Start -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+          Start Period
+        </label>
+        <input
+          type="month"
+          [value]="startDate()"
+          (input)="onStartDateChange($event)"
+          class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all cursor-pointer"
+        />
+      </div>
+
+      <!-- Range End -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+          End Period
+        </label>
+        <input
+          type="month"
+          [value]="endDate()"
+          (input)="onEndDateChange($event)"
+          class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all cursor-pointer"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Historical Records Table Card -->
+  <div class="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-sm">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-slate-100 bg-slate-50/70">
+            <!-- Period Header -->
+            <th
+              (click)="toggleSort('period')"
+              class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4 cursor-pointer hover:bg-slate-100/50 transition-colors select-none"
+            >
+              <div class="flex items-center gap-1.5">
+                <span>Month/Period</span>
+                @if (sortBy() === 'period') {
+                  <span>{{ sortOrder() === 'asc' ? '▲' : '▼' }}</span>
+                }
+              </div>
+            </th>
+            <!-- Sales Header -->
+            <th
+              (click)="toggleSort('monthlySales')"
+              class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4 cursor-pointer hover:bg-slate-100/50 transition-colors select-none text-right"
+            >
+              <div class="flex items-center justify-end gap-1.5">
+                <span>Monthly Sales</span>
+                @if (sortBy() === 'monthlySales') {
+                  <span>{{ sortOrder() === 'asc' ? '▲' : '▼' }}</span>
+                }
+              </div>
+            </th>
+            <!-- Profit Header -->
+            <th
+              (click)="toggleSort('monthlyProfit')"
+              class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4 cursor-pointer hover:bg-slate-100/50 transition-colors select-none text-right"
+            >
+              <div class="flex items-center justify-end gap-1.5">
+                <span>Monthly Profit</span>
+                @if (sortBy() === 'monthlyProfit') {
+                  <span>{{ sortOrder() === 'asc' ? '▲' : '▼' }}</span>
+                }
+              </div>
+            </th>
+            <!-- Outstanding Due -->
+            <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4 text-right">Outstanding Due</th>
+            <!-- Bills Pending -->
+            <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4 text-right">Bills Pending</th>
+            <!-- Prev Balance -->
+            <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4 text-right">Previous Profit Share</th>
+            <!-- Recent Profit -->
+            <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4 text-right">Recent Profit</th>
+            <!-- Total Balance -->
+            <th
+              (click)="toggleSort('currentTotalBalance')"
+              class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4 cursor-pointer hover:bg-slate-100/50 transition-colors select-none text-right"
+            >
+              <div class="flex items-center justify-end gap-1.5">
+                <span>Total Balance</span>
+                @if (sortBy() === 'currentTotalBalance') {
+                  <span>{{ sortOrder() === 'asc' ? '▲' : '▼' }}</span>
+                }
+              </div>
+            </th>
+            <!-- Subsidy -->
+            <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4 text-right">Subsidy</th>
+            <!-- Created Date -->
+            <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Created Date</th>
+            <!-- Updated Date -->
+            <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Updated Date</th>
+            <!-- Actions -->
+            <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (record of records(); track record._id) {
+            <tr class="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
+              <td class="px-6 py-4 text-sm font-bold text-slate-900">
+                {{ formatPeriod(record.period) }}
+              </td>
+              <td class="px-6 py-4 text-sm text-slate-800 text-right font-medium">
+                {{ record.monthlySales | currency:'USD':'symbol':'1.0-2' }}
+              </td>
+              <td
+                class="px-6 py-4 text-sm text-right font-bold"
+                [ngClass]="record.monthlyProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'"
+              >
+                {{ record.monthlyProfit | currency:'USD':'symbol':'1.0-2' }}
+              </td>
+              <td class="px-6 py-4 text-sm text-slate-700 text-right">
+                {{ record.outstandingDue | currency:'USD':'symbol':'1.0-2' }}
+              </td>
+              <td class="px-6 py-4 text-sm text-slate-700 text-right">
+                {{ record.billsPendingCollection | currency:'USD':'symbol':'1.0-2' }}
+              </td>
+              <td class="px-6 py-4 text-sm text-slate-700 text-right">
+                {{ record.prevProfitShareBalance | currency:'USD':'symbol':'1.0-2' }}
+              </td>
+              <td
+                class="px-6 py-4 text-sm text-right font-semibold"
+                [ngClass]="record.recentProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'"
+              >
+                {{ record.recentProfit | currency:'USD':'symbol':'1.0-2' }}
+              </td>
+              <td class="px-6 py-4 text-sm text-slate-800 text-right font-bold">
+                {{ record.currentTotalBalance | currency:'USD':'symbol':'1.0-2' }}
+              </td>
+              <td class="px-6 py-4 text-sm text-slate-600 text-right font-medium">
+                {{ record.monthlySubsidy | currency:'USD':'symbol':'1.0-2' }}
+              </td>
+              <td class="px-6 py-4 text-xs text-slate-500 font-mono">
+                {{ record.createdAt | date:'short' }}
+              </td>
+              <td class="px-6 py-4 text-xs text-slate-500 font-mono">
+                {{ record.updatedAt | date:'short' }}
+              </td>
+              <td class="px-6 py-4 text-sm text-center">
+                <div class="flex items-center justify-center gap-2">
+                  <button
+                    (click)="editRecord(record)"
+                    type="button"
+                    class="btn-link-outline-amber text-xs font-semibold py-1 px-2.5"
+                    title="Edit Record"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    (click)="deleteRecord(record._id!)"
+                    type="button"
+                    class="btn-link-outline-rose text-xs font-semibold py-1 px-2.5"
+                    title="Delete Record"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="12" class="px-6 py-12 text-center text-slate-400">
+                @if (recordsLoading()) {
+                  <span class="text-sm font-medium">Loading historical records...</span>
+                } @else {
+                  <span class="text-sm font-medium">No records found matching filters.</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination Footer -->
+    @if (totalPages() > 1) {
+      <div class="flex justify-between items-center bg-slate-50 border-t border-slate-100 px-6 py-4">
+        <span class="text-xs text-slate-500 font-medium">
+          Showing page {{ page() }} of {{ totalPages() }} ({{ total() }} total records)
+        </span>
+        <div class="flex gap-2">
+          <button
+            (click)="prevPage()"
+            [disabled]="page() <= 1"
+            class="border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-50 text-slate-700 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
+          >
+            Previous
+          </button>
+          <button
+            (click)="nextPage()"
+            [disabled]="page() >= totalPages()"
+            class="border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-50 text-slate-700 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

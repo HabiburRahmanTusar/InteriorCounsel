@@ -14,5 +14,6 @@ router.use('/settings', require('./settings.routes'));
 router.use('/holidays', require('./holiday.routes'));
 router.use('/salary', require('./salary.routes'));
 router.use('/leaves', require('./leave.routes'));
+router.use('/financial', require('./financial.routes'));
 
 module.exports = router;
