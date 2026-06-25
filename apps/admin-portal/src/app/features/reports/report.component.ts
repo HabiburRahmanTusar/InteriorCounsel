@@ -1,4 +1,12 @@
-import { Component, ChangeDetectionStrategy, signal, inject, OnDestroy } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  signal,
+  computed,
+  inject,
+  OnDestroy,
+} from '@angular/core';
+import { DatePipe, TitleCasePipe, UpperCasePipe } from '@angular/common';
 import { Subject, of } from 'rxjs';
 import { catchError, finalize, tap, takeUntil } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
@@ -11,7 +19,7 @@ import { Employee } from '../../core/models/employee.model';
   selector: 'wfm-report',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [],
+  imports: [DatePipe, TitleCasePipe, UpperCasePipe],
   templateUrl: './report.component.html',
 })
 export class ReportComponent implements OnDestroy {
@@ -25,6 +33,17 @@ export class ReportComponent implements OnDestroy {
   readonly selectedEmployeeId = signal<string>('');
   readonly employees = signal<Employee[]>([]);
   readonly reportData = signal<any | null>(null);
+
+  readonly selectedEmployee = computed(() => {
+    const id = this.selectedEmployeeId();
+    return this.employees().find((e) => e.id === id) || null;
+  });
+
+  readonly selectedEmployeeShift = computed(() => {
+    const emp = this.selectedEmployee();
+    if (!emp) return null;
+    return (emp.shiftId as any) || null;
+  });
 
   readonly loading = signal(false);
   readonly exporting = signal(false);
@@ -150,5 +169,21 @@ export class ReportComponent implements OnDestroy {
           this.toastr.success('Report exported successfully', 'Success');
         }
       });
+  }
+
+  formatTime(timeStr?: string): string {
+    if (!timeStr) return 'N/A';
+    try {
+      const parts = timeStr.split(':');
+      const hour = parseInt(parts[0], 10);
+      const min = parseInt(parts[1], 10);
+      if (isNaN(hour) || isNaN(min)) return timeStr;
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const formattedHour = hour % 12 || 12;
+      const formattedMin = String(min).padStart(2, '0');
+      return `${formattedHour}:${formattedMin} ${ampm}`;
+    } catch (e) {
+      return timeStr;
+    }
   }
 }

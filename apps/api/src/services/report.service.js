@@ -205,6 +205,17 @@ function formatWorkingHours(minutes) {
   return `${hrs}h ${mins}m`;
 }
 
+function formatLateDuration(minutes) {
+  if (!minutes) return '0 mins';
+  const hrs = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  const hrStr = hrs === 1 ? '1 hour' : `${hrs} hours`;
+  const minStr = mins === 1 ? '1 min' : `${mins} mins`;
+  if (hrs === 0) return minStr;
+  if (mins === 0) return hrStr;
+  return `${hrStr} ${minStr}`;
+}
+
 exports.employeeWise = async function employeeWise({ employeeId, from, to }) {
   const LeaveRequest = require('../models/LeaveRequest');
   const Holiday = require('../models/Holiday');
@@ -270,6 +281,7 @@ exports.employeeWise = async function employeeWise({ employeeId, from, to }) {
     dates.push(current);
     current = current.add(1, 'day');
   }
+  dates.reverse();
 
   const rows = [];
   let totalPresent = 0;
@@ -337,7 +349,7 @@ exports.employeeWise = async function employeeWise({ employeeId, from, to }) {
           remarks = `Short hours: ${workingMins} mins worked (Shift requires ${shiftRequiredMinutes} mins)`;
         } else if (log.checkIn.status === 'Late') {
           status = 'Late';
-          remarks = `Late check-in by ${log.checkIn.lateMinutes || 0} mins`;
+          remarks = `Late check-in by ${formatLateDuration(log.checkIn.lateMinutes || 0)}`;
           totalLate++;
         } else {
           status = 'Present';
@@ -348,7 +360,7 @@ exports.employeeWise = async function employeeWise({ employeeId, from, to }) {
         if (dateStr === todayStr) {
           if (log.checkIn.status === 'Late') {
             status = 'Late';
-            remarks = 'Late check-in, check-out pending';
+            remarks = `Late check-in by ${formatLateDuration(log.checkIn.lateMinutes || 0)}, check-out pending`;
             totalLate++;
           } else {
             status = 'Present';
