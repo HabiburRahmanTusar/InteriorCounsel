@@ -72,4 +72,43 @@ export class ReportService {
       responseType: 'blob',
     });
   }
+
+  leaveWise(params: {
+    employeeId?: string;
+    leaveType?: string;
+    from: string;
+    to: string;
+  }): Observable<any> {
+    let httpParams = new HttpParams().set('from', params.from).set('to', params.to);
+    if (params.employeeId) {
+      httpParams = httpParams.set('employeeId', params.employeeId);
+    }
+    if (params.leaveType) {
+      httpParams = httpParams.set('leaveType', params.leaveType);
+    }
+    return this.http.get(`${this.baseUrl}/leave-wise`, { params: httpParams });
+  }
+
+  exportLeaveWise(params: {
+    format: 'excel' | 'csv' | 'pdf';
+    employeeId?: string;
+    leaveType?: string;
+    from: string;
+    to: string;
+  }): Observable<Blob> {
+    let httpParams = new HttpParams()
+      .set('format', params.format)
+      .set('from', params.from)
+      .set('to', params.to);
+    if (params.employeeId) {
+      httpParams = httpParams.set('employeeId', params.employeeId);
+    }
+    if (params.leaveType) {
+      httpParams = httpParams.set('leaveType', params.leaveType);
+    }
+    return this.http.get(`${this.baseUrl}/leave-wise/export`, {
+      params: httpParams,
+      responseType: 'blob',
+    });
+  }
 }

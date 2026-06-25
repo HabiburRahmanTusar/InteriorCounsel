@@ -22,5 +22,11 @@ router.get(
   validate(schemas.exportEmployeeWise, 'query'),
   ctrl.exportEmployeeWise,
 );
+router.get('/leave-wise', validate(schemas.leaveWise, 'query'), ctrl.leaveWise);
+router.get(
+  '/leave-wise/export',
+  validate(schemas.exportLeaveWise, 'query'),
+  ctrl.exportLeaveWise,
+);
 
 module.exports = router;

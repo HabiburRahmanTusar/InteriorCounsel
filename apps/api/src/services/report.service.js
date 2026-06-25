@@ -590,3 +590,243 @@ exports.exportEmployeeWise = async function exportEmployeeWise({ format, employe
     contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   };
 };
+
+exports.leaveWise = async function leaveWise({ employeeId, leaveType, from, to }) {
+  const LeaveRequest = require('../models/LeaveRequest');
+
+  const fromDate = dayjs(from).tz('Asia/Dhaka').startOf('day').toDate();
+  const toDate = dayjs(to).tz('Asia/Dhaka').endOf('day').toDate();
+
+  const query = {
+    startDate: { $lte: toDate },
+    endDate: { $gte: fromDate },
+  };
+
+  if (employeeId) {
+    query.employeeId = employeeId;
+  }
+  if (leaveType) {
+    query.leaveType = leaveType;
+  }
+
+  const requests = await LeaveRequest.find(query)
+    .populate('employeeId', 'name employeeId')
+    .populate('approvedBy', 'name')
+    .sort({ startDate: -1 });
+
+  const items = requests.map((req) => ({
+    employeeId: req.employeeId?.employeeId || '—',
+    employeeName: req.employeeId?.name || '—',
+    leaveType: req.leaveType,
+    startDate: dayjs(req.startDate).tz('Asia/Dhaka').format('YYYY-MM-DD'),
+    endDate: dayjs(req.endDate).tz('Asia/Dhaka').format('YYYY-MM-DD'),
+    totalDays: req.requestedDays,
+    reason: req.reason,
+    status: req.status,
+    approvedBy: req.approvedBy?.name || '—',
+    approvalDate: req.approvalDate
+      ? dayjs(req.approvalDate).tz('Asia/Dhaka').format('YYYY-MM-DD hh:mm A')
+      : '—',
+  }));
+
+  // Calculate stats
+  let totalLeaveTaken = 0;
+  let pendingRequests = 0;
+  let approvedLeaves = 0;
+  let rejectedLeaves = 0;
+
+  for (const req of requests) {
+    if (req.status === 'Approved') {
+      approvedLeaves++;
+      totalLeaveTaken += req.requestedDays;
+    } else if (req.status === 'Pending') {
+      pendingRequests++;
+    } else if (req.status === 'Rejected') {
+      rejectedLeaves++;
+    }
+  }
+
+  return {
+    items,
+    summary: {
+      totalLeaveTaken,
+      pendingRequests,
+      approvedLeaves,
+      rejectedLeaves,
+    },
+  };
+};
+
+exports.exportLeaveWise = async function exportLeaveWise({
+  format,
+  employeeId,
+  leaveType,
+  from,
+  to,
+}) {
+  const { items, summary } = await exports.leaveWise({ employeeId, leaveType, from, to });
+
+  if (format === 'csv') {
+    const headers = [
+      'Employee ID',
+      'Employee Name',
+      'Leave Type',
+      'Start Date',
+      'End Date',
+      'Total Days',
+      'Reason',
+      'Status',
+      'Approved By',
+      'Approval Date',
+    ];
+    const csvRows = [headers.join(',')];
+    for (const item of items) {
+      const values = [
+        `"${item.employeeId}"`,
+        `"${item.employeeName.replace(/"/g, '""')}"`,
+        `"${item.leaveType}"`,
+        item.startDate,
+        item.endDate,
+        item.totalDays,
+        `"${item.reason.replace(/"/g, '""')}"`,
+        item.status,
+        `"${item.approvedBy.replace(/"/g, '""')}"`,
+        `"${item.approvalDate}"`,
+      ];
+      csvRows.push(values.join(','));
+    }
+    csvRows.push('');
+    csvRows.push(`Total Leave Taken (Days),${summary.totalLeaveTaken}`);
+    csvRows.push(`Pending Requests,${summary.pendingRequests}`);
+    csvRows.push(`Approved Leaves,${summary.approvedLeaves}`);
+    csvRows.push(`Rejected Leaves,${summary.rejectedLeaves}`);
+
+    return { buffer: Buffer.from(csvRows.join('\n'), 'utf-8'), contentType: 'text/csv' };
+  }
+
+  if (format === 'pdf') {
+    const doc = new PDFDocument({ margin: 30, layout: 'landscape' });
+    const buffers = [];
+    doc.on('data', buffers.push.bind(buffers));
+
+    doc.fontSize(20).text('Employee Wise Leave Report', { align: 'center' });
+    doc.moveDown();
+
+    let subTitle = `Date Range: ${from} to ${to}`;
+    if (leaveType) subTitle += ` | Leave Type: ${leaveType}`;
+    doc.fontSize(11).text(subTitle, { align: 'center' });
+    doc.moveDown();
+
+    doc.fontSize(11).text('Summary Statistics:', { underline: true });
+    doc.fontSize(10).text(`Total Leave Taken (Days): ${summary.totalLeaveTaken}`);
+    doc.text(`Pending Requests: ${summary.pendingRequests}`);
+    doc.text(`Approved Leaves: ${summary.approvedLeaves}`);
+    doc.text(`Rejected Leaves: ${summary.rejectedLeaves}`);
+    doc.moveDown(2);
+
+    doc.fontSize(8);
+    let y = doc.y;
+    doc.text('Emp ID', 30, y);
+    doc.text('Employee Name', 90, y);
+    doc.text('Type', 210, y);
+    doc.text('Start Date', 270, y);
+    doc.text('End Date', 340, y);
+    doc.text('Days', 410, y);
+    doc.text('Reason', 440, y);
+    doc.text('Status', 560, y);
+    doc.text('Approved By', 620, y);
+    doc.text('Approval Date', 700, y);
+
+    doc
+      .moveTo(30, y + 12)
+      .lineTo(760, y + 12)
+      .stroke();
+
+    y += 20;
+    for (const item of items) {
+      if (y > 500) {
+        doc.addPage();
+        y = 40;
+        doc.text('Emp ID', 30, y);
+        doc.text('Employee Name', 90, y);
+        doc.text('Type', 210, y);
+        doc.text('Start Date', 270, y);
+        doc.text('End Date', 340, y);
+        doc.text('Days', 410, y);
+        doc.text('Reason', 440, y);
+        doc.text('Status', 560, y);
+        doc.text('Approved By', 620, y);
+        doc.text('Approval Date', 700, y);
+        doc
+          .moveTo(30, y + 12)
+          .lineTo(760, y + 12)
+          .stroke();
+        y += 20;
+      }
+      doc.text(item.employeeId, 30, y);
+      doc.text(item.employeeName.substring(0, 20), 90, y);
+      doc.text(item.leaveType, 210, y);
+      doc.text(item.startDate, 270, y);
+      doc.text(item.endDate, 340, y);
+      doc.text(String(item.totalDays), 410, y);
+      doc.text(item.reason.substring(0, 22), 440, y);
+      doc.text(item.status, 560, y);
+      doc.text(item.approvedBy.substring(0, 15), 620, y);
+      doc.text(item.approvalDate, 700, y);
+      y += 18;
+    }
+
+    doc.end();
+    const buffer = await new Promise((resolve) => {
+      doc.on('end', () => {
+        resolve(Buffer.concat(buffers));
+      });
+    });
+    return { buffer, contentType: 'application/pdf' };
+  }
+
+  // Excel
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet('Leave Report');
+
+  sheet.columns = [
+    { header: 'Employee ID', key: 'empId', width: 15 },
+    { header: 'Employee Name', key: 'empName', width: 25 },
+    { header: 'Leave Type', key: 'leaveType', width: 15 },
+    { header: 'Start Date', key: 'startDate', width: 15 },
+    { header: 'End Date', key: 'endDate', width: 15 },
+    { header: 'Total Days', key: 'totalDays', width: 12 },
+    { header: 'Reason', key: 'reason', width: 30 },
+    { header: 'Status', key: 'status', width: 15 },
+    { header: 'Approved By', key: 'approvedBy', width: 20 },
+    { header: 'Approval Date', key: 'approvalDate', width: 22 },
+  ];
+
+  for (const item of items) {
+    sheet.addRow({
+      empId: item.employeeId,
+      empName: item.employeeName,
+      leaveType: item.leaveType,
+      startDate: item.startDate,
+      endDate: item.endDate,
+      totalDays: item.totalDays,
+      reason: item.reason,
+      status: item.status,
+      approvedBy: item.approvedBy,
+      approvalDate: item.approvalDate,
+    });
+  }
+
+  sheet.addRow([]);
+  sheet.addRow(['Summary Statistics']);
+  sheet.addRow(['Total Leave Taken (Days)', summary.totalLeaveTaken]);
+  sheet.addRow(['Pending Requests', summary.pendingRequests]);
+  sheet.addRow(['Approved Leaves', summary.approvedLeaves]);
+  sheet.addRow(['Rejected Leaves', summary.rejectedLeaves]);
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  return {
+    buffer,
+    contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  };
+};

@@ -9,6 +9,8 @@ const leaveRequestSchema = new mongoose.Schema(
     reason: { type: String, required: true },
     status: { type: String, enum: ['Pending', 'Approved', 'Rejected'], default: 'Pending' },
     requestedDays: { type: Number, required: true }, // The number of working days taken
+    approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    approvalDate: { type: Date },
   },
   { timestamps: true },
 );

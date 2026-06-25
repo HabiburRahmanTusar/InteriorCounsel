@@ -105,6 +105,14 @@ exports.updateRequestStatus = async (req, res, next) => {
       );
     }
 
+    if (status === 'Approved' || status === 'Rejected') {
+      request.approvedBy = req.user.id;
+      request.approvalDate = new Date();
+    } else {
+      request.approvedBy = undefined;
+      request.approvalDate = undefined;
+    }
+
     request.status = status;
     await request.save();
 

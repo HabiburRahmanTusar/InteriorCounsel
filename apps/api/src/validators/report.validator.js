@@ -32,3 +32,18 @@ exports.exportEmployeeWise = Joi.object({
   from: Joi.date().iso().required(),
   to: Joi.date().iso().required(),
 }).default({});
+
+exports.leaveWise = Joi.object({
+  employeeId: Joi.string().hex().length(24).allow('').optional(),
+  leaveType: Joi.string().valid('Annual', 'Sick', 'Casual', 'Unpaid').allow('').optional(),
+  from: Joi.date().iso().required(),
+  to: Joi.date().iso().required(),
+}).default({});
+
+exports.exportLeaveWise = Joi.object({
+  format: Joi.string().valid('excel', 'csv', 'pdf').required(),
+  employeeId: Joi.string().hex().length(24).allow('').optional(),
+  leaveType: Joi.string().valid('Annual', 'Sick', 'Casual', 'Unpaid').allow('').optional(),
+  from: Joi.date().iso().required(),
+  to: Joi.date().iso().required(),
+}).default({});

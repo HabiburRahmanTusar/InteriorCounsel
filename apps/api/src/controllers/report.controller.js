@@ -103,3 +103,47 @@ exports.exportEmployeeWise = async (req, res, next) => {
     return next(err);
   }
 };
+
+exports.leaveWise = async (req, res, next) => {
+  try {
+    const { employeeId, leaveType, from, to } = req.query;
+    if (!from || !to) {
+      const error = new Error('from and to parameters are required');
+      error.status = 400;
+      throw error;
+    }
+    const data = await reportService.leaveWise({ employeeId, leaveType, from, to });
+    return apiResponse.ok(res, data);
+  } catch (err) {
+    return next(err);
+  }
+};
+
+exports.exportLeaveWise = async (req, res, next) => {
+  try {
+    const { format, employeeId, leaveType, from, to } = req.query;
+    if (!from || !to) {
+      const error = new Error('from and to parameters are required');
+      error.status = 400;
+      throw error;
+    }
+    const { buffer, contentType } = await reportService.exportLeaveWise({
+      format: format || 'excel',
+      employeeId,
+      leaveType,
+      from,
+      to,
+    });
+    res.setHeader('Content-Type', contentType);
+
+    let filename = `leave-report-${from}-${to}`;
+    if (format === 'csv') filename += '.csv';
+    else if (format === 'pdf') filename += '.pdf';
+    else filename += '.xlsx';
+
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    return res.send(buffer);
+  } catch (err) {
+    return next(err);
+  }
+};

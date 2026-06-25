@@ -180,4 +180,73 @@ describe('Employee Wise Attendance Report API & Service', () => {
     expect(reportExport.contentType).toContain('spreadsheetml');
     expect(reportExport.buffer).toBeInstanceOf(Buffer);
   });
+
+  test('should generate leave wise report and statistics', async () => {
+    // Seed approved leave request
+    await LeaveRequest.create({
+      employeeId: employee._id,
+      startDate: new Date('2026-06-03'),
+      endDate: new Date('2026-06-05'),
+      leaveType: 'Annual',
+      reason: 'Vacation',
+      requestedDays: 3,
+      status: 'Approved',
+      approvedBy: employee._id,
+      approvalDate: new Date(),
+    });
+
+    // Seed pending leave request
+    await LeaveRequest.create({
+      employeeId: employee._id,
+      startDate: new Date('2026-06-07'),
+      endDate: new Date('2026-06-08'),
+      leaveType: 'Sick',
+      reason: 'Fever',
+      requestedDays: 2,
+      status: 'Pending',
+    });
+
+    const report = await reportService.leaveWise({
+      employeeId: employee._id.toString(),
+      from: '2026-06-01',
+      to: '2026-06-10',
+    });
+
+    expect(report).toBeDefined();
+    expect(report.items.length).toBe(2);
+    // Sort should be reverse chronological (June 7th request first)
+    expect(report.items[0].leaveType).toBe('Sick');
+    expect(report.items[1].leaveType).toBe('Annual');
+
+    expect(report.summary.totalLeaveTaken).toBe(3);
+    expect(report.summary.pendingRequests).toBe(1);
+    expect(report.summary.approvedLeaves).toBe(1);
+    expect(report.summary.rejectedLeaves).toBe(0);
+  });
+
+  test('should support Leave report CSV, PDF, and Excel exports', async () => {
+    const csvExport = await reportService.exportLeaveWise({
+      format: 'csv',
+      from: '2026-06-01',
+      to: '2026-06-10',
+    });
+    expect(csvExport.contentType).toBe('text/csv');
+    expect(csvExport.buffer).toBeInstanceOf(Buffer);
+
+    const pdfExport = await reportService.exportLeaveWise({
+      format: 'pdf',
+      from: '2026-06-01',
+      to: '2026-06-10',
+    });
+    expect(pdfExport.contentType).toBe('application/pdf');
+    expect(pdfExport.buffer).toBeInstanceOf(Buffer);
+
+    const excelExport = await reportService.exportLeaveWise({
+      format: 'excel',
+      from: '2026-06-01',
+      to: '2026-06-10',
+    });
+    expect(excelExport.contentType).toContain('spreadsheetml');
+    expect(excelExport.buffer).toBeInstanceOf(Buffer);
+  });
 });

@@ -21,6 +21,7 @@ export class SidebarComponent {
   readonly calendarOpen = signal(false);
   readonly leavesOpen = signal(false);
   readonly salaryOpen = signal(false);
+  readonly reportsOpen = signal(false);
 
   toggleSettings() {
     this.settingsOpen.update((v) => !v);
@@ -36,6 +37,10 @@ export class SidebarComponent {
 
   toggleLeaves() {
     this.leavesOpen.update((v) => !v);
+  }
+
+  toggleReports() {
+    this.reportsOpen.update((v) => !v);
   }
 
   logout() {

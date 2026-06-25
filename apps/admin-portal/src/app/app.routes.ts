@@ -99,10 +99,17 @@ export const routes: Routes = [
       },
       {
         path: 'reports',
-        title: 'Reports',
+        title: 'Attendance Report',
         canActivate: [roleGuard('admin', 'hr', 'manager')],
         loadComponent: () =>
           import('./features/reports/report.component').then((m) => m.ReportComponent),
+      },
+      {
+        path: 'reports/leaves',
+        title: 'Leave Report',
+        canActivate: [roleGuard('admin', 'hr', 'manager')],
+        loadComponent: () =>
+          import('./features/reports/leave-report.component').then((m) => m.LeaveReportComponent), // Trigger dev server rebuild
       },
       {
         path: 'settings',
