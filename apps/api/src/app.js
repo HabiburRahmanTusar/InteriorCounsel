@@ -24,6 +24,7 @@ app.use(
       'http://localhost:4300',
       'http://192.168.0.141:4300',
       'http://192.168.0.141:4200',
+      'http://localhost:58922',
       config.corsOrigin,
     ],
     credentials: true,
