@@ -15,7 +15,7 @@ class SkeletonCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: AppTheme.border.withOpacity(0.5),
+      baseColor: AppTheme.border.withValues(alpha: 0.5),
       highlightColor: AppTheme.surface,
       period: const Duration(milliseconds: 1500),
       child: Container(
@@ -43,7 +43,7 @@ class SkeletonList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: AppTheme.border.withOpacity(0.5),
+      baseColor: AppTheme.border.withValues(alpha: 0.5),
       highlightColor: AppTheme.surface,
       period: const Duration(milliseconds: 1500),
       child: Column(

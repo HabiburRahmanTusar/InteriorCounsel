@@ -122,16 +122,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: _getStatusColor(record).withOpacity(0.1),
+                        color: _getStatusColor(record).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Center(
                         child: Text(
                           DateFormat('d').format(date),
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: _getStatusColor(record),
-                                fontWeight: FontWeight.w700,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    color: _getStatusColor(record),
+                                    fontWeight: FontWeight.w700,
+                                  ),
                         ),
                       ),
                     ),
@@ -142,16 +143,20 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         children: [
                           Text(
                             DateFormat('EEEE').format(date),
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
                                   color: AppTheme.textPrimary,
                                 ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             DateFormat('MMM yyyy').format(date),
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: AppTheme.textSecondary,
-                                ),
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: AppTheme.textSecondary,
+                                    ),
                           ),
                         ],
                       ),

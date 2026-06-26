@@ -42,7 +42,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final authProvider = context.read<AuthProvider>();
     final attendanceProvider = context.read<AttendanceProvider>();
     final connectivityProvider = context.read<ConnectivityProvider>();
-    
+
     final userId = authProvider.user?.id ?? '';
     if (userId.isNotEmpty) {
       await attendanceProvider.loadTodayStatus(userId);
@@ -75,7 +75,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       children: [
                         Text(
                           'Hello, $userName',
-                          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineLarge
+                              ?.copyWith(
                                 color: AppTheme.textPrimary,
                               ),
                           maxLines: 1,
@@ -83,10 +86,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          DateFormat('EEEE, MMMM d, yyyy').format(DateTime.now()),
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppTheme.textSecondary,
-                              ),
+                          DateFormat('EEEE, MMMM d, yyyy')
+                              .format(DateTime.now()),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: AppTheme.textSecondary,
+                                  ),
                         ),
                       ],
                     ),
@@ -101,7 +106,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              AppTheme.primary.withOpacity(0.6),
+                              AppTheme.primary.withValues(alpha: 0.6),
                             ),
                           ),
                         );
@@ -121,14 +126,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
               delegate: SliverChildListDelegate([
                 // Attendance Status Card
                 _buildAttendanceCard(attendanceProvider),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Today's Stats
                 _buildStatsSection(attendanceProvider),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Quick Info
                 _buildQuickInfoCard(attendanceProvider),
               ]),
@@ -164,7 +169,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -176,13 +181,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
             width: 72,
             height: 72,
             decoration: BoxDecoration(
-              color: AppTheme.primary.withOpacity(0.1),
+              color: AppTheme.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.fingerprint_outlined,
               size: 36,
-              color: AppTheme.primary.withOpacity(0.5),
+              color: AppTheme.primary.withValues(alpha: 0.5),
             ),
           ),
           const SizedBox(height: 16),
@@ -230,13 +235,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
         border: Border.all(
-          color: AppTheme.success.withOpacity(0.2),
+          color: AppTheme.success.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -255,7 +260,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.success.withOpacity(0.4),
+                      color: AppTheme.success.withValues(alpha: 0.4),
                       blurRadius: 8,
                       spreadRadius: 2,
                     ),
@@ -307,7 +312,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           // Check-in details
           Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.access_time_outlined,
                 size: 16,
                 color: AppTheme.textSecondary,
@@ -355,7 +360,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -366,7 +371,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.check_circle_outline,
                 color: AppTheme.primary,
                 size: 24,
@@ -411,16 +416,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Expanded(
                 child: _buildTimePoint(
                   'Check In',
-                  checkIn != null ? DateFormat('hh:mm a').format(checkIn.time) : '--:--',
+                  checkIn != null
+                      ? DateFormat('hh:mm a').format(checkIn.time)
+                      : '--:--',
                   Icons.login_outlined,
                   AppTheme.success,
                 ),
               ),
-              Icon(Icons.arrow_forward, size: 16, color: AppTheme.textTertiary),
+              const Icon(Icons.arrow_forward,
+                  size: 16, color: AppTheme.textTertiary),
               Expanded(
                 child: _buildTimePoint(
                   'Check Out',
-                  checkOut != null ? DateFormat('hh:mm a').format(checkOut.time) : '--:--',
+                  checkOut != null
+                      ? DateFormat('hh:mm a').format(checkOut.time)
+                      : '--:--',
                   Icons.logout_outlined,
                   AppTheme.accent,
                 ),
@@ -428,7 +438,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          StatusChip(
+          const StatusChip(
             label: 'Completed',
             type: StatusChipType.primary,
           ),
@@ -437,7 +447,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildTimePoint(String label, String time, IconData icon, Color color) {
+  Widget _buildTimePoint(
+      String label, String time, IconData icon, Color color) {
     return Column(
       children: [
         Icon(icon, size: 20, color: color),
@@ -508,7 +519,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -520,7 +531,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, size: 20, color: color),
@@ -556,7 +567,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primary.withOpacity(0.25),
+            color: AppTheme.primary.withValues(alpha: 0.25),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -570,7 +581,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
+                  color: Colors.white.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
@@ -595,7 +606,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Text(
                       'GPS is used to verify your attendance location',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.white.withOpacity(0.8),
+                            color: Colors.white.withValues(alpha: 0.8),
                           ),
                     ),
                   ],
@@ -607,7 +618,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.12),
+              color: Colors.white.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -616,13 +627,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Icon(
                   Icons.info_outline,
                   size: 14,
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                 ),
                 const SizedBox(width: 8),
                 Text(
                   'Make sure GPS is enabled',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                       ),
                 ),
               ],

@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import '../models/sync_queue_model.dart';
-import '../utils/constants.dart';
 import 'database_service.dart';
 import 'api_service.dart';
 
@@ -53,7 +52,7 @@ class SyncService {
   /// Process all pending sync items
   Future<SyncResult> processPendingSync() async {
     final pendingItems = await _db.getPendingSyncItems();
-    
+
     if (pendingItems.isEmpty) {
       return SyncResult(success: true, processed: 0, failed: 0);
     }
@@ -66,7 +65,7 @@ class SyncService {
 
       try {
         bool synced = false;
-        
+
         if (item.action == 'check_in') {
           synced = await _syncCheckIn(item);
         } else if (item.action == 'check_out') {

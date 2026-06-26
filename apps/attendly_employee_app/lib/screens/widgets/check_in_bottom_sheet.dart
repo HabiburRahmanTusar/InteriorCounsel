@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:attendly_employee/models/attendance_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/attendance_provider.dart';
@@ -48,7 +49,7 @@ class _CheckInBottomSheetState extends State<CheckInBottomSheet>
 
   Future<void> _getLocation() async {
     final locationService = LocationService();
-    
+
     try {
       final status = await locationService.checkPermission();
       if (status != LocationPermissionStatus.granted) {
@@ -60,7 +61,7 @@ class _CheckInBottomSheetState extends State<CheckInBottomSheet>
       }
 
       final location = await locationService.getLocationData();
-      
+
       if (mounted) {
         setState(() {
           _locationData = location;
@@ -98,7 +99,9 @@ class _CheckInBottomSheetState extends State<CheckInBottomSheet>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              widget.isCheckIn ? 'Checked in successfully!' : 'Checked out successfully!',
+              widget.isCheckIn
+                  ? 'Checked in successfully!'
+                  : 'Checked out successfully!',
             ),
             backgroundColor: AppTheme.success,
           ),
@@ -106,7 +109,8 @@ class _CheckInBottomSheetState extends State<CheckInBottomSheet>
       } else {
         setState(() {
           _isProcessing = false;
-          _error = attendanceProvider.error ?? 'Action failed. Please try again.';
+          _error =
+              attendanceProvider.error ?? 'Action failed. Please try again.';
         });
       }
     }
@@ -162,12 +166,10 @@ class _CheckInBottomSheetState extends State<CheckInBottomSheet>
                 if (_isLocating) _buildLocationAnimation(),
 
                 // Location Data
-                if (!_isLocating && _locationData != null)
-                  _buildLocationCard(),
+                if (!_isLocating && _locationData != null) _buildLocationCard(),
 
                 // Error
-                if (_error != null)
-                  _buildErrorWidget(),
+                if (_error != null) _buildErrorWidget(),
 
                 const SizedBox(height: 32),
 
@@ -180,13 +182,15 @@ class _CheckInBottomSheetState extends State<CheckInBottomSheet>
                         ? _performAction
                         : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: widget.isCheckIn ? AppTheme.primary : AppTheme.accent,
+                      backgroundColor:
+                          widget.isCheckIn ? AppTheme.primary : AppTheme.accent,
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      disabledBackgroundColor: AppTheme.textTertiary.withOpacity(0.3),
+                      disabledBackgroundColor:
+                          AppTheme.textTertiary.withValues(alpha: 0.3),
                     ),
                     child: _isProcessing
                         ? const SizedBox(
@@ -194,11 +198,14 @@ class _CheckInBottomSheetState extends State<CheckInBottomSheet>
                             height: 24,
                             child: CircularProgressIndicator(
                               strokeWidth: 2.5,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
                         : Text(
-                            widget.isCheckIn ? 'Confirm Check In' : 'Confirm Check Out',
+                            widget.isCheckIn
+                                ? 'Confirm Check In'
+                                : 'Confirm Check Out',
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -243,7 +250,8 @@ class _CheckInBottomSheetState extends State<CheckInBottomSheet>
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: AppTheme.primary.withOpacity((1 - value) * 0.4),
+                      color:
+                          AppTheme.primary.withValues(alpha: (1 - value) * 0.4),
                       width: 1.5,
                     ),
                   ),
@@ -282,7 +290,7 @@ class _CheckInBottomSheetState extends State<CheckInBottomSheet>
         color: AppTheme.primaryLight,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppTheme.primary.withOpacity(0.2),
+          color: AppTheme.primary.withValues(alpha: 0.2),
         ),
       ),
       child: Column(
@@ -292,7 +300,7 @@ class _CheckInBottomSheetState extends State<CheckInBottomSheet>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppTheme.primary.withOpacity(0.1),
+                  color: AppTheme.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -347,10 +355,10 @@ class _CheckInBottomSheetState extends State<CheckInBottomSheet>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.error.withOpacity(0.08),
+        color: AppTheme.error.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppTheme.error.withOpacity(0.2),
+          color: AppTheme.error.withValues(alpha: 0.2),
         ),
       ),
       child: Row(

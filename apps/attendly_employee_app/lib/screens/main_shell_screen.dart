@@ -73,7 +73,10 @@ class _MainShellScreenState extends State<MainShellScreen>
 
     // FAB color and icon based on state
     final fabGradient = isCheckedOut
-        ? const [AppTheme.textTertiary, AppTheme.textSecondary] // Disabled/completed
+        ? const [
+            AppTheme.textTertiary,
+            AppTheme.textSecondary
+          ] // Disabled/completed
         : isCheckedIn
             ? [AppTheme.accent, AppTheme.accentDark] // Check-out (coral)
             : [AppTheme.primary, AppTheme.primaryDark]; // Check-in (teal)
@@ -110,7 +113,7 @@ class _MainShellScreenState extends State<MainShellScreen>
                 color: (isCheckedIn && !isCheckedOut
                         ? AppTheme.accent
                         : AppTheme.primary)
-                    .withOpacity(0.35),
+                    .withValues(alpha: 0.35),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
@@ -129,7 +132,8 @@ class _MainShellScreenState extends State<MainShellScreen>
                         height: 28,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.5,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
                     : Icon(

@@ -23,17 +23,17 @@ class StatusChip extends StatelessWidget {
   Color get _backgroundColor {
     switch (type) {
       case StatusChipType.primary:
-        return AppTheme.primary.withOpacity(0.1);
+        return AppTheme.primary.withValues(alpha: 0.1);
       case StatusChipType.success:
-        return AppTheme.success.withOpacity(0.1);
+        return AppTheme.success.withValues(alpha: 0.1);
       case StatusChipType.warning:
-        return AppTheme.warning.withOpacity(0.1);
+        return AppTheme.warning.withValues(alpha: 0.1);
       case StatusChipType.error:
-        return AppTheme.error.withOpacity(0.1);
+        return AppTheme.error.withValues(alpha: 0.1);
       case StatusChipType.neutral:
-        return AppTheme.border.withOpacity(0.5);
+        return AppTheme.border.withValues(alpha: 0.5);
       case StatusChipType.accent:
-        return AppTheme.accent.withOpacity(0.1);
+        return AppTheme.accent.withValues(alpha: 0.1);
     }
   }
 

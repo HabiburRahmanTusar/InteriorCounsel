@@ -95,10 +95,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   margin: const EdgeInsets.only(bottom: 16),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppTheme.error.withOpacity(0.08),
+                    color: AppTheme.error.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: AppTheme.error.withOpacity(0.2),
+                      color: AppTheme.error.withValues(alpha: 0.2),
                     ),
                   ),
                   child: Row(
@@ -112,9 +112,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       Expanded(
                         child: Text(
                           authProvider.error!,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppTheme.error,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: AppTheme.error,
+                                  ),
                         ),
                       ),
                     ],
@@ -122,7 +123,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               // Form
               AnimatedBuilder(
-                animation: Listenable.merge([_emailController, _passwordController]),
+                animation:
+                    Listenable.merge([_emailController, _passwordController]),
                 builder: (context, child) {
                   return Form(
                     key: _formKey,
@@ -147,7 +149,8 @@ class _LoginScreenState extends State<LoginScreen> {
               // Demo credentials hint
               Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
                     color: AppTheme.primaryLight,
                     borderRadius: BorderRadius.circular(10),
@@ -165,7 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Text(
                         'admin@attendly.com / password123',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppTheme.primary.withOpacity(0.8),
+                              color: AppTheme.primary.withValues(alpha: 0.8),
                               fontFamily: 'monospace',
                             ),
                       ),
@@ -204,7 +207,8 @@ class _LoginScreenState extends State<LoginScreen> {
       decoration: InputDecoration(
         labelText: 'Email',
         hintText: 'Enter your email',
-        prefixIcon: const Icon(Icons.email_outlined, color: AppTheme.textTertiary),
+        prefixIcon:
+            const Icon(Icons.email_outlined, color: AppTheme.textTertiary),
         filled: true,
         fillColor: AppTheme.surface,
         border: OutlineInputBorder(
@@ -241,10 +245,13 @@ class _LoginScreenState extends State<LoginScreen> {
       decoration: InputDecoration(
         labelText: 'Password',
         hintText: 'Enter your password',
-        prefixIcon: const Icon(Icons.lock_outlined, color: AppTheme.textTertiary),
+        prefixIcon:
+            const Icon(Icons.lock_outlined, color: AppTheme.textTertiary),
         suffixIcon: IconButton(
           icon: Icon(
-            _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+            _obscurePassword
+                ? Icons.visibility_off_outlined
+                : Icons.visibility_outlined,
             color: AppTheme.textTertiary,
           ),
           onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
@@ -286,8 +293,9 @@ class _LoginScreenState extends State<LoginScreen> {
           backgroundColor: AppTheme.primary,
           foregroundColor: Colors.white,
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          disabledBackgroundColor: AppTheme.primary.withOpacity(0.5),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          disabledBackgroundColor: AppTheme.primary.withValues(alpha: 0.5),
         ),
         child: authProvider.isLoading
             ? const SizedBox(

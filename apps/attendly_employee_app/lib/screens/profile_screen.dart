@@ -37,17 +37,20 @@ class ProfileScreen extends StatelessWidget {
                         width: 80,
                         height: 80,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.3),
+                            color: Colors.white.withValues(alpha: 0.3),
                             width: 3,
                           ),
                         ),
                         child: Center(
                           child: Text(
                             _getInitials(user?.name ?? 'E'),
-                            style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                            style: Theme.of(context)
+                                .textTheme
+                                .displayLarge
+                                ?.copyWith(
                                   color: Colors.white,
                                   fontSize: 32,
                                 ),
@@ -57,30 +60,33 @@ class ProfileScreen extends StatelessWidget {
                       const SizedBox(height: 16),
                       Text(
                         user?.name ?? 'Employee',
-                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                              color: Colors.white,
-                            ),
+                        style:
+                            Theme.of(context).textTheme.headlineLarge?.copyWith(
+                                  color: Colors.white,
+                                ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         user?.designation ?? 'Employee',
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: Colors.white.withOpacity(0.8),
+                              color: Colors.white.withValues(alpha: 0.8),
                             ),
                       ),
                       const SizedBox(height: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
+                          color: Colors.white.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           user?.employeeId ?? '',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Colors.white.withOpacity(0.9),
-                                fontWeight: FontWeight.w600,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Colors.white.withValues(alpha: 0.9),
+                                    fontWeight: FontWeight.w600,
+                                  ),
                         ),
                       ),
                     ],
@@ -108,14 +114,18 @@ class ProfileScreen extends StatelessWidget {
                       _buildSectionTitle('Personal Information'),
                       const SizedBox(height: 12),
                       _buildInfoCard([
-                        _buildInfoRow(Icons.email_outlined, 'Email', user?.email ?? '-'),
-                        _buildInfoRow(Icons.phone_outlined, 'Phone', user?.phone ?? '-'),
-                        _buildInfoRow(Icons.badge_outlined, 'Employee ID', user?.employeeId ?? '-'),
+                        _buildInfoRow(
+                            Icons.email_outlined, 'Email', user?.email ?? '-'),
+                        _buildInfoRow(
+                            Icons.phone_outlined, 'Phone', user?.phone ?? '-'),
+                        _buildInfoRow(Icons.badge_outlined, 'Employee ID',
+                            user?.employeeId ?? '-'),
                         _buildInfoRow(
                           Icons.calendar_today_outlined,
                           'Joining Date',
                           user?.joiningDate != null
-                              ? DateFormat('MMM d, yyyy').format(user!.joiningDate!)
+                              ? DateFormat('MMM d, yyyy')
+                                  .format(user!.joiningDate!)
                               : '-',
                         ),
                       ]),
@@ -126,8 +136,10 @@ class ProfileScreen extends StatelessWidget {
                       _buildSectionTitle('Work Information'),
                       const SizedBox(height: 12),
                       _buildInfoCard([
-                        _buildInfoRow(Icons.work_outline, 'Designation', user?.designation ?? '-'),
-                        _buildInfoRow(Icons.schedule_outlined, 'Shift', 'Day Shift (9:00 - 18:00)'),
+                        _buildInfoRow(Icons.work_outline, 'Designation',
+                            user?.designation ?? '-'),
+                        _buildInfoRow(Icons.schedule_outlined, 'Shift',
+                            'Day Shift (9:00 - 18:00)'),
                         _buildInfoRow(
                           Icons.attach_money_outlined,
                           'Salary',
@@ -167,7 +179,7 @@ class ProfileScreen extends StatelessWidget {
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
                                     valueColor: AlwaysStoppedAnimation<Color>(
-                                      AppTheme.primary.withOpacity(0.6),
+                                      AppTheme.primary.withValues(alpha: 0.6),
                                     ),
                                   ),
                                 );
@@ -214,9 +226,10 @@ class ProfileScreen extends StatelessWidget {
                       Center(
                         child: Text(
                           'Attendly v1.0.0',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppTheme.textTertiary,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: AppTheme.textTertiary,
+                                  ),
                         ),
                       ),
                     ],
@@ -248,7 +261,7 @@ class ProfileScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -267,7 +280,7 @@ class ProfileScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -284,13 +297,15 @@ class ProfileScreen extends StatelessWidget {
     for (var i = 0; i < children.length; i++) {
       result.add(children[i]);
       if (i < children.length - 1) {
-        result.add(const Divider(height: 1, indent: 56, color: AppTheme.border));
+        result
+            .add(const Divider(height: 1, indent: 56, color: AppTheme.border));
       }
     }
     return result;
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value, {Color? valueColor}) {
+  Widget _buildInfoRow(IconData icon, String label, String value,
+      {Color? valueColor}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(

@@ -19,7 +19,7 @@ class OfflineBanner extends StatelessWidget {
             icon: Icons.cloud_done_outlined,
             message: connectivity.lastSyncMessage!,
             color: AppTheme.success,
-            backgroundColor: AppTheme.success.withOpacity(0.08),
+            backgroundColor: AppTheme.success.withValues(alpha: 0.08),
           );
         }
 
@@ -40,7 +40,7 @@ class OfflineBanner extends StatelessWidget {
             icon: Icons.cloud_off_outlined,
             message: 'Offline mode \u2014 changes will sync when connected',
             color: AppTheme.offline,
-            backgroundColor: AppTheme.offline.withOpacity(0.08),
+            backgroundColor: AppTheme.offline.withValues(alpha: 0.08),
           );
         }
 

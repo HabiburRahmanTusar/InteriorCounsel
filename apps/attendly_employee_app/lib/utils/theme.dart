@@ -11,7 +11,7 @@ class AppTheme {
   static const Color success = Color(0xFF10B981);
   static const Color error = Color(0xFFEF4444);
   static const Color offline = Color(0xFF6366F1);
-  
+
   static const Color background = Color(0xFFF8FAFB);
   static const Color surface = Color(0xFFFFFFFF);
   static const Color textPrimary = Color(0xFF1A1D26);
@@ -22,15 +22,30 @@ class AppTheme {
   static TextTheme _buildTextTheme() {
     final base = GoogleFonts.interTextTheme();
     return base.copyWith(
-      displayLarge: GoogleFonts.inter(fontSize: 32, fontWeight: FontWeight.w700, color: textPrimary, letterSpacing: -0.5),
-      displayMedium: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.w700, color: textPrimary, letterSpacing: -0.3),
-      displaySmall: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w600, color: textPrimary),
-      headlineLarge: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: textPrimary),
-      headlineMedium: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: textPrimary),
-      bodyLarge: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w400, color: textPrimary),
-      bodyMedium: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w400, color: textSecondary),
-      bodySmall: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: textSecondary),
-      labelLarge: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: primary),
+      displayLarge: GoogleFonts.inter(
+          fontSize: 32,
+          fontWeight: FontWeight.w700,
+          color: textPrimary,
+          letterSpacing: -0.5),
+      displayMedium: GoogleFonts.inter(
+          fontSize: 24,
+          fontWeight: FontWeight.w700,
+          color: textPrimary,
+          letterSpacing: -0.3),
+      displaySmall: GoogleFonts.inter(
+          fontSize: 20, fontWeight: FontWeight.w600, color: textPrimary),
+      headlineLarge: GoogleFonts.inter(
+          fontSize: 18, fontWeight: FontWeight.w600, color: textPrimary),
+      headlineMedium: GoogleFonts.inter(
+          fontSize: 16, fontWeight: FontWeight.w600, color: textPrimary),
+      bodyLarge: GoogleFonts.inter(
+          fontSize: 16, fontWeight: FontWeight.w400, color: textPrimary),
+      bodyMedium: GoogleFonts.inter(
+          fontSize: 14, fontWeight: FontWeight.w400, color: textSecondary),
+      bodySmall: GoogleFonts.inter(
+          fontSize: 12, fontWeight: FontWeight.w500, color: textSecondary),
+      labelLarge: GoogleFonts.inter(
+          fontSize: 14, fontWeight: FontWeight.w600, color: primary),
     );
   }
 
@@ -44,12 +59,10 @@ class AppTheme {
         primary: primary,
         secondary: accent,
         surface: surface,
-        background: background,
         error: error,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onSurface: textPrimary,
-        onBackground: textPrimary,
       ),
       textTheme: textTheme,
       appBarTheme: AppBarTheme(
@@ -59,7 +72,7 @@ class AppTheme {
         foregroundColor: textPrimary,
         titleTextStyle: textTheme.headlineMedium,
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         color: surface,
@@ -68,7 +81,8 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           elevation: 0,
           minimumSize: const Size(double.infinity, 52),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           backgroundColor: primary,
           foregroundColor: Colors.white,
           textStyle: textTheme.headlineMedium?.copyWith(color: Colors.white),
@@ -77,7 +91,8 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           minimumSize: const Size(double.infinity, 52),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           side: const BorderSide(color: primary, width: 1.5),
           foregroundColor: primary,
           textStyle: textTheme.headlineMedium,
@@ -86,7 +101,8 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: surface,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: border),
@@ -111,7 +127,8 @@ class AppTheme {
         unselectedItemColor: textSecondary,
         type: BottomNavigationBarType.fixed,
         elevation: 8,
-        selectedLabelStyle: textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+        selectedLabelStyle:
+            textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
         unselectedLabelStyle: textTheme.bodySmall,
       ),
       snackBarTheme: SnackBarThemeData(
