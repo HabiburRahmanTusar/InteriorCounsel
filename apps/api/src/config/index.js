@@ -4,12 +4,16 @@
  */
 const path = require('path');
 
-require('dotenv').config({ path: path.resolve(__dirname, '../../../.env') });
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
 const config = {
   env: process.env.NODE_ENV || 'development',
   port: parseInt(process.env.PORT || '4000', 10),
   mongodbUri: process.env.MONGODB_URI || 'mongodb://localhost:27017/workforce_management',
+  mongodb: {
+    serverSelectionTimeoutMS: parseInt(process.env.MONGODB_SERVER_SELECTION_TIMEOUT_MS || '10000', 10),
+    maxPoolSize: parseInt(process.env.MONGODB_MAX_POOL_SIZE || '50', 10),
+  },
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:4200',
   jwt: {
     accessSecret: process.env.JWT_ACCESS_SECRET || 'dev-access-secret',

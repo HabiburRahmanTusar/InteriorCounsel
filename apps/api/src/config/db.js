@@ -5,7 +5,7 @@
 const mongoose = require('mongoose');
 const logger = require('../utils/logger');
 
-async function connectDatabase(uri) {
+async function connectDatabase(uri, options = {}) {
   mongoose.set('strictQuery', true);
 
   mongoose.connection.on('connected', () => {
@@ -19,8 +19,8 @@ async function connectDatabase(uri) {
   });
 
   await mongoose.connect(uri, {
-    serverSelectionTimeoutMS: 10000,
-    maxPoolSize: 50,
+    serverSelectionTimeoutMS: options.serverSelectionTimeoutMS || 10000,
+    maxPoolSize: options.maxPoolSize || 50,
   });
 }
 

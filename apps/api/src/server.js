@@ -10,7 +10,7 @@ const logger = require('./utils/logger');
 const { connectDatabase, disconnectDatabase } = require('./config/db');
 
 async function start() {
-  await connectDatabase(config.mongodbUri);
+  await connectDatabase(config.mongodbUri, config.mongodb);
 
   const server = app.listen(config.port, () => {
     logger.info(`API listening on http://localhost:${config.port} [${config.env}]`);
