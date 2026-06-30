@@ -1,0 +1,3 @@
+[build]
+  command = "npm --workspace @wfm/admin-portal run build"
+  publish = "apps/admin-portal/dist/admin-portal/browser"
