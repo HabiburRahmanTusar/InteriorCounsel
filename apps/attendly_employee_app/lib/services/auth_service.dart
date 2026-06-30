@@ -24,18 +24,20 @@ class AuthService {
     try {
       final response = await _apiService.dio.post(
         '/auth/login',
-        data: {'email': email, 'password': password},
+        data: {'email': email, 'password': password, 'rememberMe': true},
       );
 
       if (response.statusCode == 200 && response.data['success'] == true) {
         final data = response.data['data'];
-        
+
         // Store tokens
         if (data['accessToken'] != null) {
-          await _storage.write(AppConstants.accessTokenKey, data['accessToken']);
+          await _storage.write(
+              AppConstants.accessTokenKey, data['accessToken']);
         }
         if (data['refreshToken'] != null) {
-          await _storage.write(AppConstants.refreshTokenKey, data['refreshToken']);
+          await _storage.write(
+              AppConstants.refreshTokenKey, data['refreshToken']);
         }
 
         // Cache user profile
@@ -56,10 +58,20 @@ class AuthService {
         message: response.data['message'] ?? 'Login failed',
       );
     } on DioException catch (e) {
-      final message = e.response?.data?['message'] ?? 'Network error. Please try again.';
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.connectionTimeout) {
+        return AuthResponse(
+          success: false,
+          message:
+              'Unable to connect to server. Please check your internet connection and try again.',
+        );
+      }
+      final message =
+          e.response?.data?['message'] ?? 'Network error. Please try again.';
       return AuthResponse(success: false, message: message);
     } catch (e) {
-      return AuthResponse(success: false, message: 'An unexpected error occurred');
+      return AuthResponse(
+          success: false, message: 'An unexpected error occurred');
     }
   }
 

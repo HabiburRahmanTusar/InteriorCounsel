@@ -26,6 +26,7 @@ class ApiService {
 
     _dio.interceptors.addAll([
       _authInterceptor(),
+      _retryInterceptor(),
       _logInterceptor(),
     ]);
   }
@@ -71,12 +72,38 @@ class ApiService {
               return;
             }
           } else {
-            // Wait for token refresh
             final newToken = await _waitForRefresh();
             if (newToken != null) {
               error.requestOptions.headers['Authorization'] = 'Bearer $newToken';
               final response = await _dio.fetch(error.requestOptions);
               handler.resolve(response);
+              return;
+            }
+          }
+        }
+        handler.next(error);
+      },
+    );
+  }
+
+  Interceptor _retryInterceptor() {
+    const maxRetries = 3;
+    return InterceptorsWrapper(
+      onError: (error, handler) async {
+        if (error.type == DioExceptionType.connectionError ||
+            error.type == DioExceptionType.connectionTimeout) {
+          final retryCount = error.requestOptions.headers['x-connection-retry-count'] ?? 0;
+          if (retryCount < maxRetries) {
+            final delay = Duration(seconds: (retryCount + 1) * 2);
+            await Future.delayed(delay);
+            final newOptions = error.requestOptions;
+            newOptions.headers['x-connection-retry-count'] = retryCount + 1;
+            try {
+              final response = await _dio.fetch(newOptions);
+              handler.resolve(response);
+              return;
+            } catch (e) {
+              handler.next(error);
               return;
             }
           }
