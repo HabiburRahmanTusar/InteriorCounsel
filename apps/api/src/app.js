@@ -17,16 +17,23 @@ const app = express();
 
 // --- Security & utility middleware ---
 app.use(helmet());
+
+const allowedOrigins = [
+  'http://localhost:4200',
+  'http://localhost:4300',
+  'http://192.168.0.141:4300',
+  'http://192.168.0.141:4200',
+  'http://localhost:58922',
+];
+
+if (config.corsOrigin) {
+  const origins = config.corsOrigin.split(',').map((o) => o.trim());
+  allowedOrigins.push(...origins);
+}
+
 app.use(
   cors({
-    origin: [
-      'http://localhost:4200',
-      'http://localhost:4300',
-      'http://192.168.0.141:4300',
-      'http://192.168.0.141:4200',
-      'http://localhost:58922',
-      config.corsOrigin,
-    ],
+    origin: allowedOrigins,
     credentials: true,
   }),
 );
