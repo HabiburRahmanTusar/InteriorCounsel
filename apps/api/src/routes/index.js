@@ -1,9 +1,25 @@
-/**
- * Route registry — mounts each feature router under /api.
- */
 const express = require('express');
+const mongoose = require('mongoose');
 
 const router = express.Router();
+
+// Public test/health endpoint
+router.get('/test', (req, res) => {
+  const dbStatus = {
+    0: 'disconnected',
+    1: 'connected',
+    2: 'connecting',
+    3: 'disconnecting',
+  };
+
+  res.json({
+    status: 'ok',
+    message: 'Attendly API is live and public!',
+    database: dbStatus[mongoose.connection.readyState] || 'unknown',
+    timestamp: new Date().toISOString(),
+    env: process.env.NODE_ENV || 'development'
+  });
+});
 
 router.use('/auth', require('./auth.routes'));
 router.use('/employees', require('./employee.routes'));
