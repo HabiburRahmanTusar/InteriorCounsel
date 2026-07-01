@@ -83,6 +83,21 @@ class _MainShellScreenState extends State<MainShellScreen> with SingleTickerProv
             : Icons.login_outlined;
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text(['Dashboard', 'History', 'Profile'][_currentIndex]),
+        backgroundColor: AppTheme.surface,
+        elevation: 0,
+        centerTitle: false,
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu, color: AppTheme.textPrimary),
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
+          ),
+        ),
+      ),
+      drawer: _buildDrawer(context),
       body: Column(
         children: [
           // Offline banner
@@ -156,7 +171,6 @@ class _MainShellScreenState extends State<MainShellScreen> with SingleTickerProv
           ],
         ),
       ),
-
     );
   }
 
@@ -186,6 +200,183 @@ class _MainShellScreenState extends State<MainShellScreen> with SingleTickerProv
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildDrawer(BuildContext context) {
+    final authProvider = context.read<AuthProvider>();
+    final user = authProvider.user;
+
+    return Drawer(
+      backgroundColor: AppTheme.surface,
+      child: SafeArea(
+        child: Column(
+          children: [
+            // Drawer header with user info
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [AppTheme.primary, AppTheme.primaryDark],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+              ),
+              child: Column(
+                children: [
+                  // Avatar
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        width: 3,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        _getInitials(user?.name ?? 'E'),
+                        style: Theme.of(context)
+                            .textTheme
+                            .displayLarge
+                            ?.copyWith(
+                              color: Colors.white,
+                              fontSize: 32,
+                            ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    user?.name ?? 'Employee',
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineSmall
+                        ?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    user?.designation ?? 'Employee',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.8),
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+
+            // Drawer menu items
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    // Profile option
+                    ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.person_outline, color: AppTheme.primary, size: 24),
+                      ),
+                      title: const Text('Profile', style: TextStyle(fontWeight: FontWeight.w500)),
+                      subtitle: Text(user?.employeeId ?? '', style: const TextStyle(fontSize: 12)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    setState(() => _currentIndex = 2);
+                  },
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Sign Out button
+                    ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.error.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.logout_outlined, color: AppTheme.error, size: 24),
+                      ),
+                      title: const Text('Sign Out', style: TextStyle(color: AppTheme.error, fontWeight: FontWeight.w500)),
+                      onTap: () => _confirmSignOut(context),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // App version
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Center(
+                child: Text(
+                  'Attendly v1.0.0',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(
+                        color: AppTheme.textTertiary,
+                      ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getInitials(String name) {
+    final parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    return name.isNotEmpty ? name[0].toUpperCase() : 'E';
+  }
+
+  void _confirmSignOut(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Sign Out'),
+        content: const Text('Are you sure you want to sign out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context); // Close drawer
+              context.read<AuthProvider>().logout();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.error,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Sign Out'),
+          ),
+        ],
       ),
     );
   }
