@@ -194,7 +194,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (diff.inMinutes <= 60) {
         statusTitle = 'Shift starts soon';
         statusSubtitle = 'Get ready to check in';
-        bannerText = 'Shift starts in ${diff.inMinutes} mins. On time!';
+        bannerText = 'Shift starts in ${_formatMinutes(diff.inMinutes)}. On time!';
         bannerColor = AppTheme.primary.withValues(alpha: 0.08);
         textColor = AppTheme.primary;
         bannerIcon = Icons.timer_outlined;
@@ -211,7 +211,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       showBanner = true;
       statusTitle = 'Check-in is active';
       statusSubtitle = 'You are currently within the grace period';
-      bannerText = 'Grace period active: late by ${diff.inMinutes} mins. Check in now!';
+      bannerText = 'Grace period active: late by ${_formatMinutes(diff.inMinutes)}. Check in now!';
       bannerColor = AppTheme.warning.withValues(alpha: 0.08);
       textColor = AppTheme.warning;
       bannerIcon = Icons.report_problem_outlined;
@@ -220,7 +220,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       showBanner = true;
       statusTitle = 'You are getting late';
       statusSubtitle = 'Lateness penalty may apply';
-      bannerText = 'You are late by ${diff.inMinutes} mins! Check in now.';
+      bannerText = 'You are late by ${_formatMinutes(diff.inMinutes)}! Check in now.';
       bannerColor = AppTheme.error.withValues(alpha: 0.08);
       textColor = AppTheme.error;
       bannerIcon = Icons.warning_amber_rounded;
@@ -758,5 +758,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
     } catch (_) {
       return hhMm;
     }
+  }
+
+  String _formatMinutes(int minutes) {
+    if (minutes < 60) {
+      return '$minutes ${minutes == 1 ? 'minute' : 'minutes'}';
+    }
+    final hrs = minutes ~/ 60;
+    final mins = minutes % 60;
+    final hrStr = hrs == 1 ? 'hour' : 'hours';
+    final minStr = mins == 1 ? 'minute' : 'minutes';
+    if (mins == 0) {
+      return '$hrs $hrStr';
+    }
+    return '$hrs $hrStr and $mins $minStr';
   }
 }

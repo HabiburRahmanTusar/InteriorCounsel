@@ -287,6 +287,25 @@ class _MainShellScreenState extends State<MainShellScreen> with SingleTickerProv
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
+                    // Attendance option
+                    ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.fingerprint_outlined, color: AppTheme.primary, size: 24),
+                      ),
+                      title: const Text('Attendance', style: TextStyle(fontWeight: FontWeight.w500)),
+                      onTap: () {
+                        Navigator.pop(context);
+                        setState(() => _currentIndex = 0);
+                      },
+                    ),
+                    const SizedBox(height: 8),
+
                     // Profile option
                     ListTile(
                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

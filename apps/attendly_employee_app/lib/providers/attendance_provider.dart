@@ -59,19 +59,51 @@ class AttendanceProvider extends ChangeNotifier {
   }
 
   /// Get current location
-  Future<void> getCurrentLocation() async {
+  Future<bool> getCurrentLocation() async {
     _isGettingLocation = true;
     _error = null;
     notifyListeners();
 
     try {
-      _currentLocation = await _locationService.getLocationData();
+      final status = await _locationService.checkPermission();
+      if (status == LocationPermissionStatus.serviceDisabled) {
+        _error = 'Location services are disabled. Opening location settings...';
+        _isGettingLocation = false;
+        notifyListeners();
+        await _locationService.openLocationSettings();
+        return false;
+      } else if (status == LocationPermissionStatus.deniedForever) {
+        _error = 'Location permission is permanently denied. Opening app settings...';
+        _isGettingLocation = false;
+        notifyListeners();
+        await _locationService.openAppSettings();
+        return false;
+      } else if (status == LocationPermissionStatus.denied) {
+        _error = 'Location permission is required to check in/out.';
+        _isGettingLocation = false;
+        notifyListeners();
+        return false;
+      }
+
+      final loc = await _locationService.getLocationData();
+      if (loc.latitude == 0.0 && loc.longitude == 0.0) {
+        _error = 'Failed to get a valid GPS signal. Please try again.';
+        _currentLocation = null;
+        _isGettingLocation = false;
+        notifyListeners();
+        return false;
+      }
+
+      _currentLocation = loc;
       _currentAddress = _currentLocation?.address;
-    } catch (e) {
-      _error = 'Failed to get location';
-    } finally {
       _isGettingLocation = false;
       notifyListeners();
+      return true;
+    } catch (e) {
+      _error = 'Failed to get location: $e';
+      _isGettingLocation = false;
+      notifyListeners();
+      return false;
     }
   }
 
@@ -82,10 +114,9 @@ class AttendanceProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await getCurrentLocation();
+      final hasLocation = await getCurrentLocation();
       
-      if (_currentLocation == null) {
-        _error = 'Unable to get your location. Please enable GPS.';
+      if (!hasLocation || _currentLocation == null) {
         _isProcessingAction = false;
         notifyListeners();
         return false;
@@ -124,10 +155,9 @@ class AttendanceProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await getCurrentLocation();
+      final hasLocation = await getCurrentLocation();
 
-      if (_currentLocation == null) {
-        _error = 'Unable to get your location. Please enable GPS.';
+      if (!hasLocation || _currentLocation == null) {
         _isProcessingAction = false;
         notifyListeners();
         return false;
