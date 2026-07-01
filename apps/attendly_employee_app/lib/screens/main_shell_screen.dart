@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/attendance_provider.dart';
@@ -20,6 +21,7 @@ class MainShellScreen extends StatefulWidget {
 class _MainShellScreenState extends State<MainShellScreen> with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   late final AnimationController _fabController;
+  DateTime? _lastPressedAt;
 
   final _pages = const [
     DashboardScreen(),
@@ -84,8 +86,32 @@ class _MainShellScreenState extends State<MainShellScreen> with SingleTickerProv
             ? Icons.logout_outlined
             : Icons.login_outlined;
 
-    return Scaffold(
-      appBar: AppBar(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+
+        if (_currentIndex != 0) {
+          setState(() => _currentIndex = 0);
+          return;
+        }
+
+        final now = DateTime.now();
+        if (_lastPressedAt == null || now.difference(_lastPressedAt!) > const Duration(seconds: 2)) {
+          _lastPressedAt = now;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Press back again to exit'),
+              duration: Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        } else {
+          await SystemNavigator.pop();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
         title: Text(['Dashboard', 'History', 'My Leaves', 'Profile'][_currentIndex]),
         backgroundColor: AppTheme.surface,
         elevation: 0,
@@ -174,8 +200,9 @@ class _MainShellScreenState extends State<MainShellScreen> with SingleTickerProv
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildNavItem(IconData icon, String label, int index) {
     final isActive = _currentIndex == index;
