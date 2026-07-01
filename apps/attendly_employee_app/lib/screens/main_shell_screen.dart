@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/attendance_provider.dart';
-import '../providers/connectivity_provider.dart';
 import '../utils/theme.dart';
 import 'dashboard_screen.dart';
 import 'history_screen.dart';
@@ -17,8 +16,7 @@ class MainShellScreen extends StatefulWidget {
   State<MainShellScreen> createState() => _MainShellScreenState();
 }
 
-class _MainShellScreenState extends State<MainShellScreen>
-    with SingleTickerProviderStateMixin {
+class _MainShellScreenState extends State<MainShellScreen> with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   late final AnimationController _fabController;
 
@@ -73,10 +71,7 @@ class _MainShellScreenState extends State<MainShellScreen>
 
     // FAB color and icon based on state
     final fabGradient = isCheckedOut
-        ? const [
-            AppTheme.textTertiary,
-            AppTheme.textSecondary
-          ] // Disabled/completed
+        ? const [AppTheme.textTertiary, AppTheme.textSecondary] // Disabled/completed
         : isCheckedIn
             ? [AppTheme.accent, AppTheme.accentDark] // Check-out (coral)
             : [AppTheme.primary, AppTheme.primaryDark]; // Check-in (teal)
@@ -110,9 +105,7 @@ class _MainShellScreenState extends State<MainShellScreen>
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: (isCheckedIn && !isCheckedOut
-                        ? AppTheme.accent
-                        : AppTheme.primary)
+                color: (isCheckedIn && !isCheckedOut ? AppTheme.accent : AppTheme.primary)
                     .withValues(alpha: 0.35),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
@@ -132,8 +125,7 @@ class _MainShellScreenState extends State<MainShellScreen>
                         height: 28,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.5,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
                     : Icon(
@@ -149,6 +141,7 @@ class _MainShellScreenState extends State<MainShellScreen>
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
         height: 72,
+        padding: EdgeInsets.zero,
         elevation: 8,
         notchMargin: 8,
         shape: const CircularNotchedRectangle(),
@@ -163,6 +156,7 @@ class _MainShellScreenState extends State<MainShellScreen>
           ],
         ),
       ),
+
     );
   }
 

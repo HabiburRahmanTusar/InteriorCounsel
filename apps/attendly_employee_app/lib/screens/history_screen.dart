@@ -16,11 +16,14 @@ class HistoryScreen extends StatefulWidget {
 
 class _HistoryScreenState extends State<HistoryScreen> {
   final ScrollController _scrollController = ScrollController();
+  bool _isFirstLoad = true;
 
   @override
   void initState() {
     super.initState();
-    _loadHistory();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadHistory();
+    });
   }
 
   @override
@@ -35,6 +38,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final userId = authProvider.user?.id ?? '';
     if (userId.isNotEmpty) {
       await attendanceProvider.loadHistory(userId);
+    }
+    if (mounted) {
+      setState(() {
+        _isFirstLoad = false;
+      });
     }
   }
 
@@ -69,7 +77,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _buildContent(AttendanceProvider provider) {
-    if (provider.isLoading && provider.history.isEmpty) {
+    if (_isFirstLoad || (provider.isLoading && provider.history.isEmpty)) {
       return ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: 6,

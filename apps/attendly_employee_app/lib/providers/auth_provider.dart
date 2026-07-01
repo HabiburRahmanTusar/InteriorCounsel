@@ -6,7 +6,7 @@ class AuthProvider extends ChangeNotifier {
   final AuthService _authService;
   
   User? _user;
-  bool _isLoading = false;
+  bool _isLoading = true;
   bool _isAuthenticated = false;
   String? _error;
 
@@ -25,8 +25,10 @@ class AuthProvider extends ChangeNotifier {
 
   /// Initialize auth state on app startup
   Future<void> initialize() async {
-    _isLoading = true;
-    notifyListeners();
+    if (!_isLoading) {
+      _isLoading = true;
+      notifyListeners();
+    }
 
     try {
       final isLoggedIn = await _authService.isLoggedIn();

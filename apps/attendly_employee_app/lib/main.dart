@@ -56,8 +56,11 @@ class _AppInitializerState extends State<AppInitializer> {
   @override
   void initState() {
     super.initState();
-    _initialize();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initialize();
+    });
   }
+
 
   Future<void> _initialize() async {
     final authProvider = context.read<AuthProvider>();
