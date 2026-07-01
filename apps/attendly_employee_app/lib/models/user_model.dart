@@ -1,3 +1,5 @@
+import 'shift_model.dart';
+
 class User {
   final String id;
   final String employeeId;
@@ -8,6 +10,7 @@ class User {
   final double? salary;
   final String role;
   final String? shiftId;
+  final Shift? shift;
   final DateTime? joiningDate;
   final DateTime? resignationDate;
   final String status;
@@ -22,12 +25,23 @@ class User {
     this.salary,
     required this.role,
     this.shiftId,
+    this.shift,
     this.joiningDate,
     this.resignationDate,
     required this.status,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
+    Shift? shiftObj;
+    String? sId;
+    if (json['shiftId'] != null) {
+      if (json['shiftId'] is Map) {
+        shiftObj = Shift.fromJson(Map<String, dynamic>.from(json['shiftId']));
+        sId = shiftObj.id;
+      } else {
+        sId = json['shiftId'].toString();
+      }
+    }
     return User(
       id: json['id'] ?? json['_id'] ?? '',
       employeeId: json['employeeId'] ?? '',
@@ -37,7 +51,8 @@ class User {
       designation: json['designation'],
       salary: json['salary'] != null ? (json['salary'] as num).toDouble() : null,
       role: json['role'] ?? 'employee',
-      shiftId: json['shiftId'],
+      shiftId: sId,
+      shift: shiftObj,
       joiningDate: json['joiningDate'] != null ? DateTime.parse(json['joiningDate']) : null,
       resignationDate: json['resignationDate'] != null ? DateTime.parse(json['resignationDate']) : null,
       status: json['status'] ?? 'active',
@@ -54,7 +69,7 @@ class User {
       'designation': designation,
       'salary': salary,
       'role': role,
-      'shiftId': shiftId,
+      'shiftId': shift?.toJson() ?? shiftId,
       'joiningDate': joiningDate?.toIso8601String(),
       'resignationDate': resignationDate?.toIso8601String(),
       'status': status,
@@ -66,6 +81,7 @@ class User {
     String? phone,
     String? designation,
     String? shiftId,
+    Shift? shift,
     String? status,
   }) {
     return User(
@@ -78,6 +94,7 @@ class User {
       salary: salary,
       role: role,
       shiftId: shiftId ?? this.shiftId,
+      shift: shift ?? this.shift,
       joiningDate: joiningDate,
       resignationDate: resignationDate,
       status: status ?? this.status,

@@ -24,6 +24,7 @@ class _MainShellScreenState extends State<MainShellScreen> with SingleTickerProv
   final _pages = const [
     DashboardScreen(),
     HistoryScreen(),
+    MyLeavesScreen(showAppBar: false),
     ProfileScreen(),
   ];
 
@@ -85,7 +86,7 @@ class _MainShellScreenState extends State<MainShellScreen> with SingleTickerProv
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(['Dashboard', 'History', 'Profile'][_currentIndex]),
+        title: Text(['Dashboard', 'History', 'My Leaves', 'Profile'][_currentIndex]),
         backgroundColor: AppTheme.surface,
         elevation: 0,
         centerTitle: false,
@@ -168,7 +169,8 @@ class _MainShellScreenState extends State<MainShellScreen> with SingleTickerProv
             _buildNavItem(Icons.home_outlined, 'Home', 0),
             _buildNavItem(Icons.calendar_month_outlined, 'History', 1),
             const SizedBox(width: 64), // Space for FAB
-            _buildNavItem(Icons.person_outline, 'Profile', 2),
+            _buildNavItem(Icons.beach_access_outlined, 'Leaves', 2),
+            _buildNavItem(Icons.person_outline, 'Profile', 3),
           ],
         ),
       ),
@@ -298,10 +300,10 @@ class _MainShellScreenState extends State<MainShellScreen> with SingleTickerProv
                       ),
                       title: const Text('Profile', style: TextStyle(fontWeight: FontWeight.w500)),
                       subtitle: Text(user?.employeeId ?? '', style: const TextStyle(fontSize: 12)),
-                  onTap: () {
-                    Navigator.pop(context);
-                    setState(() => _currentIndex = 2);
-                  },
+                      onTap: () {
+                        Navigator.pop(context);
+                        setState(() => _currentIndex = 3);
+                      },
                     ),
                     const SizedBox(height: 8),
 
@@ -319,10 +321,7 @@ class _MainShellScreenState extends State<MainShellScreen> with SingleTickerProv
                       title: const Text('My Leaves', style: TextStyle(fontWeight: FontWeight.w500)),
                       onTap: () {
                         Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const MyLeavesScreen()),
-                        );
+                        setState(() => _currentIndex = 2);
                       },
                     ),
                     const SizedBox(height: 8),

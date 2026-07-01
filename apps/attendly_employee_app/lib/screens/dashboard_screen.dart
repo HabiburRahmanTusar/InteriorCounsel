@@ -131,12 +131,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 // Attendance Status Card
-                _buildAttendanceCard(attendanceProvider),
+                _buildAttendanceCard(attendanceProvider, authProvider),
 
                 const SizedBox(height: 24),
 
                 // Today's Stats
-                _buildStatsSection(attendanceProvider),
+                _buildStatsSection(attendanceProvider, authProvider),
 
                 const SizedBox(height: 24),
 
@@ -150,7 +150,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildAttendanceCard(AttendanceProvider provider) {
+  Widget _buildAttendanceCard(AttendanceProvider provider, AuthProvider authProvider) {
     if (provider.isLoading && provider.todayRecord == null) {
       return const SkeletonCard(height: 220);
     }
@@ -159,7 +159,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     // Determine state
     if (record == null || !record.checkedIn) {
-      return _buildNotCheckedInCard();
+      return _buildNotCheckedInCard(authProvider);
     } else if (record.checkedIn && !record.checkedOut) {
       return _buildCheckedInCard(provider);
     } else {
@@ -167,7 +167,65 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  Widget _buildNotCheckedInCard() {
+  Widget _buildNotCheckedInCard(AuthProvider authProvider) {
+    final shift = authProvider.user?.shift;
+    final startStr = shift?.startTime ?? '09:00';
+    final grace = shift?.gracePeriod ?? 15;
+    
+    final parts = startStr.split(':');
+    final shiftHour = int.tryParse(parts[0]) ?? 9;
+    final shiftMin = int.tryParse(parts[1]) ?? 0;
+    
+    final now = DateTime.now();
+    final shiftStart = DateTime(now.year, now.month, now.day, shiftHour, shiftMin);
+    final lateThreshold = shiftStart.add(Duration(minutes: grace));
+    
+    String statusTitle = 'Ready to start?';
+    String statusSubtitle = 'Check in to begin your work day';
+    Color bannerColor = AppTheme.primary;
+    Color textColor = AppTheme.primary;
+    IconData bannerIcon = Icons.info_outline;
+    String bannerText = '';
+    bool showBanner = false;
+    
+    if (now.isBefore(shiftStart)) {
+      final diff = shiftStart.difference(now);
+      showBanner = true;
+      if (diff.inMinutes <= 60) {
+        statusTitle = 'Shift starts soon';
+        statusSubtitle = 'Get ready to check in';
+        bannerText = 'Shift starts in ${diff.inMinutes} mins. On time!';
+        bannerColor = AppTheme.primary.withValues(alpha: 0.08);
+        textColor = AppTheme.primary;
+        bannerIcon = Icons.timer_outlined;
+      } else {
+        statusTitle = 'Early morning';
+        statusSubtitle = 'Your shift has not started yet';
+        bannerText = 'Your shift starts at ${_formatTime(startStr)}.';
+        bannerColor = AppTheme.textSecondary.withValues(alpha: 0.05);
+        textColor = AppTheme.textSecondary;
+        bannerIcon = Icons.schedule_outlined;
+      }
+    } else if (now.isBefore(lateThreshold)) {
+      final diff = now.difference(shiftStart);
+      showBanner = true;
+      statusTitle = 'Check-in is active';
+      statusSubtitle = 'You are currently within the grace period';
+      bannerText = 'Grace period active: late by ${diff.inMinutes} mins. Check in now!';
+      bannerColor = AppTheme.warning.withValues(alpha: 0.08);
+      textColor = AppTheme.warning;
+      bannerIcon = Icons.report_problem_outlined;
+    } else {
+      final diff = now.difference(shiftStart);
+      showBanner = true;
+      statusTitle = 'You are getting late';
+      statusSubtitle = 'Lateness penalty may apply';
+      bannerText = 'You are late by ${diff.inMinutes} mins! Check in now.';
+      bannerColor = AppTheme.error.withValues(alpha: 0.08);
+      textColor = AppTheme.error;
+      bannerIcon = Icons.warning_amber_rounded;
+    }
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -187,35 +245,66 @@ class _DashboardScreenState extends State<DashboardScreen> {
             width: 72,
             height: 72,
             decoration: BoxDecoration(
-              color: AppTheme.primary.withValues(alpha: 0.1),
+              color: (showBanner ? textColor : AppTheme.primary).withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.fingerprint_outlined,
               size: 36,
-              color: AppTheme.primary.withValues(alpha: 0.5),
+              color: (showBanner ? textColor : AppTheme.primary).withValues(alpha: 0.8),
             ),
           ),
           const SizedBox(height: 16),
           Text(
-            'Ready to start?',
+            statusTitle,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   color: AppTheme.textPrimary,
+                  fontWeight: FontWeight.bold,
                 ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Check in to begin your work day',
+            statusSubtitle,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppTheme.textSecondary,
                 ),
           ),
-          const SizedBox(height: 16),
+          
+          if (showBanner) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: bannerColor,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: textColor.withValues(alpha: 0.2)),
+              ),
+              child: Row(
+                children: [
+                  Icon(bannerIcon, color: textColor, size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      bannerText,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: textColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 20),
           Text(
             _getCurrentTime(),
             style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                  color: AppTheme.primary,
-                  fontSize: 36,
+                  color: showBanner ? textColor : AppTheme.primary,
+                  fontSize: 40,
+                  fontWeight: FontWeight.bold,
                 ),
           ),
           const SizedBox(height: 4),
@@ -476,7 +565,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildStatsSection(AttendanceProvider provider) {
+  Widget _buildStatsSection(AttendanceProvider provider, AuthProvider authProvider) {
+    final shift = authProvider.user?.shift;
+    final shiftStart = shift != null ? _formatTime(shift.startTime) : '9:00 AM';
+    final shiftEnd = shift != null ? _formatTime(shift.endTime) : '6:00 PM';
+    final grace = shift?.gracePeriod ?? 15;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -493,7 +587,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: _buildStatCard(
                 icon: Icons.schedule_outlined,
                 label: 'Shift',
-                value: '9:00 AM - 6:00 PM',
+                value: '$shiftStart - $shiftEnd',
                 color: AppTheme.primary,
               ),
             ),
@@ -502,7 +596,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: _buildStatCard(
                 icon: Icons.access_time_outlined,
                 label: 'Grace Period',
-                value: '15 minutes',
+                value: '$grace minutes',
                 color: AppTheme.warning,
               ),
             ),
@@ -652,5 +746,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   String _getCurrentTime() {
     return DateFormat('hh:mm a').format(DateTime.now());
+  }
+
+  String _formatTime(String hhMm) {
+    try {
+      final parts = hhMm.split(':');
+      final hour = int.parse(parts[0]);
+      final min = int.parse(parts[1]);
+      final dt = DateTime(2026, 1, 1, hour, min);
+      return DateFormat('h:mm a').format(dt);
+    } catch (_) {
+      return hhMm;
+    }
   }
 }

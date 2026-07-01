@@ -7,7 +7,8 @@ import '../utils/theme.dart';
 import 'widgets/request_leave_sheet.dart';
 
 class MyLeavesScreen extends StatefulWidget {
-  const MyLeavesScreen({super.key});
+  final bool showAppBar;
+  const MyLeavesScreen({super.key, this.showAppBar = false});
 
   @override
   State<MyLeavesScreen> createState() => _MyLeavesScreenState();
@@ -41,12 +42,14 @@ class _MyLeavesScreenState extends State<MyLeavesScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        title: const Text('My Leaves'),
-        backgroundColor: AppTheme.surface,
-        elevation: 0,
-        centerTitle: true,
-      ),
+      appBar: widget.showAppBar
+          ? AppBar(
+              title: const Text('My Leaves'),
+              backgroundColor: AppTheme.surface,
+              elevation: 0,
+              centerTitle: true,
+            )
+          : null,
       body: RefreshIndicator(
         onRefresh: () async {
           await provider.loadLeaveData();
