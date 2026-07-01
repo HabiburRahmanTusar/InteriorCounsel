@@ -6,6 +6,7 @@ import '../utils/theme.dart';
 import 'dashboard_screen.dart';
 import 'history_screen.dart';
 import 'profile_screen.dart';
+import 'my_leaves_screen.dart';
 import 'widgets/check_in_bottom_sheet.dart';
 import 'widgets/offline_banner.dart';
 
@@ -301,6 +302,52 @@ class _MainShellScreenState extends State<MainShellScreen> with SingleTickerProv
                     Navigator.pop(context);
                     setState(() => _currentIndex = 2);
                   },
+                    ),
+                    const SizedBox(height: 8),
+
+                    // My Leaves option
+                    ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.beach_access_outlined, color: AppTheme.primary, size: 24),
+                      ),
+                      title: const Text('My Leaves', style: TextStyle(fontWeight: FontWeight.w500)),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const MyLeavesScreen()),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Change Password option
+                    ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.lock_outline, color: AppTheme.primary, size: 24),
+                      ),
+                      title: const Text('Change Password', style: TextStyle(fontWeight: FontWeight.w500)),
+                      onTap: () {
+                        Navigator.pop(context);
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) => const ChangePasswordSheet(),
+                        );
+                      },
                     ),
                     const SizedBox(height: 8),
 
