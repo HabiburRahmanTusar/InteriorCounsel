@@ -35,13 +35,13 @@ class AttendanceRecord {
       userId: json['userId']?.toString() ?? '',
       employeeId: json['employeeId']?.toString() ?? '',
       attendanceDate: json['attendanceDate'] != null 
-          ? DateTime.parse(json['attendanceDate']) 
+          ? DateTime.parse(json['attendanceDate']).toLocal() 
           : DateTime.now(),
       checkIn: json['checkIn'] != null ? CheckInOut.fromJson(json['checkIn']) : null,
       checkOut: json['checkOut'] != null ? CheckInOut.fromJson(json['checkOut']) : null,
       workingMinutes: json['workingMinutes'] ?? 0,
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
-      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']).toLocal() : null,
+      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']).toLocal() : null,
       isSynced: true,
     );
   }
@@ -87,7 +87,7 @@ class AttendanceRecord {
     CheckInOut? checkIn;
     if (map['checkInTime'] != null) {
       checkIn = CheckInOut(
-        time: DateTime.parse(map['checkInTime']),
+        time: DateTime.parse(map['checkInTime']).toLocal(),
         status: map['checkInStatus'] ?? 'On Time',
         location: LocationData(
           latitude: map['checkInLat'] ?? 0.0,
@@ -100,7 +100,7 @@ class AttendanceRecord {
     CheckInOut? checkOut;
     if (map['checkOutTime'] != null) {
       checkOut = CheckInOut(
-        time: DateTime.parse(map['checkOutTime']),
+        time: DateTime.parse(map['checkOutTime']).toLocal(),
         status: map['checkOutStatus'] ?? 'On Time',
         location: LocationData(
           latitude: map['checkOutLat'] ?? 0.0,
@@ -113,12 +113,12 @@ class AttendanceRecord {
       id: map['id']?.toString(),
       userId: map['userId']?.toString() ?? '',
       employeeId: map['employeeId']?.toString() ?? '',
-      attendanceDate: DateTime.parse(map['attendanceDate']),
+      attendanceDate: DateTime.parse(map['attendanceDate']).toLocal(),
       checkIn: checkIn,
       checkOut: checkOut,
       workingMinutes: map['workingMinutes'] ?? 0,
-      createdAt: map['createdAt'] != null ? DateTime.parse(map['createdAt']) : null,
-      updatedAt: map['updatedAt'] != null ? DateTime.parse(map['updatedAt']) : null,
+      createdAt: map['createdAt'] != null ? DateTime.parse(map['createdAt']).toLocal() : null,
+      updatedAt: map['updatedAt'] != null ? DateTime.parse(map['updatedAt']).toLocal() : null,
       isSynced: map['isSynced'] == 1,
       pendingAction: map['pendingAction'],
     );
@@ -162,7 +162,7 @@ class CheckInOut {
 
   factory CheckInOut.fromJson(Map<String, dynamic> json) {
     return CheckInOut(
-      time: json['time'] != null ? DateTime.parse(json['time']) : DateTime.now(),
+      time: json['time'] != null ? DateTime.parse(json['time']).toLocal() : DateTime.now(),
       status: json['status'] ?? 'On Time',
       location: json['location'] != null 
           ? LocationData.fromJson(json['location']) 

@@ -50,13 +50,13 @@ class LeaveRequest {
       employeeId: json['employeeId'] is Map
           ? (json['employeeId']['_id'] ?? json['employeeId']['id'] ?? '')
           : (json['employeeId'] ?? ''),
-      startDate: DateTime.parse(json['startDate']),
-      endDate: DateTime.parse(json['endDate']),
+      startDate: DateTime.parse(json['startDate']).toLocal(),
+      endDate: DateTime.parse(json['endDate']).toLocal(),
       leaveType: json['leaveType'] ?? 'Annual',
       reason: json['reason'] ?? '',
       requestedDays: (json['requestedDays'] as num?)?.toInt() ?? 0,
       status: json['status'] ?? 'Pending',
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']).toLocal() : null,
     );
   }
 
@@ -98,7 +98,7 @@ class HolidayRecord {
     return HolidayRecord(
       id: json['id'] ?? json['_id'] ?? '',
       name: json['name'] ?? '',
-      date: DateTime.parse(json['date']),
+      date: DateTime.parse(json['date']).toLocal(),
     );
   }
 }

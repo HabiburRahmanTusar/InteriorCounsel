@@ -12,6 +12,7 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
     final user = authProvider.user;
+    final shift = user?.shift;
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -138,8 +139,13 @@ class ProfileScreen extends StatelessWidget {
                       _buildInfoCard([
                         _buildInfoRow(Icons.work_outline, 'Designation',
                             user?.designation ?? '-'),
-                        _buildInfoRow(Icons.schedule_outlined, 'Shift',
-                            'Day Shift (9:00 - 18:00)'),
+                        _buildInfoRow(
+                          Icons.schedule_outlined,
+                          'Shift',
+                          shift != null
+                              ? '${shift.name} (${_formatTime(shift.startTime)} - ${_formatTime(shift.endTime)})'
+                              : 'Day Shift (9:00 AM - 6:00 PM)',
+                        ),
                         _buildInfoRow(
                           Icons.attach_money_outlined,
                           'Salary',
@@ -382,6 +388,18 @@ class ProfileScreen extends StatelessWidget {
       return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
     }
     return name.isNotEmpty ? name[0].toUpperCase() : 'E';
+  }
+
+  String _formatTime(String hhMm) {
+    try {
+      final parts = hhMm.split(':');
+      final hour = int.parse(parts[0]);
+      final min = int.parse(parts[1]);
+      final dt = DateTime(2026, 1, 1, hour, min);
+      return DateFormat('h:mm a').format(dt);
+    } catch (_) {
+      return hhMm;
+    }
   }
 
   void _showChangePassword(BuildContext context) {

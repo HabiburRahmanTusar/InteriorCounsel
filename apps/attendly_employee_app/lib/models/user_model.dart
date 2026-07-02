@@ -53,8 +53,8 @@ class User {
       role: json['role'] ?? 'employee',
       shiftId: sId,
       shift: shiftObj,
-      joiningDate: json['joiningDate'] != null ? DateTime.parse(json['joiningDate']) : null,
-      resignationDate: json['resignationDate'] != null ? DateTime.parse(json['resignationDate']) : null,
+      joiningDate: json['joiningDate'] != null ? DateTime.parse(json['joiningDate']).toLocal() : null,
+      resignationDate: json['resignationDate'] != null ? DateTime.parse(json['resignationDate']).toLocal() : null,
       status: json['status'] ?? 'active',
     );
   }

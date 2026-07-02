@@ -24,8 +24,8 @@ class Shift {
       startTime: json['startTime'] ?? '09:00',
       endTime: json['endTime'] ?? '18:00',
       gracePeriod: json['gracePeriod'] ?? 15,
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
-      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']).toLocal() : null,
+      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']).toLocal() : null,
     );
   }
 

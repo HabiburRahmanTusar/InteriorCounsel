@@ -61,7 +61,7 @@ class SyncQueueItem {
       latitude: (map['latitude'] as num?)?.toDouble() ?? 0.0,
       longitude: (map['longitude'] as num?)?.toDouble() ?? 0.0,
       address: map['address'],
-      timestamp: DateTime.parse(map['timestamp']),
+      timestamp: DateTime.parse(map['timestamp']).toLocal(),
       retryCount: map['retryCount'] ?? 0,
       status: map['status'] ?? 'pending',
       errorMessage: map['errorMessage'],

@@ -13,7 +13,7 @@ class Holiday {
     return Holiday(
       id: json['_id'] ?? json['id'] ?? '',
       name: json['name'] ?? '',
-      date: json['date'] != null ? DateTime.parse(json['date']) : DateTime.now(),
+      date: json['date'] != null ? DateTime.parse(json['date']).toLocal() : DateTime.now(),
     );
   }
 
