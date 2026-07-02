@@ -112,10 +112,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       Expanded(
                         child: Text(
                           authProvider.error!,
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: AppTheme.error,
-                                  ),
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: AppTheme.error,
+                              ),
                         ),
                       ),
                     ],
@@ -123,8 +122,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               // Form
               AnimatedBuilder(
-                animation:
-                    Listenable.merge([_emailController, _passwordController]),
+                animation: Listenable.merge([_emailController, _passwordController]),
                 builder: (context, child) {
                   return Form(
                     key: _formKey,
@@ -146,36 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
               // Login button
               _buildLoginButton(authProvider),
               const SizedBox(height: 24),
-              // Demo credentials hint
-              Center(
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryLight,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        'Demo Credentials',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppTheme.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'admin@attendly.com / password123',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppTheme.primary.withValues(alpha: 0.8),
-                              fontFamily: 'monospace',
-                            ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+
               const SizedBox(height: 32),
             ],
           ),
@@ -187,9 +156,8 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildShakeWrapper(Widget child) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 100),
-      transform: _isShaking
-          ? (Matrix4.identity()..translate(_getShakeOffset()))
-          : Matrix4.identity(),
+      transform:
+          _isShaking ? (Matrix4.identity()..translate(_getShakeOffset())) : Matrix4.identity(),
       child: child,
     );
   }
@@ -207,8 +175,7 @@ class _LoginScreenState extends State<LoginScreen> {
       decoration: InputDecoration(
         labelText: 'Email',
         hintText: 'Enter your email',
-        prefixIcon:
-            const Icon(Icons.email_outlined, color: AppTheme.textTertiary),
+        prefixIcon: const Icon(Icons.email_outlined, color: AppTheme.textTertiary),
         filled: true,
         fillColor: AppTheme.surface,
         border: OutlineInputBorder(
@@ -245,13 +212,10 @@ class _LoginScreenState extends State<LoginScreen> {
       decoration: InputDecoration(
         labelText: 'Password',
         hintText: 'Enter your password',
-        prefixIcon:
-            const Icon(Icons.lock_outlined, color: AppTheme.textTertiary),
+        prefixIcon: const Icon(Icons.lock_outlined, color: AppTheme.textTertiary),
         suffixIcon: IconButton(
           icon: Icon(
-            _obscurePassword
-                ? Icons.visibility_off_outlined
-                : Icons.visibility_outlined,
+            _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
             color: AppTheme.textTertiary,
           ),
           onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
@@ -293,8 +257,7 @@ class _LoginScreenState extends State<LoginScreen> {
           backgroundColor: AppTheme.primary,
           foregroundColor: Colors.white,
           elevation: 0,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           disabledBackgroundColor: AppTheme.primary.withValues(alpha: 0.5),
         ),
         child: authProvider.isLoading
