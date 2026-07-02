@@ -91,33 +91,21 @@ export class MyLeavesComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const start = new Date(this.newRequest.startDate);
-    const end = new Date(this.newRequest.endDate);
+    const startParts = this.newRequest.startDate.split('-');
+    const endParts = this.newRequest.endDate.split('-');
+    const start = new Date(parseInt(startParts[0]), parseInt(startParts[1]) - 1, parseInt(startParts[2]));
+    const end = new Date(parseInt(endParts[0]), parseInt(endParts[1]) - 1, parseInt(endParts[2]));
 
     if (end < start) {
       this.calculatedDays.set(0);
       return;
     }
 
-    let workingDays = 0;
-    let currentDay = new Date(start);
+    // Calculate calendar days inclusive
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
-    while (currentDay <= end) {
-      const dayName = currentDay.toLocaleDateString('en-US', { weekday: 'long' });
-      // Important to use local timezone for date string matching
-      const dateStr = [
-        currentDay.getFullYear(),
-        ('0' + (currentDay.getMonth() + 1)).slice(-2),
-        ('0' + currentDay.getDate()).slice(-2),
-      ].join('-');
-
-      if (!this.weekends.includes(dayName) && !this.holidays.includes(dateStr)) {
-        workingDays++;
-      }
-      currentDay.setDate(currentDay.getDate() + 1);
-    }
-
-    this.calculatedDays.set(workingDays);
+    this.calculatedDays.set(diffDays);
   }
 
   submitRequest() {

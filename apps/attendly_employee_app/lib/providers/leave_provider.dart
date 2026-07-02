@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../models/leave_model.dart';
 import '../services/leave_service.dart';
 
@@ -96,27 +95,7 @@ class LeaveProvider extends ChangeNotifier {
 
     if (end.isBefore(start)) return 0;
 
-    int workingDays = 0;
-    DateTime currentDay = start;
-
-    while (!currentDay.isAfter(end)) {
-      final dayName = DateFormat('EEEE').format(currentDay);
-      
-      final isWeekend = _weekends.contains(dayName);
-      final isHolidayDate = _holidays.any((h) =>
-          h.year == currentDay.year &&
-          h.month == currentDay.month &&
-          h.day == currentDay.day);
-
-      if (!isWeekend && !isHolidayDate) {
-        workingDays++;
-      }
-      
-      // Handle potential infinite loops with DST adjustments: add a flat 24h
-      currentDay = currentDay.add(const Duration(days: 1));
-    }
-
-    return workingDays;
+    return end.difference(start).inDays + 1;
   }
 
   /// Submit a new leave request

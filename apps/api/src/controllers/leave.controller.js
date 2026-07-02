@@ -15,33 +15,11 @@ async function getWeekends() {
 
 async function calculateWorkingDaysBetween(startDate, endDate) {
   const start = dayjs(startDate).tz('Asia/Dhaka').startOf('day');
-  const end = dayjs(endDate).tz('Asia/Dhaka').endOf('day');
+  const end = dayjs(endDate).tz('Asia/Dhaka').startOf('day');
 
   if (end.isBefore(start)) return 0;
 
-  const weekends = await getWeekends();
-  const holidays = await Holiday.find({
-    date: { $gte: start.toDate(), $lte: end.toDate() },
-  });
-
-  const holidayDates = new Set(
-    holidays.map((h) => dayjs(h.date).tz('Asia/Dhaka').format('YYYY-MM-DD')),
-  );
-
-  let workingDays = 0;
-  let currentDay = start;
-
-  while (currentDay.isBefore(end) || currentDay.isSame(end, 'day')) {
-    const dayName = currentDay.format('dddd');
-    const dateStr = currentDay.format('YYYY-MM-DD');
-
-    if (!weekends.includes(dayName) && !holidayDates.has(dateStr)) {
-      workingDays++;
-    }
-    currentDay = currentDay.add(1, 'day');
-  }
-
-  return workingDays;
+  return end.diff(start, 'day') + 1;
 }
 
 exports.getRequests = async (req, res, next) => {
