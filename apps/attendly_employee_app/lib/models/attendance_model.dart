@@ -70,11 +70,13 @@ class AttendanceRecord {
       'checkInStatus': checkIn?.status,
       'checkInLat': checkIn?.location.latitude,
       'checkInLng': checkIn?.location.longitude,
+      'checkInAddress': checkIn?.location.address,
       'checkInLateMinutes': checkIn?.lateMinutes,
       'checkOutTime': checkOut?.time.toIso8601String(),
       'checkOutStatus': checkOut?.status,
       'checkOutLat': checkOut?.location.latitude,
       'checkOutLng': checkOut?.location.longitude,
+      'checkOutAddress': checkOut?.location.address,
       'workingMinutes': workingMinutes,
       'isSynced': isSynced ? 1 : 0,
       'pendingAction': pendingAction,
@@ -92,6 +94,7 @@ class AttendanceRecord {
         location: LocationData(
           latitude: map['checkInLat'] ?? 0.0,
           longitude: map['checkInLng'] ?? 0.0,
+          address: map['checkInAddress']?.toString(),
         ),
         lateMinutes: map['checkInLateMinutes'] ?? 0,
       );
@@ -105,6 +108,7 @@ class AttendanceRecord {
         location: LocationData(
           latitude: map['checkOutLat'] ?? 0.0,
           longitude: map['checkOutLng'] ?? 0.0,
+          address: map['checkOutAddress']?.toString(),
         ),
       );
     }

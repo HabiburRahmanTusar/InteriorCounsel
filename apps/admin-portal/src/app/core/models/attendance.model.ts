@@ -4,6 +4,7 @@ export type CheckOutStatus = 'Normal' | 'Early Leave' | 'Late Checkout';
 export interface GeoPoint {
   latitude: number;
   longitude: number;
+  address?: string;
 }
 
 export interface CheckInRecord {

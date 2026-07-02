@@ -215,25 +215,40 @@ export class AttendanceViewComponent implements OnDestroy {
       });
   }
 
-  private getCoordinates(): Promise<{ latitude: number; longitude: number }> {
+  private getCoordinates(): Promise<{ latitude: number; longitude: number; address?: string }> {
     return new Promise((resolve) => {
       if (!navigator.geolocation) {
         return resolve({
           latitude: 23.8103,
           longitude: 90.4125,
+          address: 'Default Location',
         });
       }
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
+        async (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          let address: string | undefined;
+          try {
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`,
+            );
+            const data = await res.json();
+            address = data.display_name;
+          } catch (e) {
+            console.error('Reverse geocoding failed', e);
+          }
           resolve({
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
+            latitude: lat,
+            longitude: lon,
+            address,
           });
         },
         (err) => {
           resolve({
             latitude: 23.8103,
             longitude: 90.4125,
+            address: 'Default Location',
           });
         },
         { enableHighAccuracy: true, timeout: 5000 },
@@ -298,8 +313,14 @@ export class AttendanceViewComponent implements OnDestroy {
     return `${hrs}h ${mins}m`;
   }
 
-  formatCoords(location?: { latitude: number; longitude: number }): string {
-    if (!location || location.latitude === undefined || location.longitude === undefined) {
+  formatCoords(location?: { latitude: number; longitude: number; address?: string }): string {
+    if (!location) {
+      return '';
+    }
+    if (location.address) {
+      return location.address;
+    }
+    if (location.latitude === undefined || location.longitude === undefined) {
       return '';
     }
     return `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`;

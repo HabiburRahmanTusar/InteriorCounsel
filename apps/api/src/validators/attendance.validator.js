@@ -6,11 +6,13 @@ const Joi = require('joi');
 exports.checkIn = Joi.object({
   latitude: Joi.number().min(-90).max(90).required(),
   longitude: Joi.number().min(-180).max(180).required(),
+  address: Joi.string().allow('', null).optional(),
 });
 
 exports.checkOut = Joi.object({
   latitude: Joi.number().min(-90).max(90).required(),
   longitude: Joi.number().min(-180).max(180).required(),
+  address: Joi.string().allow('', null).optional(),
 });
 
 exports.history = Joi.object({

@@ -16,7 +16,7 @@ exports.getStatus = async function getStatus(userId) {
   };
 };
 
-exports.checkIn = async function checkIn({ userId, latitude, longitude }) {
+exports.checkIn = async function checkIn({ userId, latitude, longitude, address }) {
   const user = await User.findById(userId).populate('shiftId');
   if (!user) {
     const error = new Error('User not found');
@@ -52,7 +52,7 @@ exports.checkIn = async function checkIn({ userId, latitude, longitude }) {
       checkIn: {
         time: checkInTime,
         status,
-        location: { latitude, longitude },
+        location: { latitude, longitude, address },
         lateMinutes,
       },
     },
@@ -70,7 +70,7 @@ exports.checkIn = async function checkIn({ userId, latitude, longitude }) {
   return record;
 };
 
-exports.checkOut = async function checkOut({ userId, latitude, longitude }) {
+exports.checkOut = async function checkOut({ userId, latitude, longitude, address }) {
   const user = await User.findById(userId).populate('shiftId');
   if (!user) {
     const error = new Error('User not found');
@@ -104,7 +104,7 @@ exports.checkOut = async function checkOut({ userId, latitude, longitude }) {
   record.checkOut = {
     time: checkOutTime,
     status,
-    location: { latitude, longitude },
+    location: { latitude, longitude, address },
   };
   record.workingMinutes = minutes;
   await record.save();

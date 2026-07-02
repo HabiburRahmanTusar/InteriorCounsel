@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import '../../providers/attendance_provider.dart';
 import '../../services/location_service.dart';
 import '../../utils/theme.dart';
-import 'location_info_row.dart';
 
 class CheckInBottomSheet extends StatefulWidget {
   final bool isCheckIn;
@@ -323,11 +322,13 @@ class _CheckInBottomSheetState extends State<CheckInBottomSheet>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${_locationData!.latitude.toStringAsFixed(5)}, ${_locationData!.longitude.toStringAsFixed(5)}',
+                      _locationData!.address ??
+                          '${_locationData!.latitude.toStringAsFixed(5)}, ${_locationData!.longitude.toStringAsFixed(5)}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: AppTheme.textSecondary,
-                            fontFamily: 'monospace',
                           ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -339,13 +340,6 @@ class _CheckInBottomSheetState extends State<CheckInBottomSheet>
               ),
             ],
           ),
-          if (_locationData!.address != null) ...[
-            const SizedBox(height: 12),
-            LocationInfoRow(
-              location: _locationData!,
-              textColor: AppTheme.textSecondary,
-            ),
-          ],
         ],
       ),
     );

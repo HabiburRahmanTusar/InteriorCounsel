@@ -12,11 +12,12 @@ exports.getStatus = async (req, res, next) => {
 
 exports.checkIn = async (req, res, next) => {
   try {
-    const { latitude, longitude } = req.body;
+    const { latitude, longitude, address } = req.body;
     const data = await attendanceService.checkIn({
       userId: req.user.id,
       latitude,
       longitude,
+      address,
     });
     return apiResponse.created(res, data, 'Check-in successful');
   } catch (err) {
@@ -26,11 +27,12 @@ exports.checkIn = async (req, res, next) => {
 
 exports.checkOut = async (req, res, next) => {
   try {
-    const { latitude, longitude } = req.body;
+    const { latitude, longitude, address } = req.body;
     const data = await attendanceService.checkOut({
       userId: req.user.id,
       latitude,
       longitude,
+      address,
     });
     return apiResponse.ok(res, data, 'Check-out successful');
   } catch (err) {

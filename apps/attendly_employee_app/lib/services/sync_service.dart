@@ -108,6 +108,7 @@ class SyncService {
         data: {
           'latitude': item.latitude,
           'longitude': item.longitude,
+          if (item.address != null) 'address': item.address,
         },
       );
       return response.statusCode == 201 && response.data['success'] == true;
@@ -127,6 +128,7 @@ class SyncService {
         data: {
           'latitude': item.latitude,
           'longitude': item.longitude,
+          if (item.address != null) 'address': item.address,
         },
       );
       return response.statusCode == 200 && response.data['success'] == true;

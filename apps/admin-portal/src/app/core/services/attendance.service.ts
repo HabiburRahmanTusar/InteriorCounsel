@@ -18,11 +18,11 @@ export class AttendanceService {
     return this.http.get<AttendanceStatus>(`${this.baseUrl}/status`);
   }
 
-  checkIn(payload: { latitude: number; longitude: number }): Observable<Attendance> {
+  checkIn(payload: { latitude: number; longitude: number; address?: string }): Observable<Attendance> {
     return this.http.post<Attendance>(`${this.baseUrl}/check-in`, payload);
   }
 
-  checkOut(payload: { latitude: number; longitude: number }): Observable<Attendance> {
+  checkOut(payload: { latitude: number; longitude: number; address?: string }): Observable<Attendance> {
     return this.http.post<Attendance>(`${this.baseUrl}/check-out`, payload);
   }
 

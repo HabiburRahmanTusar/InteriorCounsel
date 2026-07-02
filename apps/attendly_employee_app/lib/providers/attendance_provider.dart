@@ -126,6 +126,7 @@ class AttendanceProvider extends ChangeNotifier {
         userId: userId,
         latitude: _currentLocation!.latitude,
         longitude: _currentLocation!.longitude,
+        address: _currentAddress,
       );
 
       if (response.success && response.data != null) {
@@ -167,6 +168,7 @@ class AttendanceProvider extends ChangeNotifier {
         userId: userId,
         latitude: _currentLocation!.latitude,
         longitude: _currentLocation!.longitude,
+        address: _currentAddress,
       );
 
       if (response.success && response.data != null) {

@@ -41,16 +41,20 @@ class AttendanceService {
     return local;
   }
 
-  /// Check in with GPS coordinates
   Future<ApiResponse<AttendanceRecord>> checkIn({
     required String userId,
     required double latitude,
     required double longitude,
+    String? address,
   }) async {
     try {
       final response = await _apiService.dio.post(
         '/attendance/check-in',
-        data: {'latitude': latitude, 'longitude': longitude},
+        data: {
+          'latitude': latitude,
+          'longitude': longitude,
+          if (address != null) 'address': address,
+        },
       );
 
       if (response.statusCode == 201 && response.data['success'] == true) {
@@ -71,7 +75,7 @@ class AttendanceService {
       // Queue for sync if offline
       if (e.type == DioExceptionType.connectionError ||
           e.type == DioExceptionType.connectionTimeout) {
-        await _syncService.queueCheckIn(userId, latitude, longitude);
+        await _syncService.queueCheckIn(userId, latitude, longitude, address: address);
         
         // Create local record
         final localRecord = AttendanceRecord(
@@ -81,7 +85,11 @@ class AttendanceService {
           checkIn: CheckInOut(
             time: DateTime.now(),
             status: 'Pending Sync',
-            location: LocationData(latitude: latitude, longitude: longitude),
+            location: LocationData(
+              latitude: latitude,
+              longitude: longitude,
+              address: address,
+            ),
           ),
           isSynced: false,
           pendingAction: 'check_in',
@@ -104,16 +112,20 @@ class AttendanceService {
     }
   }
 
-  /// Check out with GPS coordinates
   Future<ApiResponse<AttendanceRecord>> checkOut({
     required String userId,
     required double latitude,
     required double longitude,
+    String? address,
   }) async {
     try {
       final response = await _apiService.dio.post(
         '/attendance/check-out',
-        data: {'latitude': latitude, 'longitude': longitude},
+        data: {
+          'latitude': latitude,
+          'longitude': longitude,
+          if (address != null) 'address': address,
+        },
       );
 
       if (response.statusCode == 200 && response.data['success'] == true) {
@@ -133,7 +145,7 @@ class AttendanceService {
     } on DioException catch (e) {
       if (e.type == DioExceptionType.connectionError ||
           e.type == DioExceptionType.connectionTimeout) {
-        await _syncService.queueCheckOut(userId, latitude, longitude);
+        await _syncService.queueCheckOut(userId, latitude, longitude, address: address);
 
         // Update local record
         final todayRecord = await _db.getTodayAttendance(userId);
@@ -142,7 +154,11 @@ class AttendanceService {
             checkOut: CheckInOut(
               time: DateTime.now(),
               status: 'Pending Sync',
-              location: LocationData(latitude: latitude, longitude: longitude),
+              location: LocationData(
+                latitude: latitude,
+                longitude: longitude,
+                address: address,
+              ),
             ),
             isSynced: false,
             pendingAction: 'check_out',
