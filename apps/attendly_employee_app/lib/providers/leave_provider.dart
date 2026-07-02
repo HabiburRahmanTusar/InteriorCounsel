@@ -141,4 +141,15 @@ class LeaveProvider extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
   }
+
+  void clear() {
+    _balance = null;
+    _requests = [];
+    _weekends = ['Friday', 'Saturday'];
+    _holidays = [];
+    _isLoading = false;
+    _isSaving = false;
+    _errorMessage = null;
+    notifyListeners();
+  }
 }

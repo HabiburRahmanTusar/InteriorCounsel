@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/auth_provider.dart';
 import '../providers/connectivity_provider.dart';
+import '../providers/attendance_provider.dart';
+import '../providers/leave_provider.dart';
 import '../utils/theme.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -430,6 +432,8 @@ class ProfileScreen extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
+              context.read<AttendanceProvider>().clear();
+              context.read<LeaveProvider>().clear();
               context.read<AuthProvider>().logout();
             },
             style: ElevatedButton.styleFrom(

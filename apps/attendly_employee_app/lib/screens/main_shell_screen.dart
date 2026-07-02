@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/attendance_provider.dart';
+import '../providers/leave_provider.dart';
 import '../utils/theme.dart';
 import 'dashboard_screen.dart';
 import 'history_screen.dart';
@@ -460,6 +461,8 @@ class _MainShellScreenState extends State<MainShellScreen> with SingleTickerProv
             onPressed: () {
               Navigator.pop(context);
               Navigator.pop(context); // Close drawer
+              context.read<AttendanceProvider>().clear();
+              context.read<LeaveProvider>().clear();
               context.read<AuthProvider>().logout();
             },
             style: ElevatedButton.styleFrom(

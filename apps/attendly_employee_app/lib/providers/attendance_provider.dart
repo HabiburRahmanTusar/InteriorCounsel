@@ -257,4 +257,16 @@ class AttendanceProvider extends ChangeNotifier {
     _currentAddress = null;
     notifyListeners();
   }
+
+  void clear() {
+    _todayRecord = null;
+    _history = [];
+    _isLoading = false;
+    _isProcessingAction = false;
+    _error = null;
+    _currentLocation = null;
+    _currentAddress = null;
+    _isGettingLocation = false;
+    notifyListeners();
+  }
 }
