@@ -211,7 +211,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       showBanner = true;
       statusTitle = 'Check-in is active';
       statusSubtitle = 'You are currently within the grace period';
-      bannerText = 'Grace period active: late by ${_formatMinutes(diff.inMinutes)}. Check in now!';
+      bannerText = 'Grace period active. Check in within ${_formatMinutes(grace - diff.inMinutes)} to be on time!';
       bannerColor = AppTheme.warning.withValues(alpha: 0.08);
       textColor = AppTheme.warning;
       bannerIcon = Icons.report_problem_outlined;

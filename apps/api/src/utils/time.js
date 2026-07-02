@@ -68,8 +68,9 @@ function getLateMinutes(checkInUtc, shift) {
   const checkInLocal = dayjs(checkInUtc).tz('Asia/Dhaka');
   const [sh, sm] = shift.startTime.split(':').map(Number);
   const shiftStartLocal = checkInLocal.hour(sh).minute(sm).second(0).millisecond(0);
+  const thresholdLocal = shiftStartLocal.add(shift.gracePeriod || 0, 'minute');
 
-  if (checkInLocal.isAfter(shiftStartLocal)) {
+  if (checkInLocal.isAfter(thresholdLocal)) {
     return Math.max(0, checkInLocal.diff(shiftStartLocal, 'minute'));
   }
   return 0;
