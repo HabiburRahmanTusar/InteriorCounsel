@@ -9,6 +9,7 @@ import 'dashboard_screen.dart';
 import 'history_screen.dart';
 import 'profile_screen.dart';
 import 'my_leaves_screen.dart';
+import 'financial_screen.dart';
 import 'widgets/check_in_bottom_sheet.dart';
 import 'widgets/offline_banner.dart';
 
@@ -29,6 +30,7 @@ class _MainShellScreenState extends State<MainShellScreen> with SingleTickerProv
     HistoryScreen(),
     MyLeavesScreen(showAppBar: false),
     ProfileScreen(),
+    FinancialScreen(),
   ];
 
   @override
@@ -113,7 +115,7 @@ class _MainShellScreenState extends State<MainShellScreen> with SingleTickerProv
       },
       child: Scaffold(
         appBar: AppBar(
-        title: Text(['Dashboard', 'History', 'My Leaves', 'Profile'][_currentIndex]),
+        title: Text(['Dashboard', 'History', 'My Leaves', 'Profile', 'Financial Summary'][_currentIndex]),
         backgroundColor: AppTheme.surface,
         elevation: 0,
         centerTitle: false,
@@ -369,6 +371,25 @@ class _MainShellScreenState extends State<MainShellScreen> with SingleTickerProv
                       onTap: () {
                         Navigator.pop(context);
                         setState(() => _currentIndex = 2);
+                      },
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Financial Summary option
+                    ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.account_balance_wallet_outlined, color: AppTheme.primary, size: 24),
+                      ),
+                      title: const Text('Financial Summary', style: TextStyle(fontWeight: FontWeight.w500)),
+                      onTap: () {
+                        Navigator.pop(context);
+                        setState(() => _currentIndex = 4);
                       },
                     ),
                     const SizedBox(height: 8),

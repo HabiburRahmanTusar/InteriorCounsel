@@ -5,6 +5,7 @@ import 'providers/auth_provider.dart';
 import 'providers/attendance_provider.dart';
 import 'providers/connectivity_provider.dart';
 import 'providers/leave_provider.dart';
+import 'providers/financial_provider.dart';
 import 'services/connectivity_service.dart';
 import 'screens/splash_screen.dart';
 import 'screens/login_screen.dart';
@@ -22,6 +23,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => AttendanceProvider()),
         ChangeNotifierProvider(create: (_) => LeaveProvider()),
+        ChangeNotifierProvider(create: (_) => FinancialProvider()),
         ChangeNotifierProvider(
           create: (_) => ConnectivityProvider(
             connectivityService: connectivityService,
