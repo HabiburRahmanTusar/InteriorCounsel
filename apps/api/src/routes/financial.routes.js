@@ -12,9 +12,9 @@ const router = express.Router();
 router.use(auth);
 
 // All financial endpoints are restricted to admin role
-router.get('/', rbac('admin'), ctrl.list);
-router.get('/latest', rbac('admin'), ctrl.getLatest);
-router.get('/:id', rbac('admin'), ctrl.getById);
+router.get('/', rbac('admin', 'hr', 'manager', 'employee'), ctrl.list);
+router.get('/latest', rbac('admin', 'hr', 'manager', 'employee'), ctrl.getLatest);
+router.get('/:id', rbac('admin', 'hr', 'manager', 'employee'), ctrl.getById);
 router.post('/', rbac('admin'), validate(schemas.createFinancialRecord), ctrl.create);
 router.put('/:id', rbac('admin'), validate(schemas.updateFinancialRecord), ctrl.update);
 router.delete('/:id', rbac('admin'), ctrl.remove);

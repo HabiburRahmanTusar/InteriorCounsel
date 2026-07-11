@@ -121,7 +121,7 @@ export const routes: Routes = [
       {
         path: 'financial-summary',
         title: 'Financial Summary',
-        canActivate: [roleGuard('admin')],
+        canActivate: [roleGuard('admin', 'hr', 'manager', 'employee')],
         loadComponent: () =>
           import('./features/financial/financial.component').then((m) => m.FinancialComponent), // Force dev server resolution update
       },

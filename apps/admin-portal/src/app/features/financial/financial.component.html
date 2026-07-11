@@ -9,7 +9,7 @@
         Enter, track, and manage company financial records including sales, profits, balances, and subsidies.
       </p>
     </div>
-    @if (!isEdit()) {
+    @if (isAdmin() && !isEdit()) {
       <button
         (click)="loadLatest()"
         [disabled]="latestLoading() || saving()"
@@ -36,255 +36,362 @@
     }
   </div>
 
-  <!-- Financial Data Entry Form -->
-  <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">
-    <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
-      <div
-        class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-        [ngClass]="isEdit() ? 'bg-amber-50 border border-amber-100 text-amber-600' : 'bg-indigo-50 border border-indigo-100 text-indigo-600'"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-          />
-        </svg>
-      </div>
-      <div>
-        <h3 class="text-base font-bold text-slate-900">
-          {{ isEdit() ? 'Edit Financial Record' : 'Create Financial Record' }}
-        </h3>
-        <p class="text-xs text-slate-500">
-          {{ isEdit() ? 'Modify values for the selected month/period below.' : 'Manually input or update monthly financial statements.' }}
-        </p>
-      </div>
-    </div>
-
-    <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6">
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-        <!-- Month/Period -->
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
-            Month / Period <span class="text-rose-500">*</span>
-          </label>
-          <input
-            type="month"
-            formControlName="period"
-            [readonly]="isEdit()"
-            class="w-full border border-slate-200 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all cursor-pointer"
-            [ngClass]="{
-              'bg-slate-50/50 text-slate-500 cursor-not-allowed': isEdit(),
-              'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('period')?.touched && form.get('period')?.invalid
-            }"
-          />
-          @if (form.get('period')?.touched && form.get('period')?.invalid) {
-            <p class="text-xs text-rose-600 mt-1">Period is required in YYYY-MM format.</p>
-          }
-        </div>
-
-        <!-- Monthly Sales Amount -->
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
-            Monthly Sales Amount ($) <span class="text-rose-500">*</span>
-          </label>
-          <input
-            type="number"
-            formControlName="monthlySales"
-            min="0"
-            class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
-            [ngClass]="{
-              'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('monthlySales')?.touched && form.get('monthlySales')?.invalid
-            }"
-          />
-          @if (form.get('monthlySales')?.touched && form.get('monthlySales')?.invalid) {
-            <p class="text-xs text-rose-600 mt-1">Sales amount is required and must be &gt;= 0.</p>
-          }
-        </div>
-
-        <!-- Monthly Profit Amount -->
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
-            Monthly Profit Amount ($) <span class="text-rose-500">*</span>
-          </label>
-          <input
-            type="number"
-            formControlName="monthlyProfit"
-            class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
-            [ngClass]="{
-              'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('monthlyProfit')?.touched && form.get('monthlyProfit')?.invalid
-            }"
-          />
-          @if (form.get('monthlyProfit')?.touched && form.get('monthlyProfit')?.invalid) {
-            <p class="text-xs text-rose-600 mt-1">Profit amount is required.</p>
-          }
-        </div>
-
-        <!-- Outstanding Due Amount -->
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
-            Outstanding Due Amount ($) <span class="text-rose-500">*</span>
-          </label>
-          <input
-            type="number"
-            formControlName="outstandingDue"
-            min="0"
-            class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
-            [ngClass]="{
-              'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('outstandingDue')?.touched && form.get('outstandingDue')?.invalid
-            }"
-          />
-          @if (form.get('outstandingDue')?.touched && form.get('outstandingDue')?.invalid) {
-            <p class="text-xs text-rose-600 mt-1">Outstanding due is required and must be &gt;= 0.</p>
-          }
-        </div>
-
-        <!-- Bills Pending Collection -->
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
-            Bills Pending Collection ($) <span class="text-rose-500">*</span>
-          </label>
-          <input
-            type="number"
-            formControlName="billsPendingCollection"
-            min="0"
-            class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
-            [ngClass]="{
-              'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('billsPendingCollection')?.touched && form.get('billsPendingCollection')?.invalid
-            }"
-          />
-          @if (form.get('billsPendingCollection')?.touched && form.get('billsPendingCollection')?.invalid) {
-            <p class="text-xs text-rose-600 mt-1">Bills pending collection is required and must be &gt;= 0.</p>
-          }
-        </div>
-
-        <!-- Previous Profit Share Balance -->
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
-            Prev Profit Share Balance ($) <span class="text-rose-500">*</span>
-          </label>
-          <input
-            type="number"
-            formControlName="prevProfitShareBalance"
-            class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
-            [ngClass]="{
-              'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('prevProfitShareBalance')?.touched && form.get('prevProfitShareBalance')?.invalid
-            }"
-          />
-          @if (form.get('prevProfitShareBalance')?.touched && form.get('prevProfitShareBalance')?.invalid) {
-            <p class="text-xs text-rose-600 mt-1">Previous balance is required.</p>
-          }
-        </div>
-
-        <!-- Recent Profit Amount -->
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
-            Recent Profit Amount ($) <span class="text-rose-500">*</span>
-          </label>
-          <input
-            type="number"
-            formControlName="recentProfit"
-            class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
-            [ngClass]="{
-              'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('recentProfit')?.touched && form.get('recentProfit')?.invalid
-            }"
-          />
-          @if (form.get('recentProfit')?.touched && form.get('recentProfit')?.invalid) {
-            <p class="text-xs text-rose-600 mt-1">Recent profit is required.</p>
-          }
-        </div>
-
-        <!-- Current Total Balance -->
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
-            Current Total Balance ($) <span class="text-rose-500">*</span>
-          </label>
-          <input
-            type="number"
-            formControlName="currentTotalBalance"
-            class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
-            [ngClass]="{
-              'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('currentTotalBalance')?.touched && form.get('currentTotalBalance')?.invalid
-            }"
-          />
-          @if (form.get('currentTotalBalance')?.touched && form.get('currentTotalBalance')?.invalid) {
-            <p class="text-xs text-rose-600 mt-1">Current total balance is required.</p>
-          }
-        </div>
-
-        <!-- Monthly Subsidy Amount -->
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
-            Monthly Subsidy Amount ($) <span class="text-rose-500">*</span>
-          </label>
-          <input
-            type="number"
-            formControlName="monthlySubsidy"
-            min="0"
-            class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
-            [ngClass]="{
-              'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('monthlySubsidy')?.touched && form.get('monthlySubsidy')?.invalid
-            }"
-          />
-          @if (form.get('monthlySubsidy')?.touched && form.get('monthlySubsidy')?.invalid) {
-            <p class="text-xs text-rose-600 mt-1">Subsidy amount is required and must be &gt;= 0.</p>
-          }
-        </div>
-      </div>
-
-      <!-- Actions -->
-      <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
-        @if (isEdit()) {
-          <button
-            (click)="cancelEdit()"
-            [disabled]="saving()"
-            type="button"
-            class="border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-50 text-slate-600 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors"
-          >
-            Cancel Edit
-          </button>
-        }
-        <button
-          [disabled]="saving()"
-          type="submit"
-          class="btn btn-primary px-5 py-2.5 text-sm font-semibold"
+  @if (isAdmin()) {
+    <!-- Financial Data Entry Form -->
+    <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">
+      <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
+        <div
+          class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+          [ngClass]="isEdit() ? 'bg-amber-50 border border-amber-100 text-amber-600' : 'bg-indigo-50 border border-indigo-100 text-indigo-600'"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4"
+            class="h-5 w-5"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
-            [class.animate-spin]="saving()"
           >
-            @if (saving()) {
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3 3L22 4"
-              />
-            } @else {
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M5 13l4 4L19 7"
-              />
-            }
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
           </svg>
-          <span>{{ saving() ? 'Saving...' : (isEdit() ? 'Update Record' : 'Save Record') }}</span>
-        </button>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-900">
+            {{ isEdit() ? 'Edit Financial Record' : 'Create Financial Record' }}
+          </h3>
+          <p class="text-xs text-slate-500">
+            {{ isEdit() ? 'Modify values for the selected month/period below.' : 'Manually input or update monthly financial statements.' }}
+          </p>
+        </div>
       </div>
-    </form>
-  </div>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+          <!-- Month/Period -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+              Month / Period <span class="text-rose-500">*</span>
+            </label>
+            <input
+              type="month"
+              formControlName="period"
+              [readonly]="isEdit()"
+              class="w-full border border-slate-200 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all cursor-pointer"
+              [ngClass]="{
+                'bg-slate-50/50 text-slate-500 cursor-not-allowed': isEdit(),
+                'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('period')?.touched && form.get('period')?.invalid
+              }"
+            />
+            @if (form.get('period')?.touched && form.get('period')?.invalid) {
+              <p class="text-xs text-rose-600 mt-1">Period is required in YYYY-MM format.</p>
+            }
+          </div>
+
+          <!-- Monthly Sales Amount -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+              Monthly Sales Amount (৳) <span class="text-rose-500">*</span>
+            </label>
+            <input
+              type="number"
+              formControlName="monthlySales"
+              min="0"
+              class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
+              [ngClass]="{
+                'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('monthlySales')?.touched && form.get('monthlySales')?.invalid
+              }"
+            />
+            @if (form.get('monthlySales')?.touched && form.get('monthlySales')?.invalid) {
+              <p class="text-xs text-rose-600 mt-1">Sales amount is required and must be &gt;= 0.</p>
+            }
+          </div>
+
+          <!-- Monthly Profit Amount -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+              Monthly Profit Amount (৳) <span class="text-rose-500">*</span>
+            </label>
+            <input
+              type="number"
+              formControlName="monthlyProfit"
+              class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
+              [ngClass]="{
+                'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('monthlyProfit')?.touched && form.get('monthlyProfit')?.invalid
+              }"
+            />
+            @if (form.get('monthlyProfit')?.touched && form.get('monthlyProfit')?.invalid) {
+              <p class="text-xs text-rose-600 mt-1">Profit amount is required.</p>
+            }
+          </div>
+
+          <!-- Outstanding Due Amount -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+              Outstanding Due Amount (৳) <span class="text-rose-500">*</span>
+            </label>
+            <input
+              type="number"
+              formControlName="outstandingDue"
+              min="0"
+              class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
+              [ngClass]="{
+                'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('outstandingDue')?.touched && form.get('outstandingDue')?.invalid
+              }"
+            />
+            @if (form.get('outstandingDue')?.touched && form.get('outstandingDue')?.invalid) {
+              <p class="text-xs text-rose-600 mt-1">Outstanding due is required and must be &gt;= 0.</p>
+            }
+          </div>
+
+          <!-- Bills Pending Collection -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+              Bills Pending Collection (৳) <span class="text-rose-500">*</span>
+            </label>
+            <input
+              type="number"
+              formControlName="billsPendingCollection"
+              min="0"
+              class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
+              [ngClass]="{
+                'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('billsPendingCollection')?.touched && form.get('billsPendingCollection')?.invalid
+              }"
+            />
+            @if (form.get('billsPendingCollection')?.touched && form.get('billsPendingCollection')?.invalid) {
+              <p class="text-xs text-rose-600 mt-1">Bills pending collection is required and must be &gt;= 0.</p>
+            }
+          </div>
+
+          <!-- Previous Profit Share Balance -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+              Prev Profit Share Balance (৳) <span class="text-rose-500">*</span>
+            </label>
+            <input
+              type="number"
+              formControlName="prevProfitShareBalance"
+              class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
+              [ngClass]="{
+                'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('prevProfitShareBalance')?.touched && form.get('prevProfitShareBalance')?.invalid
+              }"
+            />
+            @if (form.get('prevProfitShareBalance')?.touched && form.get('prevProfitShareBalance')?.invalid) {
+              <p class="text-xs text-rose-600 mt-1">Previous balance is required.</p>
+            }
+          </div>
+
+          <!-- Recent Profit Amount -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+              Recent Profit Amount (৳) <span class="text-rose-500">*</span>
+            </label>
+            <input
+              type="number"
+              formControlName="recentProfit"
+              class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
+              [ngClass]="{
+                'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('recentProfit')?.touched && form.get('recentProfit')?.invalid
+              }"
+            />
+            @if (form.get('recentProfit')?.touched && form.get('recentProfit')?.invalid) {
+              <p class="text-xs text-rose-600 mt-1">Recent profit is required.</p>
+            }
+          </div>
+
+          <!-- Current Total Balance -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+              Current Total Balance (৳) <span class="text-rose-500">*</span>
+            </label>
+            <input
+              type="number"
+              formControlName="currentTotalBalance"
+              class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
+              [ngClass]="{
+                'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('currentTotalBalance')?.touched && form.get('currentTotalBalance')?.invalid
+              }"
+            />
+            @if (form.get('currentTotalBalance')?.touched && form.get('currentTotalBalance')?.invalid) {
+              <p class="text-xs text-rose-600 mt-1">Current total balance is required.</p>
+            }
+          </div>
+
+          <!-- Monthly Subsidy Amount -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+              Monthly Subsidy Amount (৳) <span class="text-rose-500">*</span>
+            </label>
+            <input
+              type="number"
+              formControlName="monthlySubsidy"
+              min="0"
+              class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
+              [ngClass]="{
+                'border-rose-300 focus:border-rose-600 focus:ring-rose-600 bg-rose-50/10': form.get('monthlySubsidy')?.touched && form.get('monthlySubsidy')?.invalid
+              }"
+            />
+            @if (form.get('monthlySubsidy')?.touched && form.get('monthlySubsidy')?.invalid) {
+              <p class="text-xs text-rose-600 mt-1">Subsidy amount is required and must be &gt;= 0.</p>
+            }
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+          @if (isEdit()) {
+            <button
+              (click)="cancelEdit()"
+              [disabled]="saving()"
+              type="button"
+              class="border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-50 text-slate-600 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors"
+            >
+              Cancel Edit
+            </button>
+          }
+          <button
+            [disabled]="saving()"
+            type="submit"
+            class="btn btn-primary px-5 py-2.5 text-sm font-semibold"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              [class.animate-spin]="saving()"
+            >
+              @if (saving()) {
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3 3L22 4"
+                />
+              } @else {
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
+                />
+              }
+            </svg>
+            <span>{{ saving() ? 'Saving...' : (isEdit() ? 'Update Record' : 'Save Record') }}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  } @else {
+    <!-- Latest Financial Summary Cards -->
+    <div class="space-y-6">
+      <!-- Section Header -->
+      <div class="flex items-center gap-3 border-b border-slate-100 pb-4 bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-indigo-50 border border-indigo-100 text-indigo-600">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+            />
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-900">
+            Latest Financial Overview
+          </h3>
+          <p class="text-xs text-slate-500">
+            @if (latestRecord()) {
+              Showing the latest financial statement for <strong>{{ formatPeriod(latestRecord()!.period) }}</strong>.
+            } @else {
+              No financial statements recorded yet.
+            }
+          </p>
+        </div>
+      </div>
+
+      <!-- KPI Grid -->
+      @if (latestRecord()) {
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+          <!-- Monthly Sales Card -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-indigo-50/30 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Monthly Sales</p>
+            <h4 class="text-2xl font-black text-indigo-950 tracking-tight">{{ latestRecord()!.monthlySales | currency:'BDT':'৳':'1.0-2' }}</h4>
+          </div>
+
+          <!-- Monthly Profit Card -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-50/30 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Monthly Profit</p>
+            <h4 class="text-2xl font-black tracking-tight" [ngClass]="latestRecord()!.monthlyProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'">
+              {{ latestRecord()!.monthlyProfit | currency:'BDT':'৳':'1.0-2' }}
+            </h4>
+          </div>
+
+          <!-- Outstanding Due Card -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-rose-50/30 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Outstanding Due</p>
+            <h4 class="text-2xl font-black text-rose-700 tracking-tight">{{ latestRecord()!.outstandingDue | currency:'BDT':'৳':'1.0-2' }}</h4>
+          </div>
+
+          <!-- Bills Pending Card -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-amber-50/30 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Bills Pending</p>
+            <h4 class="text-2xl font-black text-amber-700 tracking-tight">{{ latestRecord()!.billsPendingCollection | currency:'BDT':'৳':'1.0-2' }}</h4>
+          </div>
+
+          <!-- Prev Profit Share Card -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-slate-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Previous Profit Share</p>
+            <h4 class="text-2xl font-black text-slate-800 tracking-tight">{{ latestRecord()!.prevProfitShareBalance | currency:'BDT':'৳':'1.0-2' }}</h4>
+          </div>
+
+          <!-- Recent Profit Card -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-teal-50/30 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Recent Profit</p>
+            <h4 class="text-2xl font-black tracking-tight" [ngClass]="latestRecord()!.recentProfit >= 0 ? 'text-teal-600' : 'text-rose-600'">
+              {{ latestRecord()!.recentProfit | currency:'BDT':'৳':'1.0-2' }}
+            </h4>
+          </div>
+
+          <!-- Current Total Balance Card -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-indigo-100/20 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Total Balance</p>
+            <h4 class="text-2xl font-black text-slate-900 tracking-tight">{{ latestRecord()!.currentTotalBalance | currency:'BDT':'৳':'1.0-2' }}</h4>
+          </div>
+
+          <!-- Monthly Subsidy Card -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-violet-50/30 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Subsidy</p>
+            <h4 class="text-2xl font-black text-violet-700 tracking-tight">{{ latestRecord()!.monthlySubsidy | currency:'BDT':'৳':'1.0-2' }}</h4>
+          </div>
+        </div>
+      } @else {
+        <!-- Empty State Card -->
+        <div class="bg-slate-50 border border-slate-200/60 rounded-2xl p-12 text-center">
+          <p class="text-sm font-medium text-slate-400">No latest financial record to display.</p>
+        </div>
+      }
+    </div>
+  }
 
   <!-- Filters Card -->
   <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">
@@ -476,7 +583,9 @@
             <!-- Updated Date -->
             <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Updated Date</th>
             <!-- Actions -->
-            <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4 text-center">Actions</th>
+            @if (isAdmin()) {
+              <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4 text-center">Actions</th>
+            }
           </tr>
         </thead>
         <tbody>
@@ -486,34 +595,34 @@
                 {{ formatPeriod(record.period) }}
               </td>
               <td class="px-6 py-4 text-sm text-slate-800 text-right font-medium">
-                {{ record.monthlySales | currency:'USD':'symbol':'1.0-2' }}
+                {{ record.monthlySales | currency:'BDT':'৳':'1.0-2' }}
               </td>
               <td
                 class="px-6 py-4 text-sm text-right font-bold"
                 [ngClass]="record.monthlyProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'"
               >
-                {{ record.monthlyProfit | currency:'USD':'symbol':'1.0-2' }}
+                {{ record.monthlyProfit | currency:'BDT':'৳':'1.0-2' }}
               </td>
               <td class="px-6 py-4 text-sm text-slate-700 text-right">
-                {{ record.outstandingDue | currency:'USD':'symbol':'1.0-2' }}
+                {{ record.outstandingDue | currency:'BDT':'৳':'1.0-2' }}
               </td>
               <td class="px-6 py-4 text-sm text-slate-700 text-right">
-                {{ record.billsPendingCollection | currency:'USD':'symbol':'1.0-2' }}
+                {{ record.billsPendingCollection | currency:'BDT':'৳':'1.0-2' }}
               </td>
               <td class="px-6 py-4 text-sm text-slate-700 text-right">
-                {{ record.prevProfitShareBalance | currency:'USD':'symbol':'1.0-2' }}
+                {{ record.prevProfitShareBalance | currency:'BDT':'৳':'1.0-2' }}
               </td>
               <td
                 class="px-6 py-4 text-sm text-right font-semibold"
                 [ngClass]="record.recentProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'"
               >
-                {{ record.recentProfit | currency:'USD':'symbol':'1.0-2' }}
+                {{ record.recentProfit | currency:'BDT':'৳':'1.0-2' }}
               </td>
               <td class="px-6 py-4 text-sm text-slate-800 text-right font-bold">
-                {{ record.currentTotalBalance | currency:'USD':'symbol':'1.0-2' }}
+                {{ record.currentTotalBalance | currency:'BDT':'৳':'1.0-2' }}
               </td>
               <td class="px-6 py-4 text-sm text-slate-600 text-right font-medium">
-                {{ record.monthlySubsidy | currency:'USD':'symbol':'1.0-2' }}
+                {{ record.monthlySubsidy | currency:'BDT':'৳':'1.0-2' }}
               </td>
               <td class="px-6 py-4 text-xs text-slate-500 font-mono">
                 {{ record.createdAt | date:'short' }}
@@ -521,30 +630,32 @@
               <td class="px-6 py-4 text-xs text-slate-500 font-mono">
                 {{ record.updatedAt | date:'short' }}
               </td>
-              <td class="px-6 py-4 text-sm text-center">
-                <div class="flex items-center justify-center gap-2">
-                  <button
-                    (click)="editRecord(record)"
-                    type="button"
-                    class="btn-link-outline-amber text-xs font-semibold py-1 px-2.5"
-                    title="Edit Record"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    (click)="deleteRecord(record._id!)"
-                    type="button"
-                    class="btn-link-outline-rose text-xs font-semibold py-1 px-2.5"
-                    title="Delete Record"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </td>
+              @if (isAdmin()) {
+                <td class="px-6 py-4 text-sm text-center font-semibold">
+                  <div class="flex items-center justify-center gap-2">
+                    <button
+                      (click)="editRecord(record)"
+                      type="button"
+                      class="btn-link-outline-amber text-xs font-semibold py-1 px-2.5"
+                      title="Edit Record"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      (click)="deleteRecord(record._id!)"
+                      type="button"
+                      class="btn-link-outline-rose text-xs font-semibold py-1 px-2.5"
+                      title="Delete Record"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              }
             </tr>
           } @empty {
             <tr>
-              <td colspan="12" class="px-6 py-12 text-center text-slate-400">
+              <td [attr.colspan]="isAdmin() ? 12 : 11" class="px-6 py-12 text-center text-slate-400">
                 @if (recordsLoading()) {
                   <span class="text-sm font-medium">Loading historical records...</span>
                 } @else {

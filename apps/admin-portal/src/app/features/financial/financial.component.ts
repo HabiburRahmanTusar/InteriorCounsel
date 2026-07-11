@@ -6,6 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 import { CommonModule, CurrencyPipe, DatePipe, NgClass } from '@angular/common';
 
 import { FinancialService, FinancialRecord } from '../../core/services/financial.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'wfm-financial-summary',
@@ -18,6 +19,10 @@ export class FinancialComponent implements OnDestroy {
   private fb = inject(FormBuilder);
   private financialService = inject(FinancialService);
   private toastr = inject(ToastrService);
+  private authService = inject(AuthService);
+
+  readonly isAdmin = computed(() => this.authService.currentRole() === 'admin');
+  readonly latestRecord = signal<FinancialRecord | null>(null);
   private destroy$ = new Subject<void>();
 
   // Form & UI States
@@ -97,14 +102,14 @@ export class FinancialComponent implements OnDestroy {
   loadLatest() {
     this.latestLoading.set(true);
     this.financialService
-      .getLatest()
+      .list({ page: 1, limit: 1, sortBy: 'updatedAt', sortOrder: 'desc' })
       .pipe(
         tap((res) => {
-          const latest = res.data;
+          const latest = res.data && res.data[0];
+          this.latestRecord.set(latest || null);
           if (latest) {
-            // Populate form with latest values
+            // Populate form with latest values, leaving the period as current or user-selected
             this.form.patchValue({
-              period: latest.period,
               monthlySales: latest.monthlySales,
               monthlyProfit: latest.monthlyProfit,
               outstandingDue: latest.outstandingDue,
@@ -115,6 +120,19 @@ export class FinancialComponent implements OnDestroy {
               monthlySubsidy: latest.monthlySubsidy,
             });
             this.toastr.info('Prefilled form with the latest saved record.', 'Information');
+          } else {
+            // Reset form fields to 0/defaults if no records exist
+            this.form.reset({
+              period: this.getCurrentPeriodString(),
+              monthlySales: 0,
+              monthlyProfit: 0,
+              outstandingDue: 0,
+              billsPendingCollection: 0,
+              prevProfitShareBalance: 0,
+              recentProfit: 0,
+              currentTotalBalance: 0,
+              monthlySubsidy: 0,
+            });
           }
         }),
         catchError((err) => {
@@ -252,6 +270,11 @@ export class FinancialComponent implements OnDestroy {
         .pipe(
           tap(() => {
             this.toastr.success('Record deleted successfully', 'Success');
+            if (this.selectedRecordId() === id) {
+              this.cancelEdit();
+            } else {
+              this.loadLatest();
+            }
             this.loadRecords();
           }),
           catchError((err) => {
