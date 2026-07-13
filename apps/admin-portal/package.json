@@ -19,6 +19,7 @@
     "@angular/platform-browser": "^18.2.0",
     "@angular/platform-browser-dynamic": "^18.2.0",
     "@angular/router": "^18.2.0",
+    "@vercel/speed-insights": "^2.0.0",
     "chart.js": "^4.4.4",
     "dayjs": "^1.11.13",
     "leaflet": "^1.9.4",
