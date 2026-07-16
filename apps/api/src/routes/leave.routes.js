@@ -15,9 +15,9 @@ router.get('/balances', rbac('admin', 'hr'), ctrl.getBalances);
 router.put('/balances/allocation', rbac('admin', 'hr'), ctrl.updateAllocation);
 router.put('/balances/bulk-allocation', rbac('admin', 'hr'), ctrl.bulkUpdateAllocation);
 
-// Employee routes
-router.get('/me/requests', rbac('employee'), ctrl.getMyRequests);
-router.get('/me/balance', rbac('employee'), ctrl.getMyBalance);
-router.post('/me/request', rbac('employee'), ctrl.submitMyRequest);
+// Employee routes for all roles
+router.get('/me/requests', ctrl.getMyRequests);
+router.get('/me/balance', ctrl.getMyBalance);
+router.post('/me/request', ctrl.submitMyRequest);
 
 module.exports = router;

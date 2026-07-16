@@ -108,7 +108,7 @@ exports.getBalances = async (req, res, next) => {
   try {
     const year = parseInt(req.query.year) || dayjs().year();
     const activeEmployees = await User.find(
-      { role: { $ne: 'admin' }, status: 'active' },
+      { status: 'active' },
       'name employeeId designation email',
     );
 
@@ -152,7 +152,7 @@ exports.updateAllocation = async (req, res, next) => {
 exports.bulkUpdateAllocation = async (req, res, next) => {
   try {
     const { year, allocated } = req.body;
-    const activeEmployees = await User.find({ role: { $ne: 'admin' }, status: 'active' });
+    const activeEmployees = await User.find({ status: 'active' });
 
     const operations = activeEmployees.map((emp) => ({
       updateOne: {
