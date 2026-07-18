@@ -13,13 +13,52 @@ async function getWeekends() {
     : ['Friday', 'Saturday'];
 }
 
+function getLeaveAllocated(balance, type) {
+  const defaults = { Annual: 15, Sick: 10, Casual: 10 };
+  if (!balance) return defaults[type] || 0;
+  if (!balance.allocated) return defaults[type] || 0;
+  if (typeof balance.allocated === 'number') {
+    if (type === 'Annual') return balance.allocated;
+    return defaults[type] || 0;
+  }
+  return typeof balance.allocated[type] === 'number' ? balance.allocated[type] : (defaults[type] || 0);
+}
+
+function getLeaveUsed(balance, type) {
+  if (!balance) return 0;
+  if (!balance.used) return 0;
+  if (typeof balance.used === 'number') {
+    if (type === 'Annual') return balance.used;
+    return 0;
+  }
+  return typeof balance.used[type] === 'number' ? balance.used[type] : 0;
+}
+
 async function calculateWorkingDaysBetween(startDate, endDate) {
   const start = dayjs(startDate).tz('Asia/Dhaka').startOf('day');
   const end = dayjs(endDate).tz('Asia/Dhaka').startOf('day');
 
   if (end.isBefore(start)) return 0;
 
-  return end.diff(start, 'day') + 1;
+  const weekends = await getWeekends();
+  const holidays = await Holiday.find();
+  const holidaySet = new Set(
+    holidays.map((h) => dayjs(h.date).tz('Asia/Dhaka').format('YYYY-MM-DD'))
+  );
+
+  let workingDays = 0;
+  let current = start;
+  while (current.isBefore(end) || current.isSame(end, 'day')) {
+    const dayName = current.format('dddd');
+    const dateStr = current.format('YYYY-MM-DD');
+
+    if (!weekends.includes(dayName) && !holidaySet.has(dateStr)) {
+      workingDays++;
+    }
+    current = current.add(1, 'day');
+  }
+
+  return workingDays;
 }
 
 exports.getRequests = async (req, res, next) => {
@@ -57,7 +96,7 @@ exports.createRequest = async (req, res, next) => {
 exports.updateRequestStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status, approverRemarks } = req.body;
 
     const request = await LeaveRequest.findById(id);
     if (!request) {
@@ -66,21 +105,24 @@ exports.updateRequestStatus = async (req, res, next) => {
       throw error;
     }
 
-    if (status === 'Approved' && request.status !== 'Approved') {
-      // Deduct from balance
+    if (request.leaveType !== 'Unpaid') {
+      const field = `used.${request.leaveType}`;
       const year = dayjs(request.startDate).year();
-      await LeaveBalance.findOneAndUpdate(
-        { employeeId: request.employeeId, year },
-        { $inc: { used: request.requestedDays } },
-        { upsert: true },
-      );
-    } else if (request.status === 'Approved' && status !== 'Approved') {
-      // Revert balance deduction
-      const year = dayjs(request.startDate).year();
-      await LeaveBalance.findOneAndUpdate(
-        { employeeId: request.employeeId, year },
-        { $inc: { used: -request.requestedDays } },
-      );
+
+      if (status === 'Approved' && request.status !== 'Approved') {
+        // Deduct from balance
+        await LeaveBalance.findOneAndUpdate(
+          { employeeId: request.employeeId, year },
+          { $inc: { [field]: request.requestedDays } },
+          { upsert: true },
+        );
+      } else if (request.status === 'Approved' && status !== 'Approved') {
+        // Revert balance deduction
+        await LeaveBalance.findOneAndUpdate(
+          { employeeId: request.employeeId, year },
+          { $inc: { [field]: -request.requestedDays } },
+        );
+      }
     }
 
     if (status === 'Approved' || status === 'Rejected') {
@@ -92,6 +134,10 @@ exports.updateRequestStatus = async (req, res, next) => {
     }
 
     request.status = status;
+    if (approverRemarks !== undefined) {
+      request.approverRemarks = approverRemarks;
+    }
+
     await request.save();
 
     const populated = await LeaveRequest.findById(id).populate(
@@ -119,13 +165,34 @@ exports.getBalances = async (req, res, next) => {
 
     const result = activeEmployees.map((emp) => {
       const b = balanceMap.get(emp._id.toString());
+
+      const allocatedAnnual = getLeaveAllocated(b, 'Annual');
+      const allocatedSick = getLeaveAllocated(b, 'Sick');
+      const allocatedCasual = getLeaveAllocated(b, 'Casual');
+
+      const usedAnnual = getLeaveUsed(b, 'Annual');
+      const usedSick = getLeaveUsed(b, 'Sick');
+      const usedCasual = getLeaveUsed(b, 'Casual');
+
       return {
         _id: b ? b._id : null,
         employeeId: emp,
         year,
-        allocated: b ? b.allocated : 20,
-        used: b ? b.used : 0,
-        remaining: b ? b.allocated - b.used : 20,
+        allocated: {
+          Annual: allocatedAnnual,
+          Sick: allocatedSick,
+          Casual: allocatedCasual,
+        },
+        used: {
+          Annual: usedAnnual,
+          Sick: usedSick,
+          Casual: usedCasual,
+        },
+        remaining: {
+          Annual: allocatedAnnual - usedAnnual,
+          Sick: allocatedSick - usedSick,
+          Casual: allocatedCasual - usedCasual,
+        },
       };
     });
 
@@ -140,7 +207,13 @@ exports.updateAllocation = async (req, res, next) => {
     const { employeeId, year, allocated } = req.body;
     const balance = await LeaveBalance.findOneAndUpdate(
       { employeeId, year },
-      { allocated },
+      {
+        $set: {
+          'allocated.Annual': allocated.Annual,
+          'allocated.Sick': allocated.Sick,
+          'allocated.Casual': allocated.Casual,
+        }
+      },
       { upsert: true, new: true },
     );
     return apiResponse.ok(res, balance, 'Leave allocation updated');
@@ -157,7 +230,13 @@ exports.bulkUpdateAllocation = async (req, res, next) => {
     const operations = activeEmployees.map((emp) => ({
       updateOne: {
         filter: { employeeId: emp._id, year },
-        update: { $set: { allocated } },
+        update: {
+          $set: {
+            'allocated.Annual': allocated.Annual,
+            'allocated.Sick': allocated.Sick,
+            'allocated.Casual': allocated.Casual,
+          }
+        },
         upsert: true,
       },
     }));
@@ -192,11 +271,31 @@ exports.getMyBalance = async (req, res, next) => {
     const year = parseInt(req.query.year) || dayjs().year();
     const balance = await LeaveBalance.findOne({ employeeId: req.user.id, year });
 
+    const allocatedAnnual = getLeaveAllocated(balance, 'Annual');
+    const allocatedSick = getLeaveAllocated(balance, 'Sick');
+    const allocatedCasual = getLeaveAllocated(balance, 'Casual');
+
+    const usedAnnual = getLeaveUsed(balance, 'Annual');
+    const usedSick = getLeaveUsed(balance, 'Sick');
+    const usedCasual = getLeaveUsed(balance, 'Casual');
+
     return apiResponse.ok(res, {
       year,
-      allocated: balance ? balance.allocated : 20,
-      used: balance ? balance.used : 0,
-      remaining: balance ? balance.allocated - balance.used : 20,
+      allocated: {
+        Annual: allocatedAnnual,
+        Sick: allocatedSick,
+        Casual: allocatedCasual,
+      },
+      used: {
+        Annual: usedAnnual,
+        Sick: usedSick,
+        Casual: usedCasual,
+      },
+      remaining: {
+        Annual: allocatedAnnual - usedAnnual,
+        Sick: allocatedSick - usedSick,
+        Casual: allocatedCasual - usedCasual,
+      },
     });
   } catch (err) {
     return next(err);
@@ -205,7 +304,7 @@ exports.getMyBalance = async (req, res, next) => {
 
 exports.submitMyRequest = async (req, res, next) => {
   try {
-    const { startDate, endDate, leaveType, reason } = req.body;
+    const { startDate, endDate, leaveType, reason, halfDay } = req.body;
     const employeeId = req.user.id;
 
     if (!startDate || !endDate || !reason) {
@@ -219,25 +318,36 @@ exports.submitMyRequest = async (req, res, next) => {
       return apiResponse.badRequest(res, 'End date must be after start date');
     }
 
-    // Auto-calculate working days
-    const requestedDays = await calculateWorkingDaysBetween(startDate, endDate);
+    let requestedDays;
+    if (halfDay) {
+      if (!start.isSame(end, 'day')) {
+        return apiResponse.badRequest(res, 'Half day leave must start and end on the same day');
+      }
+      requestedDays = 0.5;
+    } else {
+      // Auto-calculate working days
+      requestedDays = await calculateWorkingDaysBetween(startDate, endDate);
+    }
 
     if (requestedDays <= 0) {
       return apiResponse.badRequest(res, 'Selected date range contains no working days');
     }
 
     // Validation 1: Check balance
-    const year = start.year();
-    const balance = await LeaveBalance.findOne({ employeeId, year });
-    const allocated = balance ? balance.allocated : 20;
-    const used = balance ? balance.used : 0;
-    const remaining = allocated - used;
+    const type = leaveType || 'Annual';
+    if (type !== 'Unpaid') {
+      const year = start.year();
+      const balance = await LeaveBalance.findOne({ employeeId, year });
+      const allocated = getLeaveAllocated(balance, type);
+      const used = getLeaveUsed(balance, type);
+      const remaining = allocated - used;
 
-    if (requestedDays > remaining) {
-      return apiResponse.badRequest(
-        res,
-        `Insufficient leave balance. You are requesting ${requestedDays} days but only have ${remaining} remaining.`,
-      );
+      if (requestedDays > remaining) {
+        return apiResponse.badRequest(
+          res,
+          `Insufficient leave balance. You are requesting ${requestedDays} days of ${type} leave but only have ${remaining} remaining.`,
+        );
+      }
     }
 
     // Validation 2: Check overlapping requests
@@ -258,14 +368,61 @@ exports.submitMyRequest = async (req, res, next) => {
       employeeId,
       startDate: start.toDate(),
       endDate: end.toDate(),
-      leaveType: leaveType || 'Annual',
+      leaveType: type,
       reason,
       requestedDays,
+      halfDay: !!halfDay,
       status: 'Pending',
     });
 
     await request.save();
     return apiResponse.created(res, request, 'Leave request submitted successfully');
+  } catch (err) {
+    return next(err);
+  }
+};
+
+exports.cancelMyRequest = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const employeeId = req.user.id;
+
+    const request = await LeaveRequest.findOne({ _id: id, employeeId });
+    if (!request) {
+      return apiResponse.notFound(res, 'Leave request not found');
+    }
+
+    if (request.status === 'Cancelled') {
+      return apiResponse.badRequest(res, 'Leave request is already cancelled');
+    }
+
+    if (request.status === 'Rejected') {
+      return apiResponse.badRequest(res, 'Cannot cancel a rejected leave request');
+    }
+
+    // If it was approved, we can only cancel if it hasn't started yet
+    if (request.status === 'Approved') {
+      const today = dayjs().tz('Asia/Dhaka').startOf('day');
+      const start = dayjs(request.startDate).tz('Asia/Dhaka').startOf('day');
+      if (start.isBefore(today)) {
+        return apiResponse.badRequest(res, 'Cannot cancel an approved leave request that has already started');
+      }
+
+      // Revert the balance deduction
+      if (request.leaveType !== 'Unpaid') {
+        const field = `used.${request.leaveType}`;
+        const year = dayjs(request.startDate).year();
+        await LeaveBalance.findOneAndUpdate(
+          { employeeId, year },
+          { $inc: { [field]: -request.requestedDays } }
+        );
+      }
+    }
+
+    request.status = 'Cancelled';
+    await request.save();
+
+    return apiResponse.ok(res, request, 'Leave request cancelled successfully');
   } catch (err) {
     return next(err);
   }

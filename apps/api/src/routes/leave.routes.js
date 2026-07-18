@@ -19,5 +19,6 @@ router.put('/balances/bulk-allocation', rbac('admin', 'hr'), ctrl.bulkUpdateAllo
 router.get('/me/requests', ctrl.getMyRequests);
 router.get('/me/balance', ctrl.getMyBalance);
 router.post('/me/request', ctrl.submitMyRequest);
+router.post('/me/requests/:id/cancel', ctrl.cancelMyRequest);
 
 module.exports = router;

@@ -295,7 +295,16 @@ async function recalculateSalary(employeeId, monthStr) {
   if (dayjs(monthStr).format('MM') === '12') {
     const year = dayjs(monthStr).year();
     const balance = await LeaveBalance.findOne({ employeeId, year });
-    const remainingLeaves = balance ? balance.allocated - balance.used : 20; // fallback default
+    let remainingLeaves = 20;
+    if (balance) {
+      if (typeof balance.allocated === 'number') {
+        remainingLeaves = balance.allocated - balance.used;
+      } else {
+        const allocatedAnnual = balance.allocated?.Annual ?? 15;
+        const usedAnnual = balance.used?.Annual ?? 0;
+        remainingLeaves = allocatedAnnual - usedAnnual;
+      }
+    }
     if (remainingLeaves > 0) {
       leaveEncashmentAmount = Number((remainingLeaves * dailySalary).toFixed(2));
     }

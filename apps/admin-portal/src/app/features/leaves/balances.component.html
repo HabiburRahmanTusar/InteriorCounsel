@@ -2,22 +2,41 @@
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div class="space-y-1">
       <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Leave Balances</h1>
-      <p class="text-sm text-slate-500">View and adjust annual leave quotas for employees.</p>
+      <p class="text-sm text-slate-500">View and adjust leave quotas for employees.</p>
     </div>
     <div class="flex items-center gap-4">
       <div
-        class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200/60"
+        class="flex flex-wrap items-center gap-2 bg-slate-50 px-3 py-2 rounded-lg border border-slate-200/60"
       >
-        <input
-          type="number"
-          [(ngModel)]="bulkAllocated"
-          placeholder="Days"
-          class="w-16 rounded border-0 py-1 px-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm"
-        />
+        <span class="text-xs text-slate-500 font-medium">Bulk Set:</span>
+        <div class="flex items-center gap-1">
+          <span class="text-xs text-slate-400">Ann:</span>
+          <input
+            type="number"
+            [(ngModel)]="bulkAllocated.Annual"
+            class="w-12 rounded border-0 py-0.5 px-1 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-indigo-600 sm:text-xs"
+          />
+        </div>
+        <div class="flex items-center gap-1">
+          <span class="text-xs text-slate-400">Sick:</span>
+          <input
+            type="number"
+            [(ngModel)]="bulkAllocated.Sick"
+            class="w-12 rounded border-0 py-0.5 px-1 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-indigo-600 sm:text-xs"
+          />
+        </div>
+        <div class="flex items-center gap-1">
+          <span class="text-xs text-slate-400">Cas:</span>
+          <input
+            type="number"
+            [(ngModel)]="bulkAllocated.Casual"
+            class="w-12 rounded border-0 py-0.5 px-1 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-indigo-600 sm:text-xs"
+          />
+        </div>
         <button
           (click)="bulkSaveAllocation()"
           [disabled]="saving()"
-          class="text-sm font-medium text-indigo-600 hover:text-indigo-700 disabled:opacity-50"
+          class="text-xs font-semibold text-indigo-600 hover:text-indigo-700 disabled:opacity-50 ml-1"
         >
           Assign to All
         </button>
@@ -47,13 +66,13 @@
               Employee
             </th>
             <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
-              Allocated Days
+              Annual Leave
             </th>
             <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
-              Used Days
+              Sick Leave
             </th>
             <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
-              Remaining
+              Casual Leave
             </th>
             <th
               class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4 text-right"
@@ -80,23 +99,30 @@
                   <div class="text-sm font-medium text-slate-900">{{ b.employeeId?.name }}</div>
                   <div class="text-xs text-slate-500">{{ b.employeeId?.employeeId }}</div>
                 </td>
-                <td class="px-6 py-4 text-sm text-slate-700 font-medium">
-                  {{ b.allocated }}
+                <td class="px-6 py-4 text-sm text-slate-700">
+                  <div class="flex flex-col">
+                    <span class="text-slate-900 font-medium">Allocated: {{ b.allocated?.Annual || 0 }}</span>
+                    <span class="text-xs text-slate-500">Used: {{ b.used?.Annual || 0 }} | Rem: {{ b.remaining?.Annual || 0 }}</span>
+                  </div>
                 </td>
                 <td class="px-6 py-4 text-sm text-slate-700">
-                  {{ b.used }}
+                  <div class="flex flex-col">
+                    <span class="text-slate-900 font-medium">Allocated: {{ b.allocated?.Sick || 0 }}</span>
+                    <span class="text-xs text-slate-500">Used: {{ b.used?.Sick || 0 }} | Rem: {{ b.remaining?.Sick || 0 }}</span>
+                  </div>
                 </td>
-                <td class="px-6 py-4 text-sm font-medium">
-                  <span [ngClass]="b.remaining < 5 ? 'text-amber-600' : 'text-emerald-600'">
-                    {{ b.remaining }}
-                  </span>
+                <td class="px-6 py-4 text-sm text-slate-700">
+                  <div class="flex flex-col">
+                    <span class="text-slate-900 font-medium">Allocated: {{ b.allocated?.Casual || 0 }}</span>
+                    <span class="text-xs text-slate-500">Used: {{ b.used?.Casual || 0 }} | Rem: {{ b.remaining?.Casual || 0 }}</span>
+                  </div>
                 </td>
                 <td class="px-6 py-4 text-right">
                   <button
                     (click)="openEditModal(b)"
                     class="text-xs font-medium text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors"
                   >
-                    Adjust Quota
+                    Adjust Quotas
                   </button>
                 </td>
               </tr>
@@ -115,7 +141,7 @@
   >
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden flex flex-col">
       <div class="px-6 py-4 border-b border-slate-100">
-        <h2 class="text-lg font-semibold text-slate-900">Adjust Annual Quota</h2>
+        <h2 class="text-lg font-semibold text-slate-900">Adjust Quotas</h2>
         <p class="text-xs text-slate-500 mt-1">
           {{ editingBalance?.employeeId?.name }} ({{ selectedYear }})
         </p>
@@ -123,16 +149,34 @@
 
       <div class="p-6 space-y-4">
         <div class="space-y-1">
-          <label class="block text-sm font-medium text-slate-700">Allocated Days</label>
+          <label class="block text-sm font-medium text-slate-700">Annual Leave Allocated</label>
           <input
             type="number"
-            [(ngModel)]="editingAllocated"
+            [(ngModel)]="editingAllocated.Annual"
             class="block w-full rounded-lg border-0 py-2 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
           />
+          <p class="text-[10px] text-slate-400">Used: {{ editingBalance?.used?.Annual || 0 }} days</p>
         </div>
-        <p class="text-xs text-slate-500">
-          Currently used: {{ editingBalance?.used }} days. Changes will apply immediately.
-        </p>
+
+        <div class="space-y-1">
+          <label class="block text-sm font-medium text-slate-700">Sick Leave Allocated</label>
+          <input
+            type="number"
+            [(ngModel)]="editingAllocated.Sick"
+            class="block w-full rounded-lg border-0 py-2 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
+          />
+          <p class="text-[10px] text-slate-400">Used: {{ editingBalance?.used?.Sick || 0 }} days</p>
+        </div>
+
+        <div class="space-y-1">
+          <label class="block text-sm font-medium text-slate-700">Casual Leave Allocated</label>
+          <input
+            type="number"
+            [(ngModel)]="editingAllocated.Casual"
+            class="block w-full rounded-lg border-0 py-2 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
+          />
+          <p class="text-[10px] text-slate-400">Used: {{ editingBalance?.used?.Casual || 0 }} days</p>
+        </div>
       </div>
 
       <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">

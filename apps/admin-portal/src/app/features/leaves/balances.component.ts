@@ -31,11 +31,19 @@ export class LeaveBalancesComponent implements OnInit, OnDestroy {
 
   currentYear = new Date().getFullYear();
   selectedYear = this.currentYear;
-  bulkAllocated = 20;
+  bulkAllocated = {
+    Annual: 15,
+    Sick: 10,
+    Casual: 10
+  };
 
   showEditModal = signal(false);
   editingBalance: LeaveBalance | null = null;
-  editingAllocated = 20;
+  editingAllocated = {
+    Annual: 15,
+    Sick: 10,
+    Casual: 10
+  };
 
   ngOnInit() {
     this.loadData();
@@ -64,7 +72,11 @@ export class LeaveBalancesComponent implements OnInit, OnDestroy {
 
   openEditModal(balance: LeaveBalance) {
     this.editingBalance = balance;
-    this.editingAllocated = balance.allocated;
+    this.editingAllocated = {
+      Annual: balance.allocated?.Annual || 15,
+      Sick: balance.allocated?.Sick || 10,
+      Casual: balance.allocated?.Casual || 10
+    };
     this.showEditModal.set(true);
   }
 
@@ -100,14 +112,21 @@ export class LeaveBalancesComponent implements OnInit, OnDestroy {
   }
 
   bulkSaveAllocation() {
-    if (!this.bulkAllocated || this.bulkAllocated < 0) {
-      this.toastr.warning('Please enter a valid number of days');
+    if (
+      this.bulkAllocated.Annual < 0 ||
+      this.bulkAllocated.Sick < 0 ||
+      this.bulkAllocated.Casual < 0
+    ) {
+      this.toastr.warning('Please enter valid non-negative numbers of days');
       return;
     }
 
     if (
       confirm(
-        `Are you sure you want to assign ${this.bulkAllocated} leave days to ALL employees for ${this.selectedYear}?`,
+        `Are you sure you want to assign these leave days to ALL employees for ${this.selectedYear}?
+Annual: ${this.bulkAllocated.Annual} days
+Sick: ${this.bulkAllocated.Sick} days
+Casual: ${this.bulkAllocated.Casual} days`,
       )
     ) {
       this.saving.set(true);
@@ -116,7 +135,7 @@ export class LeaveBalancesComponent implements OnInit, OnDestroy {
         .pipe(
           tap((res) => {
             this.toastr.success(
-              `Successfully assigned ${this.bulkAllocated} days to ${res.count} employees`,
+              `Successfully updated leave allocation for ${res.count} employees`,
             );
             this.loadData();
           }),

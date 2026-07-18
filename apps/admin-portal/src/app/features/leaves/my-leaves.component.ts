@@ -76,7 +76,7 @@ export class MyLeavesComponent implements OnInit, OnDestroy {
   }
 
   openRequestModal() {
-    this.newRequest = { leaveType: 'Annual' };
+    this.newRequest = { leaveType: 'Annual', halfDay: false };
     this.calculatedDays.set(0);
     this.showRequestModal.set(true);
   }
@@ -86,7 +86,18 @@ export class MyLeavesComponent implements OnInit, OnDestroy {
   }
 
   calculateDays() {
-    if (!this.newRequest.startDate || !this.newRequest.endDate) {
+    if (!this.newRequest.startDate) {
+      this.calculatedDays.set(0);
+      return;
+    }
+
+    if (this.newRequest.halfDay) {
+      this.newRequest.endDate = this.newRequest.startDate;
+      this.calculatedDays.set(0.5);
+      return;
+    }
+
+    if (!this.newRequest.endDate) {
       this.calculatedDays.set(0);
       return;
     }
@@ -101,21 +112,43 @@ export class MyLeavesComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Calculate calendar days inclusive
-    const diffTime = Math.abs(end.getTime() - start.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    let workingDays = 0;
+    let current = new Date(start);
+    while (current <= end) {
+      const dayName = current.toLocaleDateString('en-US', { weekday: 'long' });
+      const yr = current.getFullYear();
+      const mo = String(current.getMonth() + 1).padStart(2, '0');
+      const dy = String(current.getDate()).padStart(2, '0');
+      const dateStr = `${yr}-${mo}-${dy}`;
 
-    this.calculatedDays.set(diffDays);
+      if (!this.weekends.includes(dayName) && !this.holidays.includes(dateStr)) {
+        workingDays++;
+      }
+
+      current.setDate(current.getDate() + 1);
+    }
+
+    this.calculatedDays.set(workingDays);
   }
 
   submitRequest() {
-    if (!this.newRequest.startDate || !this.newRequest.endDate || !this.newRequest.reason) {
+    if (!this.newRequest.startDate || (!this.newRequest.halfDay && !this.newRequest.endDate) || !this.newRequest.reason) {
       this.toastr.warning('Please fill all required fields');
       return;
     }
 
+    if (this.newRequest.halfDay) {
+      this.newRequest.endDate = this.newRequest.startDate;
+    }
+
     if (this.calculatedDays() <= 0) {
       this.toastr.warning('Selected date range contains no working days');
+      return;
+    }
+
+    const limit = this.getRemainingBalanceForSelectedType();
+    if (this.calculatedDays() > limit) {
+      this.toastr.warning('Requested days exceed your remaining balance');
       return;
     }
 
@@ -136,6 +169,42 @@ export class MyLeavesComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
       )
       .subscribe();
+  }
+
+  cancelRequest(id?: string) {
+    if (!id) return;
+    if (confirm('Are you sure you want to cancel this leave request?')) {
+      this.leaveService
+        .cancelMyRequest(id)
+        .pipe(
+          tap(() => {
+            this.toastr.success('Leave request cancelled successfully');
+            this.loadData();
+          }),
+          catchError((err) => {
+            this.toastr.error(err.error?.message || 'Failed to cancel leave request');
+            return of(null);
+          }),
+          takeUntil(this.destroy$),
+        )
+        .subscribe();
+    }
+  }
+
+  getRemainingBalanceForSelectedType(): number {
+    if (!this.balance()) return 0;
+    const type = this.newRequest.leaveType || 'Annual';
+    if (type === 'Unpaid') return Infinity;
+    const rem = this.balance()?.remaining;
+    if (!rem) return 0;
+    if (type === 'Annual') return rem.Annual;
+    if (type === 'Sick') return rem.Sick;
+    if (type === 'Casual') return rem.Casual;
+    return 0;
+  }
+
+  isUnlimited(): boolean {
+    return this.getRemainingBalanceForSelectedType() === Infinity;
   }
 
   ngOnDestroy() {

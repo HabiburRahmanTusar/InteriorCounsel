@@ -80,8 +80,20 @@ export class LeaveRequestsComponent implements OnInit, OnDestroy {
 
   updateStatus(req: LeaveRequest, status: string) {
     if (!req._id) return;
+    
+    let remarks = '';
+    if (status === 'Rejected') {
+      const input = prompt('Please enter a rejection reason (optional):');
+      if (input === null) return; // cancelled
+      remarks = input;
+    } else if (status === 'Approved') {
+      const input = prompt('Please enter approval remarks (optional):');
+      if (input === null) return;
+      remarks = input;
+    }
+
     this.leaveService
-      .updateRequestStatus(req._id, status)
+      .updateRequestStatus(req._id, status, remarks)
       .pipe(
         tap(() => {
           this.toastr.success(`Leave request ${status.toLowerCase()}`);

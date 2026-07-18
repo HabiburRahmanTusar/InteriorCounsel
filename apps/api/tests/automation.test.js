@@ -5,6 +5,17 @@ const Holiday = require('../src/models/Holiday');
 const DeductionLog = require('../src/models/DeductionLog');
 const SalaryRecord = require('../src/models/SalaryRecord');
 const SystemSetting = require('../src/models/SystemSetting');
+
+const timeUtils = require('../src/utils/time');
+const originalDayjs = timeUtils.dayjs;
+timeUtils.dayjs = function (...args) {
+  if (args.length === 0 || args[0] === undefined) {
+    return originalDayjs('2026-06-15T12:00:00Z');
+  }
+  return originalDayjs(...args);
+};
+Object.assign(timeUtils.dayjs, originalDayjs);
+
 const {
   calculateWorkingDays,
   evaluateLateDeductions,

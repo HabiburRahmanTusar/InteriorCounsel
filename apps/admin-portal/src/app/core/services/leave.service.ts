@@ -13,16 +13,24 @@ export interface LeaveRequest {
   reason: string;
   status: string;
   requestedDays: number;
+  halfDay?: boolean;
+  approverRemarks?: string;
   createdAt?: string;
+}
+
+export interface LeaveBalanceDetail {
+  Annual: number;
+  Sick: number;
+  Casual: number;
 }
 
 export interface LeaveBalance {
   _id?: string;
   employeeId: any;
   year: number;
-  allocated: number;
-  used: number;
-  remaining: number;
+  allocated: LeaveBalanceDetail;
+  used: LeaveBalanceDetail;
+  remaining: LeaveBalanceDetail;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -38,8 +46,8 @@ export class LeaveService {
     return this.http.post<LeaveRequest>(`${this.baseUrl}/requests`, data);
   }
 
-  updateRequestStatus(id: string, status: string): Observable<LeaveRequest> {
-    return this.http.put<LeaveRequest>(`${this.baseUrl}/requests/${id}/status`, { status });
+  updateRequestStatus(id: string, status: string, approverRemarks?: string): Observable<LeaveRequest> {
+    return this.http.put<LeaveRequest>(`${this.baseUrl}/requests/${id}/status`, { status, approverRemarks });
   }
 
   getBalances(year?: number): Observable<LeaveBalance[]> {
@@ -47,7 +55,7 @@ export class LeaveService {
     return this.http.get<LeaveBalance[]>(url);
   }
 
-  updateAllocation(employeeId: string, year: number, allocated: number): Observable<LeaveBalance> {
+  updateAllocation(employeeId: string, year: number, allocated: LeaveBalanceDetail): Observable<LeaveBalance> {
     return this.http.put<LeaveBalance>(`${this.baseUrl}/balances/allocation`, {
       employeeId,
       year,
@@ -55,7 +63,7 @@ export class LeaveService {
     });
   }
 
-  bulkUpdateAllocation(year: number, allocated: number): Observable<any> {
+  bulkUpdateAllocation(year: number, allocated: LeaveBalanceDetail): Observable<any> {
     return this.http.put<any>(`${this.baseUrl}/balances/bulk-allocation`, { year, allocated });
   }
 
@@ -72,5 +80,9 @@ export class LeaveService {
 
   submitMyRequest(payload: Partial<LeaveRequest>): Observable<LeaveRequest> {
     return this.http.post<LeaveRequest>(`${this.baseUrl}/me/request`, payload);
+  }
+
+  cancelMyRequest(id: string): Observable<LeaveRequest> {
+    return this.http.post<LeaveRequest>(`${this.baseUrl}/me/requests/${id}/cancel`, {});
   }
 }

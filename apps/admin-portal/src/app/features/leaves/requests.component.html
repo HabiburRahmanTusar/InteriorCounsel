@@ -73,18 +73,31 @@
                 </td>
                 <td class="px-6 py-4 text-sm text-slate-700">
                   <div>
-                    {{ req.startDate | date: 'MMM d, y' }} - {{ req.endDate | date: 'MMM d, y' }}
+                    {{ req.startDate | date: 'MMM d, y' }}
+                    @if (!req.halfDay) {
+                      - {{ req.endDate | date: 'MMM d, y' }}
+                    }
                   </div>
-                  <div class="text-xs text-slate-500">{{ req.requestedDays }} day(s)</div>
+                  <div class="flex items-center gap-1.5 mt-0.5">
+                    <span class="text-xs text-slate-500">{{ req.requestedDays }} day(s)</span>
+                    @if (req.halfDay) {
+                      <span class="inline-flex items-center rounded-md bg-indigo-50 px-1.5 py-0.5 text-[10px] font-medium text-indigo-700 ring-1 ring-inset ring-indigo-600/10">Half Day</span>
+                    }
+                  </div>
                 </td>
-                <td class="px-6 py-4 text-sm text-slate-700 max-w-xs truncate">{{ req.reason }}</td>
+                <td class="px-6 py-4 text-sm text-slate-700 max-w-xs">
+                  <div class="truncate" [title]="req.reason">{{ req.reason }}</div>
+                  @if (req.approverRemarks) {
+                    <div class="text-xs text-rose-500 italic mt-0.5 font-medium">Remarks: {{ req.approverRemarks }}</div>
+                  }
+                </td>
                 <td class="px-6 py-4">
                   <span
                     [ngClass]="{
                       'bg-amber-50 text-amber-700 ring-amber-600/20': req.status === 'Pending',
-                      'bg-emerald-50 text-emerald-700 ring-emerald-600/20':
-                        req.status === 'Approved',
+                      'bg-emerald-50 text-emerald-700 ring-emerald-600/20': req.status === 'Approved',
                       'bg-rose-50 text-rose-700 ring-rose-600/20': req.status === 'Rejected',
+                      'bg-slate-50 text-slate-600 ring-slate-500/20': req.status === 'Cancelled',
                     }"
                     class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset"
                   >
@@ -92,20 +105,22 @@
                   </span>
                 </td>
                 <td class="px-6 py-4 text-right">
-                  <div class="flex items-center justify-end gap-2" *ngIf="req.status === 'Pending'">
-                    <button
-                      (click)="updateStatus(req, 'Approved')"
-                      class="text-xs font-medium text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors"
-                    >
-                      Approve
-                    </button>
-                    <button
-                      (click)="updateStatus(req, 'Rejected')"
-                      class="text-xs font-medium text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg transition-colors"
-                    >
-                      Reject
-                    </button>
-                  </div>
+                  @if (req.status === 'Pending') {
+                    <div class="flex items-center justify-end gap-2">
+                      <button
+                        (click)="updateStatus(req, 'Approved')"
+                        class="text-xs font-medium text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        (click)="updateStatus(req, 'Rejected')"
+                        class="text-xs font-medium text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  }
                 </td>
               </tr>
             }
