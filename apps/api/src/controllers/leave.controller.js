@@ -305,9 +305,23 @@ exports.getMyBalance = async (req, res, next) => {
     
     const aggregated = aggregateBalances(balances, leaveTypes);
 
+    const list = balances.map(b => {
+      if (!b.leaveType) return null;
+      const typeCode = b.leaveType.code || '';
+      const typeLabel = b.leaveType.name || (typeCode.charAt(0).toUpperCase() + typeCode.slice(1) + ' Leave');
+      return {
+        leaveType: typeCode.charAt(0).toUpperCase() + typeCode.slice(1),
+        leaveTypeDoc: b.leaveType,
+        allocated: b.allocated || 0,
+        used: b.used || 0,
+        remaining: (b.allocated || 0) - (b.used || 0),
+      };
+    }).filter(Boolean);
+
     return apiResponse.ok(res, {
       year,
       ...aggregated,
+      list,
     });
   } catch (err) {
     return next(err);

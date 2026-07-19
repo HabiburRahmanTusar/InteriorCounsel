@@ -10,8 +10,9 @@ async function connectDatabase(uri, options = {}) {
 
   mongoose.connection.on('connected', async () => {
     logger.info('MongoDB connected');
+    const db = mongoose.connection.db;
+
     try {
-      const db = mongoose.connection.db;
       const collections = await db.listCollections({ name: 'leavepolicies' }).toArray();
       if (collections.length > 0) {
         await db.collection('leavepolicies').dropIndex('employmentType_1');
@@ -20,6 +21,18 @@ async function connectDatabase(uri, options = {}) {
     } catch (err) {
       if (err.codeName !== 'IndexNotFound' && err.code !== 27) {
         logger.warn('Could not drop obsolete index employmentType_1:', err.message);
+      }
+    }
+
+    try {
+      const collections = await db.listCollections({ name: 'leavebalances' }).toArray();
+      if (collections.length > 0) {
+        await db.collection('leavebalances').dropIndex('employeeId_1_year_1');
+        logger.info('Successfully dropped obsolete index employeeId_1_year_1 from leavebalances');
+      }
+    } catch (err) {
+      if (err.codeName !== 'IndexNotFound' && err.code !== 27) {
+        logger.warn('Could not drop obsolete index employeeId_1_year_1:', err.message);
       }
     }
   });

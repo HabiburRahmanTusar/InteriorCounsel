@@ -24,6 +24,14 @@ export interface LeaveBalanceDetail {
   Casual: number;
 }
 
+export interface LeaveBalanceItem {
+  leaveType: string;
+  leaveTypeDoc?: any;
+  allocated: number;
+  used: number;
+  remaining: number;
+}
+
 export interface LeaveBalance {
   _id?: string;
   employeeId: any;
@@ -31,6 +39,7 @@ export interface LeaveBalance {
   allocated: LeaveBalanceDetail;
   used: LeaveBalanceDetail;
   remaining: LeaveBalanceDetail;
+  list?: LeaveBalanceItem[];
 }
 
 @Injectable({ providedIn: 'root' })

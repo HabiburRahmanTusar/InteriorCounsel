@@ -32,6 +32,10 @@ export class MyLeavesComponent implements OnInit, OnDestroy {
   newRequest: Partial<LeaveRequest> = { leaveType: 'Annual' };
   calculatedDays = signal(0);
 
+  totalAllocated = signal(0);
+  totalUsed = signal(0);
+  totalRemaining = signal(0);
+
   private weekends: string[] = ['Friday', 'Saturday'];
   private holidays: string[] = [];
 
@@ -44,7 +48,25 @@ export class MyLeavesComponent implements OnInit, OnDestroy {
     this.leaveService
       .getMyBalance()
       .pipe(
-        tap((b) => this.balance.set(b)),
+        tap((b) => {
+          this.balance.set(b);
+          if (b.list && b.list.length > 0 && !this.newRequest.leaveType) {
+            this.newRequest.leaveType = b.list[0].leaveType;
+          }
+          
+          if (b.list) {
+            this.totalAllocated.set(b.list.reduce((acc, item) => acc + (item.allocated || 0), 0));
+            this.totalUsed.set(b.list.reduce((acc, item) => acc + (item.used || 0), 0));
+            this.totalRemaining.set(b.list.reduce((acc, item) => acc + (item.remaining || 0), 0));
+          } else {
+            const alloc = b.allocated || { Annual: 0, Sick: 0, Casual: 0 };
+            const used = b.used || { Annual: 0, Sick: 0, Casual: 0 };
+            const rem = b.remaining || { Annual: 0, Sick: 0, Casual: 0 };
+            this.totalAllocated.set((alloc.Annual || 0) + (alloc.Sick || 0) + (alloc.Casual || 0));
+            this.totalUsed.set((used.Annual || 0) + (used.Sick || 0) + (used.Casual || 0));
+            this.totalRemaining.set((rem.Annual || 0) + (rem.Sick || 0) + (rem.Casual || 0));
+          }
+        }),
         takeUntil(this.destroy$),
       )
       .subscribe();
@@ -76,7 +98,8 @@ export class MyLeavesComponent implements OnInit, OnDestroy {
   }
 
   openRequestModal() {
-    this.newRequest = { leaveType: 'Annual', halfDay: false };
+    const defaultType = this.balance()?.list?.[0]?.leaveType || 'Annual';
+    this.newRequest = { leaveType: defaultType, halfDay: false };
     this.calculatedDays.set(0);
     this.showRequestModal.set(true);
   }
@@ -195,6 +218,10 @@ export class MyLeavesComponent implements OnInit, OnDestroy {
     if (!this.balance()) return 0;
     const type = this.newRequest.leaveType || 'Annual';
     if (type === 'Unpaid') return Infinity;
+    const found = this.balance()?.list?.find(item => item.leaveType === type);
+    if (found) {
+      return found.remaining;
+    }
     const rem = this.balance()?.remaining;
     if (!rem) return 0;
     if (type === 'Annual') return rem.Annual;

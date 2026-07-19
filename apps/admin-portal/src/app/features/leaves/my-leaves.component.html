@@ -22,72 +22,116 @@
     </button>
   </div>
 
-  <!-- Balance Cards -->
-  <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-    <!-- Annual Leave Card -->
-    <div class="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200 p-6">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-sm font-semibold text-slate-900">Annual Leave</h3>
-        <span class="inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-600/10">Paid</span>
-      </div>
-      <div class="grid grid-cols-3 gap-2 text-center">
-        <div>
-          <span class="block text-xs font-medium text-slate-500">Allocated</span>
-          <span class="text-lg font-bold text-slate-900">{{ balance()?.allocated?.Annual || 0 }}</span>
-        </div>
-        <div>
-          <span class="block text-xs font-medium text-slate-500">Used</span>
-          <span class="text-lg font-bold text-slate-900">{{ balance()?.used?.Annual || 0 }}</span>
-        </div>
-        <div>
-          <span class="block text-xs font-medium text-emerald-600">Remaining</span>
-          <span class="text-lg font-bold text-emerald-600">{{ balance()?.remaining?.Annual || 0 }}</span>
-        </div>
-      </div>
-    </div>
+  <!-- Balance Summary Table -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-slate-200">
+        <thead class="bg-slate-50/50">
+          <tr>
+            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Leave Type</th>
+            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+            <th class="px-6 py-4 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Allocated</th>
+            <th class="px-6 py-4 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Used</th>
+            <th class="px-6 py-4 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Remaining</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 bg-white">
+          <ng-container *ngIf="balance()?.list && balance()!.list!.length > 0; else legacyTableRows">
+            <tr *ngFor="let item of balance()?.list" class="hover:bg-slate-50/50 transition-colors">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900">
+                {{ item.leaveType }} Leave
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-xs font-medium">
+                <span 
+                  class="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold ring-1 ring-inset"
+                  [ngClass]="item.leaveTypeDoc?.deductsFromBalance ? 'bg-indigo-50 text-indigo-700 ring-indigo-600/10' : 'bg-slate-50 text-slate-600 ring-slate-500/10'"
+                >
+                  {{ item.leaveTypeDoc?.deductsFromBalance ? 'Paid' : 'Unpaid' }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-semibold text-slate-700">
+                {{ item.allocated }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-semibold text-slate-600">
+                {{ item.used }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-emerald-600">
+                {{ item.remaining }}
+              </td>
+            </tr>
+          </ng-container>
 
-    <!-- Sick Leave Card -->
-    <div class="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200 p-6">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-sm font-semibold text-slate-900">Sick Leave</h3>
-        <span class="inline-flex items-center rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/10">Paid</span>
-      </div>
-      <div class="grid grid-cols-3 gap-2 text-center">
-        <div>
-          <span class="block text-xs font-medium text-slate-500">Allocated</span>
-          <span class="text-lg font-bold text-slate-900">{{ balance()?.allocated?.Sick || 0 }}</span>
-        </div>
-        <div>
-          <span class="block text-xs font-medium text-slate-500">Used</span>
-          <span class="text-lg font-bold text-slate-900">{{ balance()?.used?.Sick || 0 }}</span>
-        </div>
-        <div>
-          <span class="block text-xs font-medium text-emerald-600">Remaining</span>
-          <span class="text-lg font-bold text-emerald-600">{{ balance()?.remaining?.Sick || 0 }}</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Casual Leave Card -->
-    <div class="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200 p-6">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-sm font-semibold text-slate-900">Casual Leave</h3>
-        <span class="inline-flex items-center rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-600/10">Paid</span>
-      </div>
-      <div class="grid grid-cols-3 gap-2 text-center">
-        <div>
-          <span class="block text-xs font-medium text-slate-500">Allocated</span>
-          <span class="text-lg font-bold text-slate-900">{{ balance()?.allocated?.Casual || 0 }}</span>
-        </div>
-        <div>
-          <span class="block text-xs font-medium text-slate-500">Used</span>
-          <span class="text-lg font-bold text-slate-900">{{ balance()?.used?.Casual || 0 }}</span>
-        </div>
-        <div>
-          <span class="block text-xs font-medium text-emerald-600">Remaining</span>
-          <span class="text-lg font-bold text-emerald-600">{{ balance()?.remaining?.Casual || 0 }}</span>
-        </div>
-      </div>
+          <ng-template #legacyTableRows>
+            <!-- Annual Leave -->
+            <tr class="hover:bg-slate-50/50 transition-colors">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900">Annual Leave</td>
+              <td class="px-6 py-4 whitespace-nowrap text-xs font-medium">
+                <span class="inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-600/10">Paid</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-semibold text-slate-700">
+                {{ balance()?.allocated?.Annual || 0 }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-semibold text-slate-600">
+                {{ balance()?.used?.Annual || 0 }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-emerald-600">
+                {{ balance()?.remaining?.Annual || 0 }}
+              </td>
+            </tr>
+            <!-- Sick Leave -->
+            <tr class="hover:bg-slate-50/50 transition-colors">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900">Sick Leave</td>
+              <td class="px-6 py-4 whitespace-nowrap text-xs font-medium">
+                <span class="inline-flex items-center rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/10">Paid</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-semibold text-slate-700">
+                {{ balance()?.allocated?.Sick || 0 }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-semibold text-slate-600">
+                {{ balance()?.used?.Sick || 0 }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-emerald-600">
+                {{ balance()?.remaining?.Sick || 0 }}
+              </td>
+            </tr>
+            <!-- Casual Leave -->
+            <tr class="hover:bg-slate-50/50 transition-colors">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900">Casual Leave</td>
+              <td class="px-6 py-4 whitespace-nowrap text-xs font-medium">
+                <span class="inline-flex items-center rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-600/10">Paid</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-semibold text-slate-700">
+                {{ balance()?.allocated?.Casual || 0 }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-semibold text-slate-600">
+                {{ balance()?.used?.Casual || 0 }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-emerald-600">
+                {{ balance()?.remaining?.Casual || 0 }}
+              </td>
+            </tr>
+          </ng-template>
+        </tbody>
+        <tfoot>
+          <tr class="bg-slate-50/60 font-bold border-t border-slate-200">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-800">
+              Total Balance
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
+              -
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-slate-800">
+              {{ totalAllocated() }} days
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-slate-800">
+              {{ totalUsed() }} days
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-emerald-700 font-extrabold">
+              {{ totalRemaining() }} days
+            </td>
+          </tr>
+        </tfoot>
+      </table>
     </div>
   </div>
 
@@ -307,9 +351,16 @@
                       (change)="calculateDays()"
                       class="mt-2 block w-full rounded-md border-0 py-1.5 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     >
-                      <option value="Annual">Annual Leave</option>
-                      <option value="Sick">Sick Leave</option>
-                      <option value="Casual">Casual Leave</option>
+                      <ng-container *ngIf="balance()?.list && balance()!.list!.length > 0; else legacyOptions">
+                        <option *ngFor="let item of balance()?.list" [value]="item.leaveType">
+                          {{ item.leaveType }} Leave
+                        </option>
+                      </ng-container>
+                      <ng-template #legacyOptions>
+                        <option value="Annual">Annual Leave</option>
+                        <option value="Sick">Sick Leave</option>
+                        <option value="Casual">Casual Leave</option>
+                      </ng-template>
                       <option value="Unpaid">Unpaid Leave</option>
                     </select>
                   </div>
