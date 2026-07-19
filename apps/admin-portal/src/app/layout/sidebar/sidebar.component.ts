@@ -23,6 +23,7 @@ export class SidebarComponent {
   readonly salaryOpen = signal(false);
   readonly reportsOpen = signal(false);
 
+
   toggleSettings() {
     this.settingsOpen.update((v) => !v);
   }

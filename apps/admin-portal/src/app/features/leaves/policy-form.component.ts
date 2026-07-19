@@ -27,6 +27,7 @@ export class LeavePolicyFormComponent implements OnInit {
   employeeTypes = signal<EmployeeType[]>([]);
 
   isEditMode = signal(false);
+  isViewOnly = signal(false);
   policyId = signal<string | null>(null);
   loading = signal(true);
   saving = signal(false);
@@ -69,10 +70,12 @@ export class LeavePolicyFormComponent implements OnInit {
   }
 
   removeAllocation(index: number) {
+    if (this.isViewOnly()) return;
     this.leaveAllocations.removeAt(index);
   }
 
   toggleEmployeeType(id: string) {
+    if (this.isViewOnly()) return;
     const current = this.policyForm.value.employeeTypes as string[];
     const index = current.indexOf(id);
     if (index === -1) {
@@ -100,6 +103,10 @@ export class LeavePolicyFormComponent implements OnInit {
 
         if (res.policy) {
           this.populateForm(res.policy);
+          if (res.policy.status !== 'Draft') {
+            this.isViewOnly.set(true);
+            this.policyForm.disable();
+          }
         } else {
           // Initialize with empty allocations for all active leave types
           res.lt.forEach((lt: LeaveType) => {
