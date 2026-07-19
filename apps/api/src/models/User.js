@@ -22,6 +22,7 @@ const userSchema = new mongoose.Schema(
     joiningDate: { type: Date, default: Date.now },
     resignationDate: { type: Date },
     status: { type: String, enum: USER_STATUSES, default: 'active' },
+    employeeType: { type: mongoose.Schema.Types.ObjectId, ref: 'EmployeeType' },
   },
   { timestamps: true },
 );

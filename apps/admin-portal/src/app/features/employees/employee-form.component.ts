@@ -7,6 +7,7 @@ import { catchError, finalize, of, switchMap, tap } from 'rxjs';
 import { EmployeeService } from '../../core/services/employee.service';
 import { ShiftService } from '../../core/services/shift.service';
 import { Shift } from '../../core/models/shift.model';
+import { AdminPolicyService, EmployeeType } from '../../core/services/admin-policy.service';
 
 @Component({
   selector: 'wfm-employee-form',
@@ -21,12 +22,15 @@ export class EmployeeFormComponent implements OnDestroy {
   private route = inject(ActivatedRoute);
   private employeeService = inject(EmployeeService);
   private shiftService = inject(ShiftService);
+  private adminPolicyService = inject(AdminPolicyService);
   private destroy$ = new Subject<void>();
 
   readonly loading = signal(true);
   readonly saving = signal(false);
   readonly shiftsLoading = signal(true);
   readonly shifts = signal<Shift[]>([]);
+  readonly employeeTypesLoading = signal(true);
+  readonly employeeTypes = signal<EmployeeType[]>([]);
   readonly isEdit = signal(false);
   readonly employeeId = signal<string | null>(null);
 
@@ -39,6 +43,7 @@ export class EmployeeFormComponent implements OnDestroy {
     salary: [0],
     role: ['employee'],
     shiftId: [''],
+    employeeType: [''],
     status: ['active'],
     joiningDate: [''],
     resignationDate: [''],
@@ -69,6 +74,16 @@ export class EmployeeFormComponent implements OnDestroy {
         takeUntil(this.destroy$),
       )
       .subscribe();
+
+    this.adminPolicyService
+      .getEmployeeTypes()
+      .pipe(
+        tap((types) => this.employeeTypes.set(types)),
+        catchError(() => of([])),
+        finalize(() => this.employeeTypesLoading.set(false)),
+        takeUntil(this.destroy$),
+      )
+      .subscribe();
   }
 
   loadEmployee() {
@@ -90,6 +105,7 @@ export class EmployeeFormComponent implements OnDestroy {
             salary: emp.salary ?? 0,
             role: emp.role,
             shiftId: (emp.shiftId as any)?._id || emp.shiftId || '',
+            employeeType: (emp.employeeType as any)?._id || emp.employeeType || '',
             status: emp.status,
             joiningDate: emp.joiningDate ? emp.joiningDate.split('T')[0] : '',
             resignationDate: emp.resignationDate ? emp.resignationDate.split('T')[0] : '',
@@ -114,6 +130,7 @@ export class EmployeeFormComponent implements OnDestroy {
     const raw = this.form.getRawValue();
     const payload: any = { ...raw };
     if (!payload.shiftId) payload.shiftId = null;
+    if (!payload.employeeType) payload.employeeType = null;
     if (!payload.joiningDate) payload.joiningDate = null;
     if (!payload.resignationDate) payload.resignationDate = null;
     if (!this.isEdit()) {

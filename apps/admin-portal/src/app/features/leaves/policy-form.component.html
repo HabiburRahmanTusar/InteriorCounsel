@@ -1,0 +1,114 @@
+<div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-3xl mx-auto">
+  <div class="mb-8">
+    <div class="flex items-center space-x-2 text-sm text-slate-500 mb-2">
+      <a routerLink="/leaves/policies" class="hover:text-indigo-500">Leave Policies</a>
+      <span>/</span>
+      <span class="text-slate-900">{{ isEditMode() ? 'Edit Policy' : 'New Policy' }}</span>
+    </div>
+    <h1 class="text-2xl md:text-3xl text-slate-800 font-bold">{{ isEditMode() ? 'Edit Leave Policy' : 'Create Leave Policy' }}</h1>
+  </div>
+
+  <div *ngIf="loading()" class="text-center py-8 text-slate-500">
+    Loading...
+  </div>
+
+  <form *ngIf="!loading()" [formGroup]="policyForm" (ngSubmit)="onSubmit()" class="bg-white shadow-lg rounded-sm border border-slate-200">
+    <div class="p-6 space-y-6">
+      
+      <!-- General Info -->
+      <div>
+        <h2 class="text-lg font-semibold text-slate-800 mb-4">General Information</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium mb-1" for="name">Policy Name <span class="text-rose-500">*</span></label>
+            <input id="name" type="text" formControlName="name" class="form-input w-full" placeholder="e.g. Standard 2026 Policy" />
+            <div *ngIf="policyForm.get('name')?.touched && policyForm.get('name')?.invalid" class="text-xs mt-1 text-rose-500">Name is required</div>
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium mb-1" for="description">Description</label>
+            <textarea id="description" formControlName="description" class="form-input w-full" rows="2"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1" for="year">Year <span class="text-rose-500">*</span></label>
+            <input id="year" type="number" formControlName="year" class="form-input w-full" />
+            <div *ngIf="policyForm.get('year')?.touched && policyForm.get('year')?.invalid" class="text-xs mt-1 text-rose-500">Valid year is required</div>
+          </div>
+
+          <div class="flex items-end pb-2">
+            <label class="flex items-center">
+              <input type="checkbox" formControlName="isDefault" class="form-checkbox" />
+              <span class="text-sm ml-2">Set as default policy for new users</span>
+            </label>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Assignment -->
+      <hr class="border-slate-200" />
+      <div>
+        <h2 class="text-lg font-semibold text-slate-800 mb-4">Assignment</h2>
+        <label class="block text-sm font-medium mb-1" for="employeeTypes">Applies to Employee Types <span class="text-rose-500">*</span></label>
+        <div class="space-y-2 mt-2">
+          <label *ngFor="let et of employeeTypes()" class="flex items-center">
+            <input type="checkbox" class="form-checkbox" 
+                   [checked]="policyForm.value.employeeTypes.includes(et._id)"
+                   (change)="toggleEmployeeType(et._id)" />
+            <span class="text-sm ml-2">{{ et.label }}</span>
+          </label>
+        </div>
+        <div *ngIf="policyForm.get('employeeTypes')?.touched && policyForm.get('employeeTypes')?.value?.length === 0" class="text-xs mt-1 text-rose-500">At least one employee type must be selected</div>
+      </div>
+
+      <!-- Allocations -->
+      <hr class="border-slate-200" />
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-slate-800">Leave Allocations</h2>
+          <button type="button" (click)="addAllocation()" class="btn-sm bg-white border-slate-200 hover:border-slate-300 text-indigo-500">
+            + Add Type
+          </button>
+        </div>
+        
+        <div formArrayName="leaveAllocations" class="space-y-3">
+          <div *ngFor="let alloc of leaveAllocations.controls; let i=index" [formGroupName]="i" class="flex items-start space-x-3 bg-slate-50 p-3 rounded border border-slate-200">
+            <div class="flex-1">
+              <label class="block text-xs font-medium text-slate-500 mb-1">Leave Type</label>
+              <select formControlName="leaveType" class="form-select w-full text-sm py-1.5">
+                <option value="" disabled>Select type</option>
+                <option *ngFor="let lt of leaveTypes()" [value]="lt._id">{{ lt.name }}</option>
+              </select>
+            </div>
+            <div class="w-24">
+              <label class="block text-xs font-medium text-slate-500 mb-1">Days</label>
+              <input type="number" formControlName="days" class="form-input w-full text-sm py-1.5" min="0" />
+            </div>
+            <div class="pt-6">
+              <button type="button" (click)="removeAllocation(i)" class="text-rose-500 hover:text-rose-600">
+                <svg class="w-5 h-5 fill-current" viewBox="0 0 16 16">
+                  <path d="M5 7h6v2H5z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          
+          <div *ngIf="leaveAllocations.length === 0" class="text-sm text-slate-500 text-center py-4">
+            No leave allocations added. Add at least one.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-end space-x-3">
+      <a routerLink="/leaves/policies" class="btn-sm border-slate-200 hover:border-slate-300 text-slate-600">Cancel</a>
+      <button type="submit" [disabled]="saving()" class="btn-sm bg-indigo-500 hover:bg-indigo-600 text-white disabled:opacity-50">
+        {{ saving() ? 'Saving...' : 'Save Policy' }}
+      </button>
+    </div>
+  </form>
+</div>

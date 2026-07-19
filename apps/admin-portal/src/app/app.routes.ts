@@ -42,6 +42,18 @@ export const routes: Routes = [
         canActivate: [roleGuard('admin', 'hr')],
         children: [
           {
+            path: 'policies',
+            title: 'Leave Policies',
+            loadComponent: () =>
+              import('./features/leaves/policies.component').then((m) => m.LeavePoliciesComponent),
+          },
+          {
+            path: 'policies/:id',
+            title: 'Leave Policy Form',
+            loadComponent: () =>
+              import('./features/leaves/policy-form.component').then((m) => m.LeavePolicyFormComponent),
+          },
+          {
             path: 'requests',
             title: 'Leave Requests',
             loadComponent: () =>

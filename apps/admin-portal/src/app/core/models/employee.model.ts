@@ -12,6 +12,7 @@ export interface Employee {
   salary?: number;
   role: UserRole;
   shiftId?: string;
+  employeeType?: string | any;
   status: UserStatus;
   joiningDate?: string;
   resignationDate?: string;

@@ -183,11 +183,12 @@ describe('Employee Wise Attendance Report API & Service', () => {
 
   test('should generate leave wise report and statistics', async () => {
     // Seed approved leave request
+    const type = await require('../src/models/LeaveType').findOne({ code: 'annual' });
     await LeaveRequest.create({
       employeeId: employee._id,
       startDate: new Date('2026-06-03'),
       endDate: new Date('2026-06-05'),
-      leaveType: 'Annual',
+      leaveType: type ? type._id : new require('mongoose').Types.ObjectId(),
       reason: 'Vacation',
       requestedDays: 3,
       status: 'Approved',

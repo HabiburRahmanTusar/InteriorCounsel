@@ -172,6 +172,11 @@ export class EmployeeListComponent implements OnDestroy {
     return employee?.shiftId;
   }
 
+  getEmployeeTypeLabel(type: any): string {
+    if (!type) return '';
+    return typeof type === 'object' ? type.label || '' : '';
+  }
+
   formatTime(timeStr?: string): string {
     if (!timeStr) return '';
     const [hoursStr, minutesStr] = timeStr.split(':');

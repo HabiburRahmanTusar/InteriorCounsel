@@ -5,7 +5,7 @@ const leaveRequestSchema = new mongoose.Schema(
     employeeId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
-    leaveType: { type: String, enum: ['Annual', 'Sick', 'Casual', 'Unpaid'], default: 'Annual' },
+    leaveType: { type: mongoose.Schema.Types.ObjectId, ref: 'LeaveType', required: true },
     reason: { type: String, required: true },
     status: { type: String, enum: ['Pending', 'Approved', 'Rejected', 'Cancelled'], default: 'Pending' },
     requestedDays: { type: Number, required: true }, // The number of working days taken

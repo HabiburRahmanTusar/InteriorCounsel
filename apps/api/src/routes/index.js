@@ -31,5 +31,6 @@ router.use('/holidays', require('./holiday.routes'));
 router.use('/salary', require('./salary.routes'));
 router.use('/leaves', require('./leave.routes'));
 router.use('/financial', require('./financial.routes'));
+router.use('/admin', require('./admin.routes'));
 
 module.exports = router;
