@@ -77,4 +77,8 @@ export class AdminPolicyService {
   syncBalancesBulk(year: number): Observable<{ count: number }> {
     return this.http.post<{ count: number }>(`${this.baseUrl}/leave-policies/sync-balances`, { year });
   }
+
+  deletePolicy(id: string): Observable<any> {
+    return this.http.delete<any>(`${this.baseUrl}/leave-policies/${id}`);
+  }
 }

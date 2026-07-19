@@ -1,7 +1,7 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, OnChanges, SimpleChanges, Input, Output, EventEmitter, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router, ActivatedRoute, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import {
   AdminPolicyService,
   LeaveType,
@@ -16,11 +16,14 @@ import { forkJoin } from 'rxjs';
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './policy-form.component.html',
 })
-export class LeavePolicyFormComponent implements OnInit {
+export class LeavePolicyFormComponent implements OnInit, OnChanges {
   private fb = inject(FormBuilder);
   private policyService = inject(AdminPolicyService);
-  private router = inject(Router);
-  private route = inject(ActivatedRoute);
+
+  @Input() policyId: string | null = null;
+  @Input() viewOnly: boolean = false;
+  @Output() close = new EventEmitter<void>();
+  @Output() saved = new EventEmitter<void>();
 
   policyForm!: FormGroup;
   leaveTypes = signal<LeaveType[]>([]);
@@ -28,21 +31,31 @@ export class LeavePolicyFormComponent implements OnInit {
 
   isEditMode = signal(false);
   isViewOnly = signal(false);
-  policyId = signal<string | null>(null);
   loading = signal(true);
   saving = signal(false);
 
   ngOnInit() {
     this.initForm();
+  }
 
-    this.route.paramMap.subscribe((params) => {
-      const id = params.get('id');
-      if (id && id !== 'new') {
-        this.isEditMode.set(true);
-        this.policyId.set(id);
-      }
+  ngOnChanges(changes: SimpleChanges) {
+    let shouldLoad = false;
+
+    if (changes['policyId']) {
+      const val = changes['policyId'].currentValue;
+      this.isEditMode.set(val && val !== 'new');
+      shouldLoad = true;
+    }
+
+    if (changes['viewOnly']) {
+      this.isViewOnly.set(changes['viewOnly'].currentValue);
+    }
+
+    if (shouldLoad) {
+      this.initForm();
+      this.loading.set(true);
       this.loadData();
-    });
+    }
   }
 
   initForm() {
@@ -92,8 +105,8 @@ export class LeavePolicyFormComponent implements OnInit {
       et: this.policyService.getEmployeeTypes(),
     };
 
-    if (this.isEditMode() && this.policyId()) {
-      requests.policy = this.policyService.getPolicyById(this.policyId()!);
+    if (this.isEditMode() && this.policyId) {
+      requests.policy = this.policyService.getPolicyById(this.policyId);
     }
 
     forkJoin(requests).subscribe({
@@ -103,8 +116,8 @@ export class LeavePolicyFormComponent implements OnInit {
 
         if (res.policy) {
           this.populateForm(res.policy);
-          if (res.policy.status !== 'Draft') {
-            this.isViewOnly.set(true);
+          
+          if (this.isViewOnly()) {
             this.policyForm.disable();
           }
         } else {
@@ -142,6 +155,10 @@ export class LeavePolicyFormComponent implements OnInit {
     return this.leaveTypes().find((lt) => lt._id === id);
   }
 
+  onClose() {
+    this.close.emit();
+  }
+
   onSubmit() {
     if (this.policyForm.invalid) {
       this.policyForm.markAllAsTouched();
@@ -152,13 +169,13 @@ export class LeavePolicyFormComponent implements OnInit {
     const formValue = this.policyForm.value;
 
     const request = this.isEditMode()
-      ? this.policyService.updatePolicy(this.policyId()!, formValue)
+      ? this.policyService.updatePolicy(this.policyId!, formValue)
       : this.policyService.createPolicy(formValue);
 
     request.subscribe({
       next: () => {
         this.saving.set(false);
-        this.router.navigate(['/leaves/policies']);
+        this.saved.emit();
       },
       error: (err) => {
         alert('Error saving policy: ' + (err.error?.message || 'Unknown error'));

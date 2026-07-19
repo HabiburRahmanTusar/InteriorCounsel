@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminPolicyService, LeavePolicy, EmployeeType } from '../../core/services/admin-policy.service';
+import { LeavePolicyFormComponent } from './policy-form.component';
 
 @Component({
   selector: 'app-leave-policies',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, LeavePolicyFormComponent],
   templateUrl: './policies.component.html',
 })
 export class LeavePoliciesComponent implements OnInit {
@@ -17,6 +18,10 @@ export class LeavePoliciesComponent implements OnInit {
   loading = signal(false);
   syncing = signal(false);
   yearFilter = signal(new Date().getFullYear());
+
+  isModalOpen = signal(false);
+  selectedPolicyId = signal<string | null>(null);
+  isViewOnly = signal(false);
 
   ngOnInit() {
     this.loadPolicies();
@@ -53,6 +58,16 @@ export class LeavePoliciesComponent implements OnInit {
     }
   }
 
+  deletePolicy(id: string | undefined) {
+    if (!id) return;
+    if (confirm('Are you sure you want to delete this policy? This action cannot be undone.')) {
+      this.policyService.deletePolicy(id).subscribe({
+        next: () => this.loadPolicies(),
+        error: (err) => alert('Error deleting policy: ' + (err.error?.message || 'Unknown error'))
+      });
+    }
+  }
+
   syncBalances() {
     if (confirm(`Are you sure you want to re-sync all balances for ${this.yearFilter()}? This may take a moment.`)) {
       this.syncing.set(true);
@@ -67,5 +82,35 @@ export class LeavePoliciesComponent implements OnInit {
         }
       });
     }
+  }
+
+  openCreateModal() {
+    this.selectedPolicyId.set('new');
+    this.isViewOnly.set(false);
+    this.isModalOpen.set(true);
+  }
+
+  openEditModal(id: string | undefined) {
+    if (!id) return;
+    this.selectedPolicyId.set(id);
+    this.isViewOnly.set(false);
+    this.isModalOpen.set(true);
+  }
+
+  openViewModal(id: string | undefined) {
+    if (!id) return;
+    this.selectedPolicyId.set(id);
+    this.isViewOnly.set(true);
+    this.isModalOpen.set(true);
+  }
+
+  closeModal() {
+    this.isModalOpen.set(false);
+    this.selectedPolicyId.set(null);
+  }
+
+  onModalSaved() {
+    this.closeModal();
+    this.loadPolicies();
   }
 }

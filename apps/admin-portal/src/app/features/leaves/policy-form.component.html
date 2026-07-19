@@ -1,77 +1,32 @@
-<div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-4xl mx-auto">
-  <!-- Breadcrumb & Header -->
-  <div class="mb-8">
-    <div
-      class="flex items-center space-x-2 text-xs font-semibold tracking-wider text-slate-400 uppercase mb-3"
-    >
-      <a routerLink="/leaves/policies" class="hover:text-indigo-600 transition-colors"
-        >Leave Policies</a
-      >
-      <svg class="w-3 h-3 text-slate-300 fill-current" viewBox="0 0 16 16">
-        <path d="M6.6 13.4L5.2 12l4-4-4-4 1.4-1.4L12 8z" />
-      </svg>
-      <span class="text-slate-600">{{ isViewOnly() ? 'View Policy' : isEditMode() ? 'Edit Policy' : 'New Policy' }}</span>
+<div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" (click)="onClose()">
+  <div class="bg-white border border-slate-200/80 w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+      <h2 class="text-lg font-bold text-slate-900 flex items-center gap-3">
+        <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-purple-600 text-white shadow-sm">
+          <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        {{ isViewOnly() ? 'View Leave Policy' : isEditMode() ? 'Edit Leave Policy' : 'Create Leave Policy' }}
+      </h2>
+      <button type="button" (click)="onClose()" class="text-slate-400 hover:text-slate-600 rounded-lg p-1 hover:bg-slate-100 transition-colors">
+        <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+        </svg>
+      </button>
     </div>
 
-    <div class="flex items-center justify-between">
-      <div>
-        <h1
-          class="text-2xl md:text-3xl text-slate-900 font-extrabold tracking-tight flex items-center gap-3"
-        >
-          <div
-            class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-100"
-          >
-            <svg
-              class="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
-          </div>
-          {{ isViewOnly() ? 'View Leave Policy' : isEditMode() ? 'Edit Leave Policy' : 'Create Leave Policy' }}
-        </h1>
-        <p class="text-sm text-slate-500 mt-1">
-          Configure baseline leave allocations, rules, and default assignments.
-        </p>
+    <!-- Modal Content -->
+    <div class="p-6 md:p-8 overflow-y-auto space-y-6 flex-1 min-h-0">
+      <!-- Loading State -->
+      <div *ngIf="loading()" class="flex flex-col items-center justify-center py-16 text-center">
+        <div class="animate-spin rounded-full h-10 w-10 border-4 border-indigo-500 border-t-transparent mb-4"></div>
+        <span class="text-sm font-semibold text-slate-600">Loading policy data...</span>
       </div>
 
-      <div *ngIf="isEditMode() || isViewOnly()" class="hidden sm:block">
-        <span
-          *ngIf="isViewOnly()"
-          class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200"
-        >
-          View Only
-        </span>
-        <span
-          *ngIf="!isViewOnly() && isEditMode()"
-          class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100"
-        >
-          Editing Policy
-        </span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Loading State -->
-  <div
-    *ngIf="loading()"
-    class="flex flex-col items-center justify-center py-16 text-center bg-white border border-slate-200/80 rounded-2xl shadow-sm"
-  >
-    <div
-      class="animate-spin rounded-full h-10 w-10 border-4 border-indigo-500 border-t-transparent mb-4"
-    ></div>
-    <span class="text-sm font-semibold text-slate-600">Loading policy data...</span>
-  </div>
-
-  <!-- Form -->
-  <form *ngIf="!loading()" [formGroup]="policyForm" (ngSubmit)="onSubmit()" class="space-y-6">
+      <!-- Form -->
+      <form *ngIf="!loading()" [formGroup]="policyForm" (ngSubmit)="onSubmit()" id="policyModalForm" class="space-y-6">
     <!-- Section 1: Details and Assignment -->
     <div class="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 shadow-sm">
       <div class="border-b border-slate-100 pb-5 mb-6">
@@ -164,7 +119,7 @@
               (click)="toggleEmployeeType(et._id)"
               [disabled]="isViewOnly()"
               [class]="
-                policyForm.value.employeeTypes.includes(et._id)
+                policyForm.value.employeeTypes?.includes(et._id)
                   ? 'border-2 border-indigo-600 bg-indigo-50/40 text-indigo-900 ring-2 ring-indigo-600/10'
                   : 'border border-slate-200 bg-white hover:border-slate-300 text-slate-700'
               "
@@ -176,7 +131,7 @@
               <div
                 class="absolute top-3 right-3 flex items-center justify-center w-5 h-5 rounded-full transition-all duration-200"
                 [class]="
-                  policyForm.value.employeeTypes.includes(et._id)
+                  policyForm.value.employeeTypes?.includes(et._id)
                     ? 'bg-indigo-600 text-white scale-100'
                     : 'bg-slate-100 text-slate-300 scale-90'
                 "
@@ -408,19 +363,20 @@
       </div>
     </div>
 
-    <!-- Actions Footer -->
-    <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-      <a
-        routerLink="/leaves/policies"
-        [class]="isViewOnly() ? 'px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg' : 'px-4 py-2.5 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-sm font-bold rounded-xl transition-all shadow-sm'"
-      >
-        {{ isViewOnly() ? 'Back to Policies' : 'Cancel' }}
-      </a>
+    </form>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+      <button type="button" (click)="onClose()" class="px-4 py-2.5 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-sm font-bold rounded-xl transition-all shadow-sm">
+        Close
+      </button>
       <button
         *ngIf="!isViewOnly()"
         type="submit"
+        form="policyModalForm"
         [disabled]="saving()"
-        class="inline-flex items-center justify-center px-5 py-2.5 border border-transparent text-sm font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:pointer-events-none select-none cursor-pointer"
+        class="inline-flex items-center justify-center px-5 py-2.5 border border-transparent text-sm font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none transition-all shadow-md disabled:opacity-50 disabled:pointer-events-none select-none cursor-pointer"
       >
         <svg
           *ngIf="saving()"
@@ -445,5 +401,5 @@
         {{ saving() ? 'Saving Policy...' : isEditMode() ? 'Update Policy' : 'Create Policy' }}
       </button>
     </div>
-  </form>
+  </div>
 </div>
