@@ -2,7 +2,7 @@
   "name": "workforce-management",
   "version": "0.1.0",
   "private": true,
-  "description": "Attendance & Workforce Management System — monorepo (Node.js API + Angular admin portal). Flutter app excluded from this scaffolding.",
+  "description": "Attendly — monorepo (Node.js API + Angular admin portal). Flutter app excluded from this scaffolding.",
   "workspaces": [
     "apps/api",
     "apps/admin-portal"
