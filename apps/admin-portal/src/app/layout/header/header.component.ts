@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, signal, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, inject, Output, EventEmitter } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, finalize, of } from 'rxjs';
 
@@ -14,6 +14,8 @@ import { AuthService } from '../../core/services/auth.service';
 export class HeaderComponent {
   private auth = inject(AuthService);
   private router = inject(Router);
+
+  @Output() readonly toggleSidebar = new EventEmitter<void>();
 
   readonly showDropdown = signal(false);
   readonly loggingOut = signal(false);

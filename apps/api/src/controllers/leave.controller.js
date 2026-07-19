@@ -79,7 +79,7 @@ function aggregateBalances(balances, leaveTypes) {
 exports.getRequests = async (req, res, next) => {
   try {
     const requests = await LeaveRequest.find()
-      .populate('employeeId', 'name employeeId designation email')
+      .populate('employeeId', 'name employeeId designation email role')
       .populate('leaveType')
       .sort({ createdAt: -1 });
     

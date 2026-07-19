@@ -26,6 +26,9 @@
               Reason
             </th>
             <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
+              Requested On
+            </th>
+            <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
               Status
             </th>
             <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4 text-right">
@@ -36,11 +39,11 @@
         <tbody class="divide-y divide-slate-100">
           @if (loading()) {
           <tr>
-            <td colspan="6" class="px-6 py-12 text-center text-slate-400">Loading requests...</td>
+            <td colspan="7" class="px-6 py-12 text-center text-slate-400">Loading requests...</td>
           </tr>
           } @else if (requests().length === 0) {
           <tr>
-            <td colspan="6" class="px-6 py-12 text-center text-slate-400">
+            <td colspan="7" class="px-6 py-12 text-center text-slate-400">
               <p class="text-sm">No leave requests found</p>
             </td>
           </tr>
@@ -49,7 +52,19 @@
           <tr class="hover:bg-slate-50/50 transition-colors">
             <td class="px-6 py-4">
               <div class="text-sm font-medium text-slate-900">{{ req.employeeId?.name }}</div>
-              <div class="text-xs text-slate-500">{{ req.employeeId?.employeeId }}</div>
+              <div class="flex flex-wrap items-center gap-1.5 mt-0.5">
+                <span class="text-xs text-slate-500 font-medium">{{ req.employeeId?.employeeId }}</span>
+                @if (req.employeeId?.role) {
+                  <span class="text-slate-300">•</span>
+                  <span class="inline-flex items-center rounded-md bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700 uppercase tracking-wide">
+                    {{ req.employeeId?.role }}
+                  </span>
+                }
+                @if (req.employeeId?.designation) {
+                  <span class="text-slate-300">•</span>
+                  <span class="text-xs text-slate-500 italic">{{ req.employeeId?.designation }}</span>
+                }
+              </div>
             </td>
             <td class="px-6 py-4">
               <span
@@ -78,6 +93,9 @@
               @if (req.approverRemarks) {
               <div class="text-xs text-rose-500 italic mt-0.5 font-medium">Remarks: {{ req.approverRemarks }}</div>
               }
+            </td>
+            <td class="px-6 py-4 text-sm text-slate-500">
+              {{ req.createdAt | date: 'MMM d, y, h:mm a' }}
             </td>
             <td class="px-6 py-4">
               <span [ngClass]="{
