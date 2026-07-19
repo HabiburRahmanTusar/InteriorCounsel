@@ -33,9 +33,17 @@ export class LeavePolicyFormComponent implements OnInit, OnChanges {
   isViewOnly = signal(false);
   loading = signal(true);
   saving = signal(false);
+  yearOptions = signal<number[]>([]);
 
   ngOnInit() {
     this.initForm();
+    const currentYear = new Date().getFullYear();
+    const startYear = currentYear - 3;
+    const years = [];
+    for (let i = 0; i < 6; i++) {
+      years.push(startYear + i);
+    }
+    this.yearOptions.set(years);
   }
 
   ngOnChanges(changes: SimpleChanges) {
