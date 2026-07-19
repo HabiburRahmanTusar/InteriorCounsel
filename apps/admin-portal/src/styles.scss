@@ -248,3 +248,57 @@ body {
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
 }
+
+/* Page entrance and layout transitions */
+main > * {
+  animation: fadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Universal hover transition speed */
+.btn, button, a {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Active click bounce */
+.btn:active, button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* Premium active sidebar border indicator */
+wfm-sidebar a {
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-left: 0px solid transparent;
+}
+
+wfm-sidebar a.bg-indigo-50 {
+  border-left: 4px solid #4f46e5;
+  border-top-left-radius: 0px !important;
+  border-bottom-left-radius: 0px !important;
+  padding-left: calc(1rem - 4px) !important;
+}
+
+/* Smooth input focus outline glow */
+input, select, textarea {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  &:focus {
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12) !important;
+    border-color: #4f46e5 !important;
+  }
+}
+
+/* Smooth table row highlight transitions */
+tbody tr {
+  transition: background-color 0.15s ease;
+}
