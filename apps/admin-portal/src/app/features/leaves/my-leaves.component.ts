@@ -108,6 +108,27 @@ export class MyLeavesComponent implements OnInit, OnDestroy {
     this.showRequestModal.set(false);
   }
 
+  getSelectedTypeBalance() {
+    const selectedType = this.newRequest.leaveType;
+    if (!selectedType) return null;
+    
+    if (this.balance()?.list) {
+      return this.balance()?.list?.find(item => item.leaveType === selectedType) || null;
+    }
+    
+    // Legacy fallback
+    const key = selectedType as 'Annual' | 'Sick' | 'Casual';
+    const b = this.balance();
+    if (!b) return null;
+    return {
+      leaveType: selectedType,
+      allocated: b.allocated?.[key] || 0,
+      used: b.used?.[key] || 0,
+      remaining: b.remaining?.[key] || 0,
+      leaveTypeDoc: { deductsFromBalance: selectedType !== 'Unpaid' }
+    };
+  }
+
   calculateDays() {
     if (!this.newRequest.startDate) {
       this.calculatedDays.set(0);
