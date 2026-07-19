@@ -48,12 +48,6 @@ export const routes: Routes = [
               import('./features/leaves/policies.component').then((m) => m.LeavePoliciesComponent),
           },
           {
-            path: 'policies/:id',
-            title: 'Leave Policy Form',
-            loadComponent: () =>
-              import('./features/leaves/policy-form.component').then((m) => m.LeavePolicyFormComponent),
-          },
-          {
             path: 'requests',
             title: 'Leave Requests',
             loadComponent: () =>

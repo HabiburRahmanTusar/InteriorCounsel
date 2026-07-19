@@ -40,6 +40,26 @@ class LeavePolicyService {
   async generateBalancesFromPolicy(employeeId, policy, year) {
     if (!policy) return; // No policy assigned, cannot generate balances
 
+    // 1. Delete any "PolicyAssigned" balances that do not belong to the current policy
+    await LeaveBalance.deleteMany({
+      employeeId,
+      year,
+      source: 'PolicyAssigned',
+      policy: { $ne: policy._id },
+    });
+
+    // 2. Delete any "PolicyAssigned" balances under this policy that are no longer in the allocations list
+    const policyLeaveTypeIds = policy.leaveAllocations.map(
+      (alloc) => (alloc.leaveType._id || alloc.leaveType).toString()
+    );
+    await LeaveBalance.deleteMany({
+      employeeId,
+      year,
+      policy: policy._id,
+      source: 'PolicyAssigned',
+      leaveType: { $nin: policyLeaveTypeIds },
+    });
+
     const operations = [];
 
     for (const alloc of policy.leaveAllocations) {

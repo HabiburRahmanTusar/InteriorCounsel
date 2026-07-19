@@ -1,6 +1,6 @@
-# Workforce Management System
+# Attendly
 
-Monorepo for the Attendance & Workforce Management System — covers backend API (Node.js + Express + MongoDB) and the Angular admin portal. The Flutter mobile app is intentionally excluded from this scaffolding (per build plan, Phase 3 can be added later).
+Monorepo for Attendly — covers backend API (Node.js + Express + MongoDB) and the Angular admin portal. The Flutter mobile app is intentionally excluded from this scaffolding (per build plan, Phase 3 can be added later).
 
 > **Status:** Scaffolding only. Folder structure, configurations, Mongoose schemas, route definitions, controller signatures, Joi validators, Angular feature components, guards, interceptors, and services are in place. **No business logic has been implemented yet** — every controller returns `501 Not Implemented` and every service throws `Error('… not implemented')`. This is intentional so the structure can be reviewed before any logic lands.
 

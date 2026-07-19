@@ -93,11 +93,6 @@ exports.updatePolicy = async (req, res, next) => {
     const policy = await LeavePolicy.findById(req.params.id);
     if (!policy) return apiResponse.notFound(res, 'Policy not found');
 
-    // Only allow updating allocations if Draft, or explicitly handled
-    if (policy.status !== 'Draft' && req.body.leaveAllocations) {
-      return apiResponse.badRequest(res, 'Cannot edit allocations of a non-draft policy directly. Trigger a recalculation.');
-    }
-
     Object.assign(policy, req.body);
     await policy.save();
     
@@ -174,6 +169,17 @@ exports.syncBalanceSingle = async (req, res, next) => {
       return apiResponse.badRequest(res, 'No applicable policy found for employee');
     }
     return apiResponse.ok(res, { policy: policy.name }, 'Employee balance synced successfully');
+  } catch (err) {
+    return next(err);
+  }
+};
+
+exports.deletePolicy = async (req, res, next) => {
+  try {
+    const policy = await LeavePolicy.findById(req.params.id);
+    if (!policy) return apiResponse.notFound(res, 'Policy not found');
+    await LeavePolicy.findByIdAndDelete(req.params.id);
+    return apiResponse.ok(res, null, 'Policy deleted successfully');
   } catch (err) {
     return next(err);
   }

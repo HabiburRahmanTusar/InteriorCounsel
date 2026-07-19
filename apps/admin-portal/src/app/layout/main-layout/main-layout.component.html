@@ -1,13 +1,29 @@
-<div class="flex h-screen overflow-hidden bg-slate-50">
-  <!-- Sidebar -->
+<div class="flex h-screen overflow-hidden bg-slate-50 relative">
+  <!-- Desktop Sidebar -->
   <aside class="w-64 border-r border-slate-200 bg-white hidden md:flex flex-col">
     <wfm-sidebar class="h-full"></wfm-sidebar>
   </aside>
 
+  <!-- Mobile Sidebar Overlay & Drawer -->
+  @if (mobileSidebarOpen()) {
+    <!-- Backdrop overlay -->
+    <div 
+      (click)="toggleSidebar()"
+      class="md:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40 transition-opacity duration-300 animate-in fade-in"
+    ></div>
+
+    <!-- Sliding Sidebar Drawer -->
+    <aside 
+      class="md:hidden fixed inset-y-0 left-0 w-64 bg-white border-r border-slate-200 z-50 flex flex-col transition-transform duration-300 animate-in slide-in-from-left"
+    >
+      <wfm-sidebar class="h-full" (click)="toggleSidebar()"></wfm-sidebar>
+    </aside>
+  }
+
   <!-- Main container -->
   <div class="flex-1 flex flex-col overflow-hidden">
     <!-- Header -->
-    <wfm-header></wfm-header>
+    <wfm-header (toggleSidebar)="toggleSidebar()"></wfm-header>
 
     <!-- Main content area -->
     <main class="flex-1 overflow-y-auto p-6 md:p-8">

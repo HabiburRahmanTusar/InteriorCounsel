@@ -21,6 +21,7 @@ router.post('/leave-policies', adminPolicyCtrl.createPolicy);
 router.get('/leave-policies', adminPolicyCtrl.getPolicies);
 router.get('/leave-policies/:id', adminPolicyCtrl.getPolicyById);
 router.patch('/leave-policies/:id', adminPolicyCtrl.updatePolicy);
+router.delete('/leave-policies/:id', adminPolicyCtrl.deletePolicy);
 
 // Policy Actions
 router.post('/leave-policies/:id/activate', adminPolicyCtrl.activatePolicy);
