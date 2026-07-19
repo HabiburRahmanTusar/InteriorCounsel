@@ -30,6 +30,17 @@
       >
         Company
       </button>
+      <button
+        (click)="activeTab.set('development')"
+        [class]="
+          activeTab() === 'development'
+            ? 'border-indigo-600 text-indigo-600 font-semibold'
+            : 'border-transparent text-slate-500 hover:text-slate-950'
+        "
+        class="px-4 py-4 border-b-2 text-sm font-medium transition-all outline-none"
+      >
+        Development
+      </button>
     </div>
 
     <!-- Tab Body -->
@@ -113,6 +124,70 @@
               class="btn btn-primary btn-primary-sm"
             >
               {{ savingCompany() ? 'Saving...' : 'Save Changes' }}
+            </button>
+          </div>
+        </div>
+      }
+
+      @if (activeTab() === 'development') {
+        <div class="space-y-6">
+          <div
+            class="p-5 border border-rose-200 bg-rose-50/30 rounded-2xl flex items-start gap-4 animate-fade-in"
+          >
+            <div
+              class="flex items-center justify-center w-10 h-10 rounded-xl bg-rose-100 text-rose-600 shrink-0"
+            >
+              <svg class="w-5 h-5 fill-current" viewBox="0 0 16 16">
+                <path d="M8 0a8 8 0 100 16A8 8 0 008 0zm1 12H7V7h2v5zm0-7H7V3h2v2z" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-rose-900">Danger Zone: Reset Database</h3>
+              <p class="text-xs text-rose-700/80 mt-1 max-w-2xl leading-relaxed">
+                Wiping the database is a destructive action that will completely delete all
+                registered employees, shift timetables, leave requests, leave policies, and
+                attendance history logs. It will then populate the database back with core developer
+                default configurations.
+              </p>
+
+              <div class="mt-4 p-3 bg-white border border-rose-100 rounded-xl max-w-md">
+                <h4 class="text-xs font-bold text-slate-800 mb-1">Seeded Developer Admin Access</h4>
+                <div class="text-[11px] font-medium text-slate-500 space-y-0.5">
+                  <div><span class="font-bold text-slate-700">Email:</span> admin@attendly.com</div>
+                  <div><span class="font-bold text-slate-700">Password:</span> password123</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end pt-4 border-t border-slate-100">
+            <button
+              (click)="cleanDatabase()"
+              [disabled]="clearingDb()"
+              class="inline-flex items-center justify-center px-4 py-2 text-sm font-bold rounded-xl text-white bg-rose-600 hover:bg-rose-700 focus:outline-none transition-all shadow-sm disabled:opacity-50 select-none cursor-pointer"
+            >
+              @if (clearingDb()) {
+                <svg
+                  class="animate-spin -ml-1 mr-2.5 h-4 w-4 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+              }
+              {{ clearingDb() ? 'Resetting Database...' : 'Reset Database' }}
             </button>
           </div>
         </div>

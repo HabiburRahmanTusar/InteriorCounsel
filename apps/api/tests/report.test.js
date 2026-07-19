@@ -5,12 +5,15 @@ const Holiday = require('../src/models/Holiday');
 const LeaveRequest = require('../src/models/LeaveRequest');
 const reportService = require('../src/services/report.service');
 const Shift = require('../src/models/Shift');
+const LeaveType = require('../src/models/LeaveType');
 
 const TEST_DB_URI = 'mongodb://localhost:27017/workforce_management_test';
 
 describe('Employee Wise Attendance Report API & Service', () => {
   let employee;
   let shift;
+  let annualLeaveType;
+  let sickLeaveType;
 
   beforeAll(async () => {
     await mongoose.connect(TEST_DB_URI);
@@ -28,7 +31,11 @@ describe('Employee Wise Attendance Report API & Service', () => {
       Holiday.deleteMany({}),
       LeaveRequest.deleteMany({}),
       Shift.deleteMany({}),
+      LeaveType.deleteMany({}),
     ]);
+
+    annualLeaveType = await LeaveType.create({ name: 'Annual', code: 'annual' });
+    sickLeaveType = await LeaveType.create({ name: 'Sick', code: 'sick' });
 
     // Create a default shift (9:00 AM to 5:00 PM)
     shift = await Shift.create({
@@ -60,6 +67,7 @@ describe('Employee Wise Attendance Report API & Service', () => {
       employeeId: employee._id,
       startDate: new Date('2026-06-04'),
       endDate: new Date('2026-06-04'),
+      leaveType: annualLeaveType._id,
       reason: 'Medical checkup',
       requestedDays: 1,
       status: 'Approved',
@@ -183,12 +191,11 @@ describe('Employee Wise Attendance Report API & Service', () => {
 
   test('should generate leave wise report and statistics', async () => {
     // Seed approved leave request
-    const type = await require('../src/models/LeaveType').findOne({ code: 'annual' });
     await LeaveRequest.create({
       employeeId: employee._id,
       startDate: new Date('2026-06-03'),
       endDate: new Date('2026-06-05'),
-      leaveType: type ? type._id : new require('mongoose').Types.ObjectId(),
+      leaveType: annualLeaveType._id,
       reason: 'Vacation',
       requestedDays: 3,
       status: 'Approved',
@@ -201,7 +208,7 @@ describe('Employee Wise Attendance Report API & Service', () => {
       employeeId: employee._id,
       startDate: new Date('2026-06-07'),
       endDate: new Date('2026-06-08'),
-      leaveType: 'Sick',
+      leaveType: sickLeaveType._id,
       reason: 'Fever',
       requestedDays: 2,
       status: 'Pending',

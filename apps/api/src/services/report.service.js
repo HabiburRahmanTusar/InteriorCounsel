@@ -611,13 +611,14 @@ exports.leaveWise = async function leaveWise({ employeeId, leaveType, from, to }
 
   const requests = await LeaveRequest.find(query)
     .populate('employeeId', 'name employeeId')
+    .populate('leaveType')
     .populate('approvedBy', 'name')
     .sort({ startDate: -1 });
 
   const items = requests.map((req) => ({
     employeeId: req.employeeId?.employeeId || '—',
     employeeName: req.employeeId?.name || '—',
-    leaveType: req.leaveType,
+    leaveType: req.leaveType?.name || '—',
     startDate: dayjs(req.startDate).tz('Asia/Dhaka').format('YYYY-MM-DD'),
     endDate: dayjs(req.endDate).tz('Asia/Dhaka').format('YYYY-MM-DD'),
     totalDays: req.requestedDays,

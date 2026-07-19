@@ -1,8 +1,10 @@
 import { Component, ChangeDetectionStrategy, signal, inject, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { catchError, finalize, of, tap } from 'rxjs';
 
 import { SettingsService } from '../../core/services/settings.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'wfm-settings',
@@ -13,6 +15,8 @@ import { SettingsService } from '../../core/services/settings.service';
 })
 export class SettingsComponent implements OnDestroy {
   private settingsService = inject(SettingsService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
   private destroy$ = new Subject<void>();
 
   readonly activeTab = signal('rules');
@@ -20,6 +24,7 @@ export class SettingsComponent implements OnDestroy {
   readonly company = signal<Record<string, any>>({});
   readonly savingRules = signal(false);
   readonly savingCompany = signal(false);
+  readonly clearingDb = signal(false);
 
   constructor() {
     this.loadCompany();
@@ -100,6 +105,36 @@ export class SettingsComponent implements OnDestroy {
           return of(null);
         }),
         finalize(() => this.savingCompany.set(false)),
+        takeUntil(this.destroy$),
+      )
+      .subscribe();
+  }
+
+  cleanDatabase() {
+    const confirmed = confirm(
+      'WARNING: Are you absolutely sure you want to completely wipe and reset the database?\n\nThis will delete all employees, shifts, attendance logs, and policies, then log you out. This action cannot be undone.',
+    );
+    if (!confirmed) return;
+
+    this.clearingDb.set(true);
+    this.settingsService
+      .cleanDatabase()
+      .pipe(
+        tap(() => {
+          this.authService.clearSession();
+          alert(
+            'Database successfully reset!\n\nPlease log in again using the default credentials:\nEmail: admin@attendly.com\nPassword: password123',
+          );
+          this.router.navigate(['/login']);
+        }),
+        catchError((err) => {
+          console.error('Failed to clean database', err);
+          alert(
+            'Error resetting database: ' + (err.error?.message || err.message || 'Unknown error'),
+          );
+          return of(null);
+        }),
+        finalize(() => this.clearingDb.set(false)),
         takeUntil(this.destroy$),
       )
       .subscribe();

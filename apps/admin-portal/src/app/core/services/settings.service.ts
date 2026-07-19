@@ -27,4 +27,8 @@ export class SettingsService {
   updateCompany(payload: unknown): Observable<void> {
     return this.http.put<void>(`${this.baseUrl}/company`, payload);
   }
+
+  cleanDatabase(): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.baseUrl}/clean-db`, {});
+  }
 }

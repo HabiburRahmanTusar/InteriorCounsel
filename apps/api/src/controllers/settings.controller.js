@@ -45,3 +45,12 @@ exports.updateWorkCalendar = async (req, res, next) => {
     return next(err);
   }
 };
+
+exports.cleanDatabase = async (req, res, next) => {
+  try {
+    const data = await settingsService.cleanDatabase();
+    return apiResponse.ok(res, data, 'Database fully cleaned and re-seeded');
+  } catch (err) {
+    return next(err);
+  }
+};

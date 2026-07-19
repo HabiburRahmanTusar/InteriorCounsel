@@ -23,5 +23,6 @@ router.get('/company', rbac('admin'), ctrl.getCompany);
 router.put('/company', rbac('admin'), validate(schemas.updateCompany), ctrl.updateCompany);
 router.get('/work-calendar', ctrl.getWorkCalendar);
 router.put('/work-calendar', rbac('admin', 'hr'), ctrl.updateWorkCalendar);
+router.post('/clean-db', rbac('admin'), ctrl.cleanDatabase);
 
 module.exports = router;
