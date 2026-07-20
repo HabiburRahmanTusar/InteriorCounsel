@@ -10,6 +10,16 @@ const leaveRequestSchema = new mongoose.Schema(
     status: { type: String, enum: ['Pending', 'Approved', 'Rejected', 'Cancelled'], default: 'Pending' },
     requestedDays: { type: Number, required: true }, // The number of working days taken
     halfDay: { type: Boolean, default: false },
+    approvalStages: [
+      {
+        sequence: Number,
+        role: String,
+        status: { type: String, enum: ['Pending', 'Approved', 'Rejected'], default: 'Pending' },
+        approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        approvalDate: Date,
+        remarks: String
+      }
+    ],
     approverRemarks: { type: String, default: '' },
     approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     approvalDate: { type: Date },

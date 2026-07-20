@@ -59,6 +59,12 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./features/leaves/balances.component').then((m) => m.LeaveBalancesComponent),
           },
+          {
+            path: 'workflows',
+            title: 'Approval Workflows',
+            loadComponent: () =>
+              import('./features/leaves/settings/workflow-settings.component').then((m) => m.WorkflowSettingsComponent),
+          },
         ],
       },
       {

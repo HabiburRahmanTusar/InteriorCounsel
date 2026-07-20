@@ -13,6 +13,10 @@ function noContent(res) {
   return res.status(204).send();
 }
 
+function badRequest(res, message = 'Bad request') {
+  return res.status(400).json({ success: false, message });
+}
+
 function unauthorized(res, message = 'Unauthorized') {
   return res.status(401).json({ success: false, message });
 }
@@ -49,6 +53,7 @@ module.exports = {
   ok,
   created,
   noContent,
+  badRequest,
   unauthorized,
   forbidden,
   notFound,

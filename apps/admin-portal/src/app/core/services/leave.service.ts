@@ -15,6 +15,7 @@ export interface LeaveRequest {
   requestedDays: number;
   halfDay?: boolean;
   approverRemarks?: string;
+  approvalStages?: any[];
   createdAt?: string;
 }
 

@@ -106,6 +106,25 @@
                     }" class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset">
                 {{ req.status }}
               </span>
+
+              @if (req.approvalStages && req.approvalStages.length > 0) {
+                <div class="flex items-center gap-1 mt-2 flex-wrap max-w-[200px]">
+                  @for (stage of req.approvalStages; track stage.sequence; let last = $last) {
+                    <div class="flex items-center gap-1">
+                      <span 
+                        [class]="stage.status === 'Approved' ? 'text-emerald-600 font-bold bg-emerald-50 border-emerald-100' : (stage.status === 'Rejected' ? 'text-rose-600 font-bold bg-rose-50 border-rose-100' : 'text-slate-400 bg-slate-50 border-slate-100')"
+                        class="text-[9px] px-1.5 py-0.5 border rounded font-semibold capitalize"
+                        [title]="stage.status === 'Approved' ? 'Approved' : (stage.status === 'Rejected' ? 'Rejected' : 'Pending')"
+                      >
+                        {{ stage.role }}
+                      </span>
+                      @if (!last) {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                      }
+                    </div>
+                  }
+                </div>
+              }
             </td>
             <td class="px-6 py-4 text-right">
               @if (req.status === 'Pending') {

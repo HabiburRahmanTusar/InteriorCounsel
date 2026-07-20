@@ -1,5 +1,6 @@
 const express = require('express');
 const adminPolicyCtrl = require('../controllers/adminPolicy.controller');
+const approvalWorkflowCtrl = require('../controllers/approvalWorkflow.controller');
 const auth = require('../middlewares/auth.middleware');
 const rbac = require('../middlewares/rbac.middleware');
 
@@ -29,5 +30,11 @@ router.post('/leave-policies/:id/archive', adminPolicyCtrl.archivePolicy);
 router.post('/leave-policies/:id/assign-preview', adminPolicyCtrl.assignPreview);
 router.post('/leave-policies/sync-balances', adminPolicyCtrl.syncBalancesBulk);
 router.post('/employees/:id/sync-balance', adminPolicyCtrl.syncBalanceSingle);
+
+// Approval Workflows & System Roles
+router.get('/approval-workflows', approvalWorkflowCtrl.getWorkflows);
+router.put('/approval-workflows', approvalWorkflowCtrl.updateWorkflow);
+router.delete('/approval-workflows/:id', approvalWorkflowCtrl.deleteWorkflow);
+router.get('/roles', approvalWorkflowCtrl.getRoles);
 
 module.exports = router;

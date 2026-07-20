@@ -16,6 +16,7 @@ export interface Employee {
   status: UserStatus;
   joiningDate?: string;
   resignationDate?: string;
+  reportsTo?: string | any;
   createdAt: string;
   updatedAt: string;
 }
