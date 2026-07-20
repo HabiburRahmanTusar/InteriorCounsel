@@ -13,6 +13,7 @@ import { catchError, finalize, tap, takeUntil } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { LeaveService, LeaveRequest } from '../../core/services/leave.service';
 import { EmployeeService } from '../../core/services/employee.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'wfm-leave-requests',
@@ -24,6 +25,7 @@ import { EmployeeService } from '../../core/services/employee.service';
 export class LeaveRequestsComponent implements OnInit, OnDestroy {
   private leaveService = inject(LeaveService);
   private employeeService = inject(EmployeeService);
+  private authService = inject(AuthService);
   private toastr = inject(ToastrService);
   private destroy$ = new Subject<void>();
 
@@ -146,5 +148,35 @@ export class LeaveRequestsComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
       )
       .subscribe();
+  }
+
+  isApprover(req: LeaveRequest): boolean {
+    if (req.status !== 'Pending') return false;
+    
+    const user = this.authService.currentUser();
+    if (!user) return false;
+    
+    const role = user.role?.toLowerCase();
+    if (role === 'admin') return true;
+
+    // Active stage
+    const activeStage = req.approvalStages && req.approvalStages.length > 0
+      ? req.approvalStages.find(s => s.status === 'Pending')
+      : null;
+
+    if (!activeStage) {
+      // Legacy request, default is HR approval
+      return role === 'hr';
+    }
+
+    if (activeStage.role === 'manager') {
+      const reportsToId = req.employeeId && ((req.employeeId.reportsTo as any)?._id || (req.employeeId as any)?.reportsTo);
+      if (reportsToId && reportsToId.toString() === user.id.toString()) {
+        return true;
+      }
+      return role === 'manager';
+    }
+
+    return role === activeStage.role?.toLowerCase();
   }
 }

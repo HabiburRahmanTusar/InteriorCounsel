@@ -127,7 +127,7 @@
               }
             </td>
             <td class="px-6 py-4 text-right">
-              @if (req.status === 'Pending') {
+              @if (isApprover(req)) {
               <div class="flex items-center justify-end gap-2">
                 <button (click)="updateStatus(req, 'Approved')"
                   class="text-xs font-medium text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors">

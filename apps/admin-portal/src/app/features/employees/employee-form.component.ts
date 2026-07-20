@@ -37,7 +37,6 @@ export class EmployeeFormComponent implements OnDestroy {
   readonly isEdit = signal(false);
   readonly employeeId = signal<string | null>(null);
   readonly roles = signal<string[]>([]);
-  readonly employees = signal<any[]>([]);
 
   capitalize(val: string): string {
     if (!val) return '';
@@ -52,9 +51,9 @@ export class EmployeeFormComponent implements OnDestroy {
     designation: [''],
     salary: [0],
     role: ['employee'],
+    customRole: [''],
     shiftId: [''],
     employeeType: [''],
-    reportsTo: [''],
     status: ['active'],
     joiningDate: [''],
     resignationDate: [''],
@@ -104,15 +103,6 @@ export class EmployeeFormComponent implements OnDestroy {
         takeUntil(this.destroy$),
       )
       .subscribe();
-
-    this.employeeService
-      .list({ limit: 1000 })
-      .pipe(
-        tap((result) => this.employees.set(result.data)),
-        catchError(() => of({ data: [] })),
-        takeUntil(this.destroy$),
-      )
-      .subscribe();
   }
 
   loadEmployee() {
@@ -125,6 +115,7 @@ export class EmployeeFormComponent implements OnDestroy {
       .getById(id)
       .pipe(
         tap((emp) => {
+          const isStandard = ['employee', 'manager', 'hr', 'admin'].includes(emp.role?.toLowerCase());
           this.form.patchValue({
             employeeId: emp.employeeId,
             name: emp.name,
@@ -132,10 +123,10 @@ export class EmployeeFormComponent implements OnDestroy {
             phone: emp.phone || '',
             designation: emp.designation || '',
             salary: emp.salary ?? 0,
-            role: emp.role,
+            role: isStandard ? emp.role : 'custom',
+            customRole: isStandard ? '' : emp.role,
             shiftId: (emp.shiftId as any)?._id || emp.shiftId || '',
             employeeType: (emp.employeeType as any)?._id || emp.employeeType || '',
-            reportsTo: (emp.reportsTo as any)?._id || emp.reportsTo || '',
             status: emp.status,
             joiningDate: emp.joiningDate ? emp.joiningDate.split('T')[0] : '',
             resignationDate: emp.resignationDate ? emp.resignationDate.split('T')[0] : '',
@@ -159,9 +150,13 @@ export class EmployeeFormComponent implements OnDestroy {
     this.saving.set(true);
     const raw = this.form.getRawValue();
     const payload: any = { ...raw };
+    if (payload.role === 'custom') {
+      payload.role = (payload.customRole || '').toLowerCase().trim();
+    }
+    delete payload.customRole;
+
     if (!payload.shiftId) payload.shiftId = null;
     if (!payload.employeeType) payload.employeeType = null;
-    if (!payload.reportsTo) payload.reportsTo = null;
     if (!payload.joiningDate) payload.joiningDate = null;
     if (!payload.resignationDate) payload.resignationDate = null;
     if (!this.isEdit()) {

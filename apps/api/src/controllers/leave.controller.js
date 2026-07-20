@@ -87,13 +87,6 @@ async function resolveApprovalStagesForEmployee(employeeId) {
   });
 
   if (workflow && workflow.stages && workflow.stages.length > 0) {
-    const hasManagerStage = workflow.stages.some((s) => s.role === 'manager');
-    if (hasManagerStage && !user.reportsTo) {
-      throw new Error(
-        'Direct manager is required for this leave approval chain. Please contact HR.'
-      );
-    }
-
     return workflow.stages.map((stage) => ({
       sequence: stage.sequence,
       role: stage.role,
@@ -114,7 +107,7 @@ async function resolveApprovalStagesForEmployee(employeeId) {
 exports.getRequests = async (req, res, next) => {
   try {
     const requests = await LeaveRequest.find()
-      .populate('employeeId', 'name employeeId designation email role')
+      .populate('employeeId', 'name employeeId designation email role reportsTo')
       .populate('leaveType')
       .sort({ createdAt: -1 });
     
@@ -195,6 +188,8 @@ exports.updateRequestStatus = async (req, res, next) => {
       } else if (activeStage.role === 'manager') {
         const applicant = await User.findById(request.employeeId);
         if (applicant && applicant.reportsTo && applicant.reportsTo.toString() === req.user.id.toString()) {
+          isAuthorized = true;
+        } else if (req.user.role.toLowerCase() === 'manager') {
           isAuthorized = true;
         }
       } else if (req.user.role.toLowerCase() === activeStage.role.toLowerCase()) {

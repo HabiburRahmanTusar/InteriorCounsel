@@ -27,15 +27,11 @@ export class ApprovalWorkflowService {
   private readonly baseUrl = `${environment.apiBaseUrl}/admin`;
 
   getWorkflows(): Observable<ApprovalWorkflow[]> {
-    return this.http.get<any>(`${this.baseUrl}/approval-workflows`).pipe(
-      map((res) => res.data || [])
-    );
+    return this.http.get<ApprovalWorkflow[]>(`${this.baseUrl}/approval-workflows`);
   }
 
   updateWorkflow(workflow: Partial<ApprovalWorkflow>): Observable<ApprovalWorkflow> {
-    return this.http.put<any>(`${this.baseUrl}/approval-workflows`, workflow).pipe(
-      map((res) => res.data)
-    );
+    return this.http.put<ApprovalWorkflow>(`${this.baseUrl}/approval-workflows`, workflow);
   }
 
   deleteWorkflow(id: string): Observable<void> {
@@ -43,8 +39,6 @@ export class ApprovalWorkflowService {
   }
 
   getRoles(): Observable<string[]> {
-    return this.http.get<any>(`${this.baseUrl}/roles`).pipe(
-      map((res) => res.data || [])
-    );
+    return this.http.get<string[]>(`${this.baseUrl}/roles`);
   }
 }

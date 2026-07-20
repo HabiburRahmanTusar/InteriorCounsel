@@ -39,11 +39,12 @@ export const routes: Routes = [
       },
       {
         path: 'leaves',
-        canActivate: [roleGuard('admin', 'hr')],
+        canActivate: [roleGuard('admin', 'hr', 'manager')],
         children: [
           {
             path: 'policies',
             title: 'Leave Policies',
+            canActivate: [roleGuard('admin', 'hr')],
             loadComponent: () =>
               import('./features/leaves/policies.component').then((m) => m.LeavePoliciesComponent),
           },
@@ -56,12 +57,14 @@ export const routes: Routes = [
           {
             path: 'balances',
             title: 'Leave Balances',
+            canActivate: [roleGuard('admin', 'hr')],
             loadComponent: () =>
               import('./features/leaves/balances.component').then((m) => m.LeaveBalancesComponent),
           },
           {
             path: 'workflows',
             title: 'Approval Workflows',
+            canActivate: [roleGuard('admin', 'hr')],
             loadComponent: () =>
               import('./features/leaves/settings/workflow-settings.component').then((m) => m.WorkflowSettingsComponent),
           },
