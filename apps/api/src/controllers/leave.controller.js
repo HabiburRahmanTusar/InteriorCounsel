@@ -87,6 +87,10 @@ async function resolveApprovalStagesForEmployee(employeeId) {
   });
 
   if (workflow && workflow.stages && workflow.stages.length > 0) {
+    const hasManagerStage = workflow.stages.some(stage => stage.role === 'manager');
+    if (hasManagerStage && !user.reportsTo) {
+      throw new Error('Direct manager is required for manager approval stage');
+    }
     return workflow.stages.map((stage) => ({
       sequence: stage.sequence,
       role: stage.role,
@@ -119,8 +123,46 @@ exports.getRequests = async (req, res, next) => {
       }
       return obj;
     });
+
+    if (req.user.role === 'admin') {
+      return apiResponse.ok(res, formattedRequests);
+    }
+
+    const userRole = req.user.role.toLowerCase();
+    const userId = req.user.id.toString();
+
+    const filtered = formattedRequests.filter(reqObj => {
+      // 1. Is the user currently the active approver for this request?
+      const activeStage = reqObj.approvalStages && reqObj.approvalStages.length > 0
+        ? reqObj.approvalStages.find(s => s.status === 'Pending')
+        : null;
+
+      if (activeStage) {
+        const activeRole = activeStage.role.toLowerCase();
+        if (activeRole === userRole) {
+          if (activeRole === 'manager') {
+            const reportsTo = reqObj.employeeId && (reqObj.employeeId.reportsTo?._id || reqObj.employeeId.reportsTo);
+            return reportsTo && reportsTo.toString() === userId;
+          }
+          return true;
+        }
+      } else {
+        // Legacy requests (no approval stages) - fallback to HR
+        if (userRole === 'hr' && reqObj.status === 'Pending') {
+          return true;
+        }
+      }
+
+      // 2. Has the user already participated in the approval/rejection of this request?
+      const hasParticipated = reqObj.approvalStages && reqObj.approvalStages.some(s => s.approvedBy && s.approvedBy.toString() === userId);
+      if (hasParticipated) {
+        return true;
+      }
+
+      return false;
+    });
       
-    return apiResponse.ok(res, formattedRequests);
+    return apiResponse.ok(res, filtered);
   } catch (err) {
     return next(err);
   }
@@ -188,8 +230,6 @@ exports.updateRequestStatus = async (req, res, next) => {
       } else if (activeStage.role === 'manager') {
         const applicant = await User.findById(request.employeeId);
         if (applicant && applicant.reportsTo && applicant.reportsTo.toString() === req.user.id.toString()) {
-          isAuthorized = true;
-        } else if (req.user.role.toLowerCase() === 'manager') {
           isAuthorized = true;
         }
       } else if (req.user.role.toLowerCase() === activeStage.role.toLowerCase()) {

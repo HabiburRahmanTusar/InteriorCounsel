@@ -171,10 +171,7 @@ export class LeaveRequestsComponent implements OnInit, OnDestroy {
 
     if (activeStage.role === 'manager') {
       const reportsToId = req.employeeId && ((req.employeeId.reportsTo as any)?._id || (req.employeeId as any)?.reportsTo);
-      if (reportsToId && reportsToId.toString() === user.id.toString()) {
-        return true;
-      }
-      return role === 'manager';
+      return !!(reportsToId && reportsToId.toString() === user.id.toString());
     }
 
     return role === activeStage.role?.toLowerCase();
