@@ -77,6 +77,7 @@ class LeaveService {
     required DateTime endDate,
     required String leaveType,
     required String reason,
+    bool halfDay = false,
   }) async {
     try {
       final response = await _apiService.dio.post(
@@ -86,6 +87,7 @@ class LeaveService {
           'endDate': endDate.toIso8601String(),
           'leaveType': leaveType,
           'reason': reason,
+          'halfDay': halfDay,
         },
       );
       if ((response.statusCode == 200 || response.statusCode == 201) &&

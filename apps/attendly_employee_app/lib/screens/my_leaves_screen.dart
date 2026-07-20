@@ -271,7 +271,23 @@ class _MyLeavesScreenState extends State<MyLeavesScreen> {
         statusColor = AppTheme.warning;
     }
 
-    final dateRangeStr = '${DateFormat('MMM d').format(request.startDate)} - ${DateFormat('MMM d, yyyy').format(request.endDate)}';
+    String displayStatus = request.status;
+    if (request.status == 'Pending' && request.approvalStages.isNotEmpty) {
+      try {
+        final activeStage = request.approvalStages.firstWhere((s) => s.status == 'Pending');
+        final role = activeStage.role.isNotEmpty
+            ? activeStage.role[0].toUpperCase() + activeStage.role.substring(1)
+            : '';
+        displayStatus = 'Pending $role';
+      } catch (e) {
+        // No pending stage found, keep default
+      }
+    }
+
+    final dateRangeStr = request.halfDay && request.startDate.isAtSameMomentAs(request.endDate)
+        ? DateFormat('MMM d, yyyy').format(request.startDate)
+        : '${DateFormat('MMM d').format(request.startDate)} - ${DateFormat('MMM d, yyyy').format(request.endDate)}';
+    
     final requestedOnStr = request.createdAt != null
         ? DateFormat('MMM d, yyyy hh:mm a').format(request.createdAt!.toLocal())
         : '-';
@@ -331,7 +347,7 @@ class _MyLeavesScreenState extends State<MyLeavesScreen> {
                   border: Border.all(color: statusColor.withValues(alpha: 0.2)),
                 ),
                 child: Text(
-                  request.status,
+                  displayStatus,
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
@@ -356,7 +372,7 @@ class _MyLeavesScreenState extends State<MyLeavesScreen> {
                 ),
               ),
               Text(
-                '${request.requestedDays} ${request.requestedDays == 1 ? 'Day' : 'Days'}',
+                request.halfDay ? 'Half Day (0.5)' : '${request.requestedDays} ${request.requestedDays == 1 ? 'Day' : 'Days'}',
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.bold,

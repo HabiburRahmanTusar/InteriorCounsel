@@ -15,6 +15,7 @@ class _RequestLeaveSheetState extends State<RequestLeaveSheet> {
   DateTime? _startDate;
   DateTime? _endDate;
   String _leaveType = 'Annual';
+  bool _halfDay = false;
   final _reasonController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
@@ -97,7 +98,12 @@ class _RequestLeaveSheetState extends State<RequestLeaveSheet> {
       return;
     }
 
-    final workingDays = provider.calculateWorkingDays(_startDate!, _endDate!);
+    num workingDays = 0;
+    if (_halfDay) {
+      workingDays = 0.5;
+    } else {
+      workingDays = provider.calculateWorkingDays(_startDate!, _endDate!);
+    }
     if (workingDays <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Selected date range contains no working days')),
@@ -115,9 +121,10 @@ class _RequestLeaveSheetState extends State<RequestLeaveSheet> {
 
     final success = await provider.submitLeave(
       startDate: _startDate!,
-      endDate: _endDate!,
+      endDate: _halfDay ? _startDate! : _endDate!,
       leaveType: _leaveType,
       reason: _reasonController.text,
+      halfDay: _halfDay,
     );
 
     if (success && mounted) {
@@ -137,9 +144,13 @@ class _RequestLeaveSheetState extends State<RequestLeaveSheet> {
     final provider = context.watch<LeaveProvider>();
     final remaining = provider.balance?.remaining ?? 20;
     
-    int workingDays = 0;
+    num workingDays = 0;
     if (_startDate != null && _endDate != null) {
-      workingDays = provider.calculateWorkingDays(_startDate!, _endDate!);
+      if (_halfDay) {
+        workingDays = 0.5;
+      } else {
+        workingDays = provider.calculateWorkingDays(_startDate!, _endDate!);
+      }
     }
 
     final isExceeded = workingDays > remaining;
@@ -351,6 +362,40 @@ class _RequestLeaveSheetState extends State<RequestLeaveSheet> {
                     const SizedBox(height: 16),
                   ],
 
+                  // Half Day Checkbox
+                  Row(
+                    children: [
+                      SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: Checkbox(
+                          value: _halfDay,
+                          onChanged: (val) {
+                            if (val != null) {
+                              setState(() {
+                                _halfDay = val;
+                                if (_halfDay && _startDate != null) {
+                                  _endDate = _startDate;
+                                }
+                              });
+                            }
+                          },
+                          activeColor: AppTheme.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Request Half Day Leave',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
                   // Leave Type Dropdown
                   const Text(
                     'Leave Type',
@@ -370,12 +415,19 @@ class _RequestLeaveSheetState extends State<RequestLeaveSheet> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    items: const [
-                      DropdownMenuItem(value: 'Annual', child: Text('Annual Leave')),
-                      DropdownMenuItem(value: 'Sick', child: Text('Sick Leave')),
-                      DropdownMenuItem(value: 'Casual', child: Text('Casual Leave')),
-                      DropdownMenuItem(value: 'Unpaid', child: Text('Unpaid Leave')),
-                    ],
+                    items: provider.balance?.list.isNotEmpty == true
+                        ? provider.balance!.list.map((item) {
+                            return DropdownMenuItem(
+                              value: item.leaveType,
+                              child: Text('${item.leaveType} Leave'),
+                            );
+                          }).toList()
+                        : const [
+                            DropdownMenuItem(value: 'Annual', child: Text('Annual Leave')),
+                            DropdownMenuItem(value: 'Sick', child: Text('Sick Leave')),
+                            DropdownMenuItem(value: 'Casual', child: Text('Casual Leave')),
+                            DropdownMenuItem(value: 'Unpaid', child: Text('Unpaid Leave')),
+                          ],
                     onChanged: (val) {
                       if (val != null) {
                         setState(() {
