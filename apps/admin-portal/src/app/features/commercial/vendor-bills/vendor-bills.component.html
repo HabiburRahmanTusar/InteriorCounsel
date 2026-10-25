@@ -1,0 +1,253 @@
+<div class="p-6 max-w-[1400px] mx-auto space-y-6">
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Material & Vendor Procurement</h1>
+      <p class="text-sm text-slate-500">Track supplier bills, product line mirroring from client projects, auto-pruning, and vendor dues.</p>
+    </div>
+    <button
+      (click)="openCreateModal()"
+      class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm shadow-sm transition"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+      </svg>
+      <span>New Vendor Bill</span>
+    </button>
+  </div>
+
+  <!-- Vendor Bills Table -->
+  <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm text-slate-600">
+        <thead class="bg-slate-50 text-xs font-semibold uppercase text-slate-500 border-b border-slate-200">
+          <tr>
+            <th class="px-5 py-3.5">Bill #</th>
+            <th class="px-5 py-3.5">Supplier & Invoice Ref</th>
+            <th class="px-5 py-3.5">Category</th>
+            <th class="px-5 py-3.5">Linked Client Project</th>
+            <th class="px-5 py-3.5 text-right">Total Bill</th>
+            <th class="px-5 py-3.5 text-right">Paid</th>
+            <th class="px-5 py-3.5 text-right">Vendor Due</th>
+            <th class="px-5 py-3.5 text-center">Status</th>
+            <th class="px-5 py-3.5 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          @if (loading()) {
+            <tr>
+              <td colspan="9" class="px-5 py-8 text-center text-slate-400">Loading vendor bills...</td>
+            </tr>
+          } @else if (vendorBills().length === 0) {
+            <tr>
+              <td colspan="9" class="px-5 py-12 text-center text-slate-400">
+                No vendor bills recorded. Click <strong>New Vendor Bill</strong> to add material purchases.
+              </td>
+            </tr>
+          } @else {
+            @for (bill of vendorBills(); track bill._id) {
+              <tr class="hover:bg-slate-50/80 transition-colors">
+                <td class="px-5 py-4 font-semibold text-slate-900">
+                  {{ bill.billNumber }}
+                  @if (bill.stockPurposeNumber) {
+                    <div class="text-[10px] text-indigo-600 font-bold tracking-wider uppercase">{{ bill.stockPurposeNumber }}</div>
+                  }
+                  <div class="text-xs font-normal text-slate-400">{{ bill.date | date:'dd MMM yyyy' }}</div>
+                </td>
+                <td class="px-5 py-4">
+                  <div class="font-medium text-slate-900">{{ bill.vendorId?.name || 'Unknown Supplier' }}</div>
+                  <div class="text-xs text-slate-500">Ref: {{ bill.billRef || '—' }}</div>
+                </td>
+                <td class="px-5 py-4 capitalize text-slate-700">
+                  {{ bill.category ? bill.category.replace('_', ' ') : '' }}
+                </td>
+                <td class="px-5 py-4">
+                  @if (bill.mainBillId) {
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-medium">
+                      {{ bill.mainBillId?.billNumber }} ({{ bill.mainBillId?.projectName }})
+                    </span>
+                  } @else {
+                    <span class="text-xs text-slate-400 italic">General Stock</span>
+                  }
+                </td>
+                <td class="px-5 py-4 text-right font-medium text-slate-900">
+                  ৳{{ bill.totalAmount | number:'1.2-2' }}
+                </td>
+                <td class="px-5 py-4 text-right text-emerald-600">
+                  ৳{{ bill.paidAmount | number:'1.2-2' }}
+                </td>
+                <td class="px-5 py-4 text-right font-semibold text-rose-600">
+                  ৳{{ bill.vendorDue | number:'1.2-2' }}
+                </td>
+                <td class="px-5 py-4 text-center">
+                  <span
+                    class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold"
+                    [ngClass]="{
+                      'bg-emerald-100 text-emerald-800': bill.paymentState === 'paid',
+                      'bg-amber-100 text-amber-800': bill.paymentState === 'partial',
+                      'bg-rose-100 text-rose-800': bill.paymentState === 'not_paid'
+                    }"
+                  >
+                    {{ bill.paymentState === 'paid' ? 'Paid' : bill.paymentState === 'partial' ? 'Partial' : 'Unpaid' }}
+                  </span>
+                </td>
+                <td class="px-5 py-4 text-right">
+                  <button
+                    (click)="deleteVendorBill(bill._id)"
+                    class="text-rose-600 hover:text-rose-800 text-xs font-medium px-2 py-1 rounded hover:bg-rose-50"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Create Vendor Bill Modal -->
+  @if (showModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm overflow-y-auto">
+      <div class="bg-white rounded-3xl max-w-3xl w-full p-6 space-y-6 shadow-2xl my-8 border border-slate-100">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+          <h2 class="text-xl font-bold text-slate-900">New Material / Vendor Invoice</h2>
+          <button (click)="closeModal()" class="text-slate-400 hover:text-slate-600 text-2xl font-semibold leading-none">&times;</button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Supplier / Vendor *</label>
+            <select
+              [(ngModel)]="formBill.vendorId"
+              class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="" disabled>Select Vendor</option>
+              @for (v of vendors(); track v._id) {
+                <option [value]="v._id">{{ v.name }} ({{ v.category }})</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Vendor Invoice # (Ref)</label>
+            <input
+              type="text"
+              [(ngModel)]="formBill.billRef"
+              placeholder="e.g. INV-SUPPLIER-8842"
+              class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Category</label>
+            <select
+              [(ngModel)]="formBill.category"
+              class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 capitalize"
+            >
+              <option value="wood_board">Wood & Board</option>
+              <option value="hardware">Hardware & Fittings</option>
+              <option value="glass_mirror">Glass & Mirrors</option>
+              <option value="fabric_curtain">Fabric & Curtains</option>
+              <option value="lighting_electric">Lighting & Electrical</option>
+              <option value="paint_polish">Paint & Polish</option>
+              <option value="fitting_labor">Carpentry & Labor</option>
+              <option value="transport">Transport</option>
+              <option value="general_supply">General Materials</option>
+            </select>
+          </div>
+
+          <div class="sm:col-span-3 bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100">
+            <label class="block text-xs font-bold text-indigo-950 uppercase tracking-wider mb-1">
+              Link to Master Sales Bill (Product Line Mirroring)
+            </label>
+            <select
+              [(ngModel)]="formBill.mainBillId"
+              (ngModelChange)="onMasterBillSelected($event)"
+              class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+            >
+              <option value="">None (Stock Purpose / General Inventory)</option>
+              @for (b of masterBills(); track b._id) {
+                <option [value]="b._id">{{ b.billNumber }} — {{ b.projectName }} (৳{{ b.totalAmount }})</option>
+              }
+            </select>
+            <p class="text-xs text-indigo-600 mt-1">
+              Selecting a customer bill copies project products. Select which items this vendor supplies; unselected items will be automatically pruned.
+            </p>
+          </div>
+        </div>
+
+        <!-- Line Items -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Itemized Purchase Lines</h3>
+            <button (click)="addItem()" type="button" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-1.5 rounded-lg">
+              + Add Line
+            </button>
+          </div>
+
+          <div class="border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100">
+            @for (item of formBill.items; track $index) {
+              <div class="p-3 bg-slate-50/50 flex flex-wrap sm:flex-nowrap gap-2 items-center" [class.opacity-50]="!item.isSelected">
+                @if (formBill.mainBillId) {
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="item.isSelected"
+                    class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    title="Tick if this vendor supplies this item"
+                  />
+                }
+                <input
+                  type="text"
+                  [(ngModel)]="item.description"
+                  placeholder="Material description"
+                  class="flex-1 min-w-[180px] px-3 py-1.5 text-sm rounded-lg border border-slate-200"
+                />
+                <input
+                  type="text"
+                  [(ngModel)]="item.unit"
+                  placeholder="Unit"
+                  class="w-16 px-2 py-1.5 text-sm rounded-lg border border-slate-200 text-center"
+                />
+                <input
+                  type="number"
+                  [(ngModel)]="item.quantity"
+                  (ngModelChange)="calculateItemAmount(item)"
+                  placeholder="Qty"
+                  class="w-20 px-2 py-1.5 text-sm rounded-lg border border-slate-200 text-right"
+                />
+                <input
+                  type="number"
+                  [(ngModel)]="item.unitPrice"
+                  (ngModelChange)="calculateItemAmount(item)"
+                  placeholder="Price"
+                  class="w-24 px-2 py-1.5 text-sm rounded-lg border border-slate-200 text-right"
+                />
+                <div class="w-24 text-right font-semibold text-sm text-slate-800">
+                  ৳{{ item.amount | number:'1.2-2' }}
+                </div>
+                <button (click)="removeItem($index)" class="text-rose-500 hover:text-rose-700 px-2 py-1 font-bold text-lg leading-none">
+                  &times;
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center border-t border-slate-100 pt-4">
+          <div class="text-xs text-slate-400">Total Selected Material Cost:</div>
+          <div class="text-2xl font-extrabold text-indigo-600">৳{{ formTotal | number:'1.2-2' }}</div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex justify-end gap-3 border-t border-slate-100 pt-4">
+          <button (click)="closeModal()" type="button" class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium text-sm">
+            Cancel
+          </button>
+          <button (click)="submitVendorBill()" type="button" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm shadow">
+            Save Vendor Bill
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -302,3 +302,38 @@ input, select, textarea {
 tbody tr {
   transition: background-color 0.15s ease;
 }
+
+/* Print Styles for Authentic Invoice Paper */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+  body {
+    background: #fff !important;
+  }
+  wfm-sidebar, wfm-navbar, header, nav, button, .btn {
+    display: none !important;
+  }
+  .inv-wrap {
+    overflow: visible !important;
+    padding: 0 !important;
+    background: transparent !important;
+  }
+  .inv-paper {
+    width: 210mm !important;
+    min-height: 297mm !important;
+    height: 297mm !important;
+    margin: 0 auto !important;
+    box-shadow: none !important;
+    padding: 28px 32px 0 !important;
+    page-break-after: avoid !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .inv-paper * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+

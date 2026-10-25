@@ -1,0 +1,259 @@
+<div class="p-6 max-w-7xl mx-auto space-y-6">
+  <!-- Top Navigation & Controls -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Commercial & Executive Overview</h1>
+      <p class="text-sm text-slate-500 mt-1">
+        Real-time financial performance, project billing profit margins, and enterprise cash flows.
+      </p>
+    </div>
+
+    <!-- Period Selector -->
+    <div class="inline-flex bg-slate-100 p-1 rounded-xl shadow-inner border border-slate-200">
+      <button
+        (click)="setPeriod('today')"
+        [class.bg-white]="selectedPeriod() === 'today'"
+        [class.shadow-xs]="selectedPeriod() === 'today'"
+        [class.font-bold]="selectedPeriod() === 'today'"
+        [class.text-indigo-600]="selectedPeriod() === 'today'"
+        class="px-3.5 py-1.5 text-xs rounded-lg transition text-slate-600"
+      >
+        Today
+      </button>
+      <button
+        (click)="setPeriod('this_month')"
+        [class.bg-white]="selectedPeriod() === 'this_month'"
+        [class.shadow-xs]="selectedPeriod() === 'this_month'"
+        [class.font-bold]="selectedPeriod() === 'this_month'"
+        [class.text-indigo-600]="selectedPeriod() === 'this_month'"
+        class="px-3.5 py-1.5 text-xs rounded-lg transition text-slate-600"
+      >
+        This Month
+      </button>
+      <button
+        (click)="setPeriod('last_month')"
+        [class.bg-white]="selectedPeriod() === 'last_month'"
+        [class.shadow-xs]="selectedPeriod() === 'last_month'"
+        [class.font-bold]="selectedPeriod() === 'last_month'"
+        [class.text-indigo-600]="selectedPeriod() === 'last_month'"
+        class="px-3.5 py-1.5 text-xs rounded-lg transition text-slate-600"
+      >
+        Last Month
+      </button>
+      <button
+        (click)="setPeriod('this_year')"
+        [class.bg-white]="selectedPeriod() === 'this_year'"
+        [class.shadow-xs]="selectedPeriod() === 'this_year'"
+        [class.font-bold]="selectedPeriod() === 'this_year'"
+        [class.text-indigo-600]="selectedPeriod() === 'this_year'"
+        class="px-3.5 py-1.5 text-xs rounded-lg transition text-slate-600"
+      >
+        This Year
+      </button>
+    </div>
+  </div>
+
+  @if (summary()) {
+    <!-- Core Financial Metrics Row -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Billed Sales -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+        <div class="flex items-center justify-between text-slate-500 mb-1">
+          <span class="text-xs font-semibold uppercase tracking-wider">Confirmed Sales</span>
+          <span class="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-bold">
+            {{ summary().sales?.confirmedBillsCount || 0 }} bills
+          </span>
+        </div>
+        <span class="text-2xl font-bold text-slate-900 block">
+          {{ summary().sales?.totalConfirmedSales || 0 | currency:'USD':'symbol':'1.0-2' }}
+        </span>
+        <span class="text-xs text-slate-400 mt-1 block">Net of discounts & VAT</span>
+      </div>
+
+      <!-- Gross Profit -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+        <div class="flex items-center justify-between text-slate-500 mb-1">
+          <span class="text-xs font-semibold uppercase tracking-wider text-emerald-600">Gross Margin</span>
+          <span class="text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-bold">
+            {{ summary().profitability?.grossProfitMarginPercent || 0 }}%
+          </span>
+        </div>
+        <span class="text-2xl font-bold text-emerald-700 block">
+          {{ summary().profitability?.grossProfit || 0 | currency:'USD':'symbol':'1.0-2' }}
+        </span>
+        <span class="text-xs text-slate-400 mt-1 block">Sales - (Purchases + Direct Costs)</span>
+      </div>
+
+      <!-- Net Operating Profit -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+        <div class="flex items-center justify-between text-slate-500 mb-1">
+          <span class="text-xs font-semibold uppercase tracking-wider text-indigo-600">Net Profit</span>
+          <span class="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-bold">
+            {{ summary().profitability?.netProfitMarginPercent || 0 }}%
+          </span>
+        </div>
+        <span class="text-2xl font-bold text-indigo-700 block">
+          {{ summary().profitability?.netProfit || 0 | currency:'USD':'symbol':'1.0-2' }}
+        </span>
+        <span class="text-xs text-slate-400 mt-1 block">After showroom/admin overheads</span>
+      </div>
+
+      <!-- Net Liquid Cash Flow -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+        <div class="flex items-center justify-between text-slate-500 mb-1">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-600">Net Liquidity</span>
+          <span
+            [class.bg-emerald-50]="(summary().liquidity?.netLiquidBalance || 0) >= 0"
+            [class.text-emerald-700]="(summary().liquidity?.netLiquidBalance || 0) >= 0"
+            [class.bg-rose-50]="(summary().liquidity?.netLiquidBalance || 0) < 0"
+            [class.text-rose-700]="(summary().liquidity?.netLiquidBalance || 0) < 0"
+            class="text-xs px-2 py-0.5 rounded-full font-bold"
+          >
+            Cash In - Out
+          </span>
+        </div>
+        <span
+          [class.text-emerald-600]="(summary().liquidity?.netLiquidBalance || 0) >= 0"
+          [class.text-rose-600]="(summary().liquidity?.netLiquidBalance || 0) < 0"
+          class="text-2xl font-bold block"
+        >
+          {{ summary().liquidity?.netLiquidBalance || 0 | currency:'USD':'symbol':'1.0-2' }}
+        </span>
+        <span class="text-xs text-slate-400 mt-1 block">Realized cash in vault/banks</span>
+      </div>
+    </div>
+
+    <!-- Secondary Analysis Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Direct Project Costs Breakdown -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <h3 class="text-base font-bold text-slate-900">Direct Project Costs</h3>
+          <span class="text-xs font-bold text-rose-600">
+            {{ summary().directCosts?.totalDirectCosts || 0 | currency:'USD':'symbol':'1.0-2' }}
+          </span>
+        </div>
+
+        <div class="space-y-3 text-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-600">Transport Charges</span>
+            <span class="font-semibold text-slate-900">{{ summary().directCosts?.transport || 0 | currency:'USD':'symbol':'1.0-2' }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-600">Fitting & Labor</span>
+            <span class="font-semibold text-slate-900">{{ summary().directCosts?.fitting || 0 | currency:'USD':'symbol':'1.0-2' }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-600">Sales Commission</span>
+            <span class="font-semibold text-slate-900">{{ summary().directCosts?.commission || 0 | currency:'USD':'symbol':'1.0-2' }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-600">Patty Box Charges</span>
+            <span class="font-semibold text-slate-900">{{ summary().directCosts?.pattyBox || 0 | currency:'USD':'symbol':'1.0-2' }}</span>
+          </div>
+          <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+            <span class="text-slate-600 font-semibold">Vendor Purchases</span>
+            <span class="font-bold text-slate-900">{{ summary().purchases?.vendorTotalPurchases || 0 | currency:'USD':'symbol':'1.0-2' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Receivables & Payables Position -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <h3 class="text-base font-bold text-slate-900">Working Capital Dues</h3>
+          <span class="text-xs font-semibold text-slate-400 uppercase">Outstanding</span>
+        </div>
+
+        <div class="space-y-4 text-sm">
+          <div class="p-4 rounded-xl bg-amber-50/60 border border-amber-100">
+            <span class="text-xs font-bold text-amber-700 uppercase tracking-wide block">Customer Receivables</span>
+            <span class="text-2xl font-bold text-amber-900 mt-1 block">
+              {{ summary().receivablesAndPayables?.totalCustomerReceivables || 0 | currency:'USD':'symbol':'1.0-2' }}
+            </span>
+            <span class="text-xs text-amber-700/80 mt-1 block">Uncollected bill balances from clients</span>
+          </div>
+
+          <div class="p-4 rounded-xl bg-rose-50/60 border border-rose-100">
+            <span class="text-xs font-bold text-rose-700 uppercase tracking-wide block">Vendor Payables</span>
+            <span class="text-2xl font-bold text-rose-900 mt-1 block">
+              {{ summary().receivablesAndPayables?.totalVendorPayables || 0 | currency:'USD':'symbol':'1.0-2' }}
+            </span>
+            <span class="text-xs text-rose-700/80 mt-1 block">Outstanding obligations to material vendors</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Operational Actions -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+        <h3 class="text-base font-bold text-slate-900 pb-3 border-b border-slate-100">Commercial Actions</h3>
+
+        <div class="flex flex-col gap-2.5">
+          <a
+            routerLink="/commercial/bills"
+            class="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/30 transition group"
+          >
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                B
+              </div>
+              <div>
+                <span class="text-xs font-bold text-slate-900 block group-hover:text-indigo-600">Sales Bills</span>
+                <span class="text-[11px] text-slate-500">Create & manage project master bills</span>
+              </div>
+            </div>
+            <span class="text-xs text-indigo-600 font-semibold">&rarr;</span>
+          </a>
+
+          <a
+            routerLink="/commercial/vendor-bills"
+            class="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/30 transition group"
+          >
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                V
+              </div>
+              <div>
+                <span class="text-xs font-bold text-slate-900 block group-hover:text-emerald-600">Vendor Bills</span>
+                <span class="text-[11px] text-slate-500">Procurement & auto-pruning</span>
+              </div>
+            </div>
+            <span class="text-xs text-emerald-600 font-semibold">&rarr;</span>
+          </a>
+
+          <a
+            routerLink="/commercial/cash-flow"
+            class="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/30 transition group"
+          >
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+                $
+              </div>
+              <div>
+                <span class="text-xs font-bold text-slate-900 block group-hover:text-amber-600">Cash Flow Ledger</span>
+                <span class="text-[11px] text-slate-500">Receipts, disbursements & petty cash</span>
+              </div>
+            </div>
+            <span class="text-xs text-amber-600 font-semibold">&rarr;</span>
+          </a>
+
+          <a
+            routerLink="/commercial/shareholders"
+            class="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/30 transition group"
+          >
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
+                W
+              </div>
+              <div>
+                <span class="text-xs font-bold text-slate-900 block group-hover:text-purple-600">Shareholder Wallets</span>
+                <span class="text-[11px] text-slate-500">Profit distributions & balance rules</span>
+              </div>
+            </div>
+            <span class="text-xs text-purple-600 font-semibold">&rarr;</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  }
+</div>

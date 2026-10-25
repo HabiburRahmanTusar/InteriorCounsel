@@ -38,13 +38,30 @@ const checkOutSchema = new mongoose.Schema(
   { _id: false },
 );
 
+const ATTENDANCE_STATUSES = ['present', 'absent', 'leave'];
+
 const attendanceSchema = new mongoose.Schema(
   {
     employeeId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     attendanceDate: { type: Date, required: true },
+    status: {
+      type: String,
+      enum: ATTENDANCE_STATUSES,
+      default: 'present',
+      required: true,
+    },
+    late: { type: Boolean, default: false },
+    overview: { type: String, default: '' }, // e.g. "ON Time", "15 Min Late", "1H 30Min Late", "Leave", "Absent"
+    workingHoursDisplay: { type: String, default: '00 H 00 Min' },
     checkIn: checkInSchema,
     checkOut: checkOutSchema,
     workingMinutes: { type: Number, default: 0, min: 0 },
+    // 12-hour AM/PM friendly manual fields from Odoo
+    checkInTime: { type: String, trim: true },
+    checkInPeriod: { type: String, enum: ['AM', 'PM'], default: 'AM' },
+    checkOutTime: { type: String, trim: true },
+    checkOutPeriod: { type: String, enum: ['AM', 'PM'], default: 'PM' },
+    note: { type: String, trim: true },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } },
 );

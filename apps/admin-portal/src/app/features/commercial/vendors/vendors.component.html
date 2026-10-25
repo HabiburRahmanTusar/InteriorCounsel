@@ -1,0 +1,418 @@
+<div class="p-6 max-w-7xl mx-auto space-y-6">
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2 text-xs font-semibold text-slate-400 mb-1">
+        <span>Interior Operations</span>
+        <span>/</span>
+        <span class="text-indigo-600 font-bold">Suppliers</span>
+      </div>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Suppliers & Vendor Procurement</h1>
+      <p class="text-sm text-slate-500 mt-1">
+        Material suppliers, fitting contractors, bank details, and supplier discount adjustments.
+      </p>
+    </div>
+    <div>
+      <button
+        (click)="openCreateModal()"
+        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 shadow-sm transition"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        <span>Add Vendor</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Vendors Table -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs text-slate-600">
+        <thead class="bg-slate-50 text-[11px] uppercase font-bold text-slate-400 border-b border-slate-100">
+          <tr>
+            <th class="py-3 px-4">Vendor Name</th>
+            <th class="py-3 px-4">Category</th>
+            <th class="py-3 px-4">Contact</th>
+            <th class="py-3 px-4">Bank Details</th>
+            <th class="py-3 px-4 text-right">Total Purchased</th>
+            <th class="py-3 px-4 text-right">Discount Given</th>
+            <th class="py-3 px-4 text-right">Outstanding Due</th>
+            <th class="py-3 px-4 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          @for (v of vendors(); track v._id) {
+            <tr class="hover:bg-slate-50/50 transition">
+              <td class="py-3.5 px-4 font-semibold text-slate-900">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 font-bold flex items-center justify-center text-xs">
+                    {{ (v.name || 'V').slice(0, 2).toUpperCase() }}
+                  </div>
+                  <div>
+                    <div>{{ v.name }}</div>
+                    <div class="text-[11px] text-slate-400 font-normal">{{ v.vendorCode }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="py-3.5 px-4">
+                <span class="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700 capitalize">
+                  {{ (v.category || 'general_supply').replace('_', ' ') }}
+                </span>
+              </td>
+              <td class="py-3.5 px-4">
+                <div class="font-medium text-slate-800">{{ v.phone }}</div>
+                <div class="text-[11px] text-slate-400">{{ v.email || '—' }}</div>
+              </td>
+              <td class="py-3.5 px-4 text-[11px] text-slate-600">
+                @if (v.bankDetails?.accountNumber) {
+                  <div>{{ v.bankDetails.bankName }} - {{ v.bankDetails.accountNumber }}</div>
+                  <div class="text-slate-400">{{ v.bankDetails.accountName }}</div>
+                } @else {
+                  <span class="text-slate-400 italic">Cash / Unspecified</span>
+                }
+              </td>
+              <td class="py-3.5 px-4 text-right font-medium text-slate-900">
+                ৳ {{ (v.totalPurchased || 0) | number:'1.2-2' }}
+              </td>
+              <td class="py-3.5 px-4 text-right font-bold text-emerald-600">
+                ৳ {{ (v.totalDiscountReceived || 0) | number:'1.2-2' }}
+              </td>
+              <td class="py-3.5 px-4 text-right font-bold" [class.text-rose-600]="(v.dueBalance || 0) > 0" [class.text-slate-400]="!(v.dueBalance || 0)">
+                ৳ {{ (v.dueBalance || 0) | number:'1.2-2' }}
+              </td>
+              <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                <div class="inline-flex items-center gap-1.5">
+                  <button
+                    (click)="openDiscountModal(v)"
+                    class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 font-bold hover:bg-emerald-100 transition inline-flex items-center gap-1"
+                    title="Give Supplier Discount"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .8-3 1.8 0 .9 1.343 1.2 3 1.5s3 .6 3 1.5c0 .9-1.343 1.8-3 1.8m0-5.4v-1.8m0 5.4v1.8M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
+                    </svg>
+                    <span>Discount</span>
+                  </button>
+                  <button
+                    (click)="openHistory(v)"
+                    class="px-2 py-1 rounded-lg bg-slate-100 text-slate-600 font-semibold hover:bg-slate-200 transition"
+                    title="View Discount History"
+                  >
+                    History ({{ (v.discounts || []).length }})
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="py-12 text-center text-slate-400">
+                No vendors found. Click "Add Vendor" to register a supplier.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       SUPPLIER DISCOUNT MODAL (AUTHENTIC MENU_RBAC ENGINE)
+       ========================================================================= -->
+  @if (showDiscountModal() && activeVendor()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 animate-in zoom-in-95 duration-150">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div>
+            <h3 class="text-base font-bold text-slate-900">Supplier Discount — {{ activeVendor().name }}</h3>
+            <p class="text-xs text-slate-500">Record agreed discount from supplier on bill procurement.</p>
+          </div>
+          <button (click)="showDiscountModal.set(false)" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+        </div>
+
+        @if (vendorBills().length > 0) {
+          <div class="my-4 space-y-3.5 text-xs">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Select Purchase Invoice / Bill *</label>
+              <select
+                [(ngModel)]="discountForm.vendorBillId"
+                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+              >
+                @for (b of vendorBills(); track b._id) {
+                  <option [value]="b._id">
+                    {{ b.billNumber }} (Ref: {{ b.billRef || '—' }}) — Amount: ৳ {{ b.totalAmount }}
+                  </option>
+                }
+              </select>
+            </div>
+
+            <!-- Selected Bill Details Preview -->
+            @if (selectedVendorBill) {
+              <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5 text-[11px]">
+                <div class="flex justify-between">
+                  <span class="text-slate-500">Bill Date:</span>
+                  <span class="font-medium text-slate-800">{{ selectedVendorBill.date | date:'dd/MM/yyyy' }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-500">Total Purchase Amount:</span>
+                  <span class="font-bold text-slate-900">৳ {{ selectedVendorBill.totalAmount | number:'1.2-2' }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-500">Discount Already Given:</span>
+                  <span class="font-semibold text-emerald-600">৳ {{ (selectedVendorBill.discountAmount || 0) | number:'1.2-2' }}</span>
+                </div>
+                <div class="flex justify-between pt-1 border-t border-slate-200">
+                  <span class="text-slate-600 font-bold">Current Net Purchase:</span>
+                  <span class="font-bold text-slate-900">৳ {{ (selectedVendorBill.totalAmount - (selectedVendorBill.discountAmount || 0)) | number:'1.2-2' }}</span>
+                </div>
+              </div>
+            }
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Discount Type</label>
+                <select
+                  [(ngModel)]="discountForm.type"
+                  class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+                >
+                  <option value="Fixed">Fixed Amount (৳)</option>
+                  <option value="Percent">Percentage (%)</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Discount Value *</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  [(ngModel)]="discountForm.value"
+                  placeholder="0.00"
+                  class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+            </div>
+
+            <!-- Live Adjustment Preview -->
+            @if (calculatedDiscountAmount > 0) {
+              <div class="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl text-xs space-y-1">
+                <div class="flex justify-between text-emerald-800">
+                  <span>Adjusted Discount:</span>
+                  <span class="font-bold">- ৳ {{ calculatedDiscountAmount | number:'1.2-2' }}</span>
+                </div>
+                <div class="flex justify-between font-bold text-slate-900 pt-1 border-t border-emerald-200">
+                  <span>Net Purchase Payable After Discount:</span>
+                  <span>৳ {{ remainingNetPurchase | number:'1.2-2' }}</span>
+                </div>
+              </div>
+            }
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Adjustment Note</label>
+              <input
+                type="text"
+                [(ngModel)]="discountForm.note"
+                placeholder="e.g. 5% rebate agreed on bulk glass purchase"
+                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+          </div>
+
+          <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
+            <button
+              type="button"
+              (click)="showDiscountModal.set(false)"
+              class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              (click)="applyDiscount()"
+              class="px-4 py-2 rounded-xl bg-emerald-600 text-xs font-bold text-white hover:bg-emerald-700 shadow-xs"
+            >
+              Apply Discount
+            </button>
+          </div>
+        } @else {
+          <div class="py-8 text-center text-slate-400 space-y-3">
+            <p class="text-xs">No purchase bills recorded for this supplier yet. Create a Vendor Bill first to apply a discount.</p>
+            <button
+              type="button"
+              (click)="showDiscountModal.set(false)"
+              class="px-4 py-1.5 rounded-xl bg-slate-100 text-xs font-semibold text-slate-700"
+            >
+              Close
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- =========================================================================
+       SUPPLIER DISCOUNT HISTORY MODAL
+       ========================================================================= -->
+  @if (showHistoryModal() && activeVendor()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col p-6 animate-in zoom-in-95 duration-150">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div>
+            <h3 class="text-base font-bold text-slate-900">{{ activeVendor().name }} — Discount History</h3>
+            <p class="text-xs text-slate-500">Cumulative supplier discounts received: <b class="text-emerald-600">৳ {{ (activeVendor().totalDiscountReceived || 0) | number:'1.2-2' }}</b></p>
+          </div>
+          <button (click)="showHistoryModal.set(false)" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+        </div>
+
+        <div class="overflow-y-auto flex-1 my-4 pr-1">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-50 text-[10px] uppercase font-bold text-slate-400 sticky top-0 border-b border-slate-100">
+              <tr>
+                <th class="py-2.5 px-3">Date</th>
+                <th class="py-2.5 px-3">Bill / Ref No.</th>
+                <th class="py-2.5 px-3">Type & Value</th>
+                <th class="py-2.5 px-3 text-right">Discount (Adjusted)</th>
+                <th class="py-2.5 px-3">Note</th>
+                <th class="py-2.5 px-3 text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              @for (d of (activeVendor().discounts || []); track d._id) {
+                <tr class="hover:bg-slate-50/50">
+                  <td class="py-2.5 px-3 text-slate-500">{{ d.date | date:'dd/MM/yyyy' }}</td>
+                  <td class="py-2.5 px-3 font-semibold text-slate-900">{{ d.billNo || '—' }} ({{ d.supplierRef || '—' }})</td>
+                  <td class="py-2.5 px-3">{{ d.type }} ({{ d.value }}{{ d.type === 'Percent' ? '%' : '৳' }})</td>
+                  <td class="py-2.5 px-3 text-right font-bold text-emerald-600">৳ {{ d.amount | number:'1.2-2' }}</td>
+                  <td class="py-2.5 px-3 text-slate-400 max-w-xs truncate">{{ d.note || '—' }}</td>
+                  <td class="py-2.5 px-3 text-center">
+                    <button
+                      (click)="reverseDiscount(d._id)"
+                      class="text-rose-500 hover:text-rose-700 text-[11px] font-bold hover:underline"
+                    >
+                      Reverse
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="6" class="py-8 text-center text-slate-400">
+                    No supplier discounts recorded for this vendor yet.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="flex justify-end pt-3 border-t border-slate-100">
+          <button
+            type="button"
+            (click)="showHistoryModal.set(false)"
+            class="px-4 py-2 rounded-xl bg-slate-100 text-xs font-semibold text-slate-700 hover:bg-slate-200"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- New Vendor Modal -->
+  @if (showModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 animate-in zoom-in-95 duration-150">
+        <h3 class="text-lg font-bold text-slate-900 mb-1">New Supplier Account</h3>
+        <p class="text-xs text-slate-500 mb-4">Register material supplier, transport, or fitting vendor.</p>
+
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Vendor / Company Name *</label>
+            <input
+              type="text"
+              [(ngModel)]="newVendor.name"
+              placeholder="e.g. Royal Glass & Aluminum"
+              class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Category</label>
+              <select
+                [(ngModel)]="newVendor.category"
+                class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="wood_board">Wood & Board (Plywood/MDF)</option>
+                <option value="hardware">Hardware & Fittings</option>
+                <option value="glass_mirror">Glass & Mirrors</option>
+                <option value="fabric_curtain">Fabric & Curtains</option>
+                <option value="lighting_electric">Lighting & Electrical</option>
+                <option value="paint_polish">Paint & Polish</option>
+                <option value="fitting_labor">Fitting & Labor</option>
+                <option value="transport">Transport</option>
+                <option value="general_supply">General Supply</option>
+                <option value="others">Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Phone *</label>
+              <input
+                type="text"
+                [(ngModel)]="newVendor.phone"
+                placeholder="+880..."
+                class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Bank Name</label>
+              <input
+                type="text"
+                [(ngModel)]="newVendor.bankName"
+                placeholder="e.g. City Bank"
+                class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Bank A/C Number</label>
+              <input
+                type="text"
+                [(ngModel)]="newVendor.bankAccountNumber"
+                placeholder="Account number"
+                class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Beneficiary Account Title</label>
+            <input
+              type="text"
+              [(ngModel)]="newVendor.bankAccountName"
+              placeholder="e.g. Royal Glass Ltd."
+              class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-6">
+          <button
+            type="button"
+            (click)="showModal.set(false)"
+            class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            (click)="saveVendor()"
+            class="px-4 py-2 rounded-xl bg-indigo-600 text-sm font-semibold text-white hover:bg-indigo-700 shadow-xs"
+          >
+            Save Vendor
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

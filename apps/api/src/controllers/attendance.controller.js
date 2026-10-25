@@ -79,3 +79,35 @@ exports.daily = async (req, res, next) => {
     return next(err);
   }
 };
+
+// Odoo Action: Create Today's Roster for All Active Staff
+exports.generateTodayRoster = async (req, res, next) => {
+  try {
+    const data = await attendanceService.generateTodayRoster();
+    return apiResponse.created(res, data, "Today's attendance roster generated successfully");
+  } catch (err) {
+    return next(err);
+  }
+};
+
+// Odoo Action: Manual daily attendance entry/update
+exports.recordManual = async (req, res, next) => {
+  try {
+    const record = await attendanceService.recordManualAttendance(req.body);
+    return apiResponse.ok(res, record, 'Attendance recorded successfully');
+  } catch (err) {
+    return next(err);
+  }
+};
+
+// Odoo Action: Get exact monthly salary & late deduction summary for an employee
+exports.getSalarySummary = async (req, res, next) => {
+  try {
+    const employeeId = req.params.employeeId || req.user.id;
+    const { date } = req.query;
+    const summary = await attendanceService.getSalarySummary(employeeId, date);
+    return apiResponse.ok(res, summary, 'Salary summary calculated successfully');
+  } catch (err) {
+    return next(err);
+  }
+};

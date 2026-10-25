@@ -84,7 +84,8 @@ async function calculateWorkingDays(monthStr, user) {
 }
 
 /**
- * Check late entries and trigger deduction events when the 3-lates threshold is crossed.
+ * Check late entries and trigger deduction events according to Odoo rules:
+ * late_deduction_days = Math.floor(late_days / threshold)
  *
  * @param {string} employeeId
  * @param {string} monthStr - Format "YYYY-MM"
@@ -111,7 +112,6 @@ async function evaluateLateDeductions(employeeId, monthStr) {
   const allAttendances = await Attendance.find({
     employeeId,
     attendanceDate: { $gte: startOfMonth, $lte: endOfMonth },
-    'checkIn.status': { $exists: true },
   }).sort({ attendanceDate: 1 });
 
   if (allAttendances.length === 0) return 0;
@@ -119,40 +119,90 @@ async function evaluateLateDeductions(employeeId, monthStr) {
   // 2. Clear existing DeductionLogs for this month so we can recalculate from scratch
   await DeductionLog.deleteMany({ employeeId, month: monthStr });
 
-  // 3. Find consecutive lates
-  let logsCreated = 0;
-  let consecutiveLates = [];
+  // 3. Count cumulative late attendances in the month (Odoo logic)
+  const lateAttendances = allAttendances.filter(
+    (a) => a.late || a.checkIn?.status === 'Late' || a.overview?.includes('Late')
+  );
+  const lateDays = lateAttendances.length;
 
-  const workingDays = await calculateWorkingDays(monthStr, user);
-  const dailySalary = workingDays > 0 ? (user.salary || 0) / workingDays : 0;
+  const threshold = user.attendanceDeductionDays || 3;
+  const lateDeductionDays = threshold > 0 ? Math.floor(lateDays / threshold) : 0;
 
-  const calendarSetting = await getWorkCalendarSetting();
-  const threshold = calendarSetting.consecutiveLatesPenaltyThreshold || 3;
+  if (lateDeductionDays === 0) return 0;
 
-  for (const record of allAttendances) {
-    if (record.checkIn.status === 'Late') {
-      consecutiveLates.push(record);
-      if (consecutiveLates.length === threshold) {
-        // Trigger deduction for consecutive lates
-        await DeductionLog.create({
-          employeeId,
-          triggerReason: `${threshold} consecutive late entries`,
-          deductedDays: 1,
-          deductedAmount: Number(dailySalary.toFixed(2)),
-          linkedAttendance: consecutiveLates.map((c) => c._id),
-          month: monthStr,
-          timestamp: new Date(),
-        });
-        logsCreated++;
-        consecutiveLates = []; // Reset counter after penalty
-      }
-    } else {
-      // If they check in 'On Time' (or anything else), reset the consecutive late counter
-      consecutiveLates = [];
-    }
+  const daysInMonth = dayjs(monthStr).daysInMonth();
+  const perDaySalary = daysInMonth > 0 ? (user.salary || 0) / daysInMonth : 0;
+  const deductedAmount = Number((lateDeductionDays * perDaySalary).toFixed(2));
+
+  await DeductionLog.create({
+    employeeId,
+    triggerReason: `${lateDays} late Check-Ins in ${monthStr} (${threshold} lates = 1 day penalty)`,
+    deductedDays: lateDeductionDays,
+    deductedAmount,
+    linkedAttendance: lateAttendances.map((c) => c._id),
+    month: monthStr,
+    timestamp: new Date(),
+  });
+
+  return lateDeductionDays;
+}
+
+/**
+ * Computes exact Odoo salary & late deduction summary for an employee in a given month.
+ * Matches Odoo hr_employee.get_salary_summary(ref_date)
+ *
+ * @param {string} employeeId
+ * @param {Date|string} refDate
+ */
+async function getSalarySummary(employeeId, refDate) {
+  const user = await User.findById(employeeId);
+  if (!user) {
+    throw new Error('Employee not found');
   }
 
-  return logsCreated;
+  const dateObj = refDate ? dayjs(refDate).tz('Asia/Dhaka') : dayjs().tz('Asia/Dhaka');
+  const monthStr = dateObj.format('YYYY-MM');
+  const startOfMonth = dateObj.startOf('month').toDate();
+  const endOfMonth = dateObj.endOf('month').toDate();
+  const daysInMonth = dateObj.daysInMonth();
+
+  const attendances = await Attendance.find({
+    employeeId,
+    attendanceDate: { $gte: startOfMonth, $lte: endOfMonth },
+  });
+
+  const lateDays = attendances.filter(
+    (a) => a.late || a.checkIn?.status === 'Late' || a.overview?.includes('Late')
+  ).length;
+  const absentDays = attendances.filter((a) => a.status === 'absent').length;
+  const leaveDays = attendances.filter((a) => a.status === 'leave').length;
+
+  const monthlySalary = user.salary || 0;
+  const perDaySalary = daysInMonth > 0 ? monthlySalary / daysInMonth : 0;
+
+  const threshold = user.attendanceDeductionDays || 3;
+  const lateDeductionDays = threshold > 0 ? Math.floor(lateDays / threshold) : 0;
+  const totalDeductionDays = lateDeductionDays + absentDays;
+  const deductionAmount = Number((totalDeductionDays * perDaySalary).toFixed(2));
+  const payableAmount = Number(Math.max(0, monthlySalary - deductionAmount).toFixed(2));
+
+  return {
+    employeeId: user._id,
+    employeeName: user.name,
+    employeeCode: user.employeeId,
+    month: monthStr,
+    daysInMonth,
+    lateDays,
+    absentDays,
+    leaveDays,
+    perDaySalary: Number(perDaySalary.toFixed(2)),
+    attendanceDeductionThreshold: threshold,
+    lateDeductionDays,
+    totalDeductionDays,
+    deductionAmount,
+    monthlySalary,
+    payableAmount,
+  };
 }
 
 /**
@@ -358,4 +408,5 @@ module.exports = {
   recalculateSalary,
   evaluateAllActive,
   getWeekends,
+  getSalarySummary,
 };

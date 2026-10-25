@@ -1,0 +1,325 @@
+<div class="p-6 max-w-[1400px] mx-auto space-y-6">
+  <!-- Header & KPI Cards -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Cash Flow & Disbursements</h1>
+      <p class="text-sm text-slate-500">Track client cash-in collections, vendor material payouts, showroom expenses, and owner drawings.</p>
+    </div>
+    <div class="flex gap-2">
+      <button
+        (click)="openInModal()"
+        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm shadow-sm transition"
+      >
+        <span>+ Record Cash In</span>
+      </button>
+      <button
+        (click)="openOutModal()"
+        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-medium text-sm shadow-sm transition"
+      >
+        <span>- Record Cash Out</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Metric Badges -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+      <div>
+        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Cash In</div>
+        <div class="text-2xl font-extrabold text-emerald-600 mt-1">৳{{ totalCashInAmount | number:'1.2-2' }}</div>
+      </div>
+      <div class="p-3 bg-emerald-50 rounded-xl text-emerald-600">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12" />
+        </svg>
+      </div>
+    </div>
+
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+      <div>
+        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Cash Out</div>
+        <div class="text-2xl font-extrabold text-rose-600 mt-1">৳{{ totalCashOutAmount | number:'1.2-2' }}</div>
+      </div>
+      <div class="p-3 bg-rose-50 rounded-xl text-rose-600">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6" />
+        </svg>
+      </div>
+    </div>
+
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+      <div>
+        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Net Cash Position</div>
+        <div class="text-2xl font-extrabold" [ngClass]="netLiquidity >= 0 ? 'text-indigo-600' : 'text-rose-600'">
+          ৳{{ netLiquidity | number:'1.2-2' }}
+        </div>
+      </div>
+      <div class="p-3 bg-indigo-50 rounded-xl text-indigo-600">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="border-b border-slate-200 flex gap-4">
+    <button
+      (click)="activeTab.set('in')"
+      [class.border-indigo-600]="activeTab() === 'in'"
+      [class.text-indigo-600]="activeTab() === 'in'"
+      class="pb-3 px-2 border-b-2 font-bold text-sm tracking-tight transition"
+    >
+      Cash In (Receipts) ({{ cashInList().length }})
+    </button>
+    <button
+      (click)="activeTab.set('out')"
+      [class.border-rose-600]="activeTab() === 'out'"
+      [class.text-rose-600]="activeTab() === 'out'"
+      class="pb-3 px-2 border-b-2 font-bold text-sm tracking-tight transition"
+    >
+      Cash Out (Disbursements) ({{ cashOutList().length }})
+    </button>
+  </div>
+
+  <!-- Content Tables -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    @if (activeTab() === 'in') {
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm text-slate-600">
+          <thead class="bg-slate-50 text-xs font-semibold uppercase text-slate-500 border-b border-slate-200">
+            <tr>
+              <th class="px-5 py-3.5">Receipt #</th>
+              <th class="px-5 py-3.5">Date</th>
+              <th class="px-5 py-3.5">Type</th>
+              <th class="px-5 py-3.5">Client / Source</th>
+              <th class="px-5 py-3.5">Linked Project Bill</th>
+              <th class="px-5 py-3.5">Method</th>
+              <th class="px-5 py-3.5 text-right">Amount</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (item of cashInList(); track item._id) {
+              <tr class="hover:bg-slate-50">
+                <td class="px-5 py-4 font-semibold text-emerald-600">{{ item.receiptNumber }}</td>
+                <td class="px-5 py-4">{{ item.date | date:'dd MMM yyyy' }}</td>
+                <td class="px-5 py-4 capitalize font-medium">{{ item.type.replace('_', ' ') }}</td>
+                <td class="px-5 py-4">{{ item.customerId?.name || '—' }}</td>
+                <td class="px-5 py-4">{{ item.billId?.billNumber || 'General Payment' }}</td>
+                <td class="px-5 py-4 uppercase text-xs">{{ item.paymentMethod }}</td>
+                <td class="px-5 py-4 text-right font-bold text-emerald-600">৳{{ item.amount | number:'1.2-2' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm text-slate-600">
+          <thead class="bg-slate-50 text-xs font-semibold uppercase text-slate-500 border-b border-slate-200">
+            <tr>
+              <th class="px-5 py-3.5">Voucher #</th>
+              <th class="px-5 py-3.5">Date</th>
+              <th class="px-5 py-3.5">Category</th>
+              <th class="px-5 py-3.5">Beneficiary / Payee</th>
+              <th class="px-5 py-3.5">Linked Project / Bill Ref</th>
+              <th class="px-5 py-3.5">Method</th>
+              <th class="px-5 py-3.5 text-right">Disbursed Amount</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (item of cashOutList(); track item._id) {
+              <tr class="hover:bg-slate-50">
+                <td class="px-5 py-4 font-semibold text-rose-600">{{ item.voucherNumber }}</td>
+                <td class="px-5 py-4">{{ item.date | date:'dd MMM yyyy' }}</td>
+                <td class="px-5 py-4 capitalize font-medium">{{ item.type.replace('_', ' ') }}</td>
+                <td class="px-5 py-4">
+                  {{ item.vendorId?.name || item.employeeId?.name || item.shareholderId?.name || item.recipientName || '—' }}
+                </td>
+                <td class="px-5 py-4">
+                  @if (item.billId) {
+                    <span class="text-xs text-indigo-600 font-medium">{{ item.billId?.billNumber }}</span>
+                  }
+                  @if (item.vendorBillId?.billRef) {
+                    <div class="text-[11px] text-slate-400">Ref: {{ item.vendorBillId?.billRef }}</div>
+                  }
+                </td>
+                <td class="px-5 py-4 uppercase text-xs">{{ item.paymentMethod }}</td>
+                <td class="px-5 py-4 text-right font-bold text-rose-600">৳{{ item.amount | number:'1.2-2' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  <!-- Cash In Modal -->
+  @if (showInModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+      <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+        <h2 class="text-lg font-bold text-slate-900">Record Cash In (Receipt)</h2>
+        <div class="space-y-3 text-sm">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Receipt Type</label>
+            <select [(ngModel)]="formIn.type" class="w-full p-2.5 rounded-xl border border-slate-200">
+              <option value="customer_payment">Customer Payment / Advance</option>
+              <option value="investment">Owner Investment</option>
+              <option value="patty_return">Petty Cash Return</option>
+              <option value="others">Other Inflow</option>
+            </select>
+          </div>
+          @if (formIn.type === 'customer_payment') {
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Client</label>
+              @if (clients().length > 0) {
+                <select [(ngModel)]="formIn.customerId" class="w-full p-2.5 rounded-xl border border-slate-200">
+                  @for (c of clients(); track c._id) {
+                    <option [value]="c._id">{{ c.name }} (Due: ৳{{ c.dueBalance }})</option>
+                  }
+                </select>
+              } @else {
+                <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800">
+                  No clients registered yet. Please add a client in Clients Directory.
+                </div>
+              }
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Project Bill</label>
+              <select [(ngModel)]="formIn.billId" class="w-full p-2.5 rounded-xl border border-slate-200">
+                <option value="">General Payment</option>
+                @for (b of bills(); track b._id) {
+                  <option [value]="b._id">{{ b.billNumber }} — {{ b.projectName }} (Due: ৳{{ b.customerDue }})</option>
+                }
+              </select>
+            </div>
+          }
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Amount (৳) *</label>
+            <input type="number" [(ngModel)]="formIn.amount" class="w-full p-2.5 rounded-xl border border-slate-200 font-bold" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Payment Method</label>
+            <select [(ngModel)]="formIn.paymentMethod" class="w-full p-2.5 rounded-xl border border-slate-200">
+              <option value="cash">Cash</option>
+              <option value="bank_transfer">Bank Transfer</option>
+              <option value="cheque">Cheque</option>
+              <option value="mfs">bKash / Nagad (MFS)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Notes / Remarks</label>
+            <input type="text" [(ngModel)]="formIn.notes" placeholder="e.g. Advance payment, Cheque #, etc." class="w-full p-2.5 rounded-xl border border-slate-200" />
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <button (click)="showInModal.set(false)" class="px-4 py-2 border rounded-xl text-slate-600 text-sm">Cancel</button>
+          <button (click)="submitCashIn()" class="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold">Save Receipt</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Cash Out Modal -->
+  @if (showOutModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+      <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+        <h2 class="text-lg font-bold text-slate-900">Record Cash Out (Disbursement)</h2>
+        <div class="space-y-3 text-sm">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Expense / Payment Type</label>
+            <select [(ngModel)]="formOut.type" class="w-full p-2.5 rounded-xl border border-slate-200 capitalize">
+              <option value="purchase">Vendor / Material Payment</option>
+              <option value="fitting_charge">Carpentry & Fitting Charge</option>
+              <option value="transport">Transport / Logistics</option>
+              <option value="showroom_expense">Daily Showroom Supplies</option>
+              <option value="operating_expense">Operating Overhead</option>
+              <option value="showroom_rent">Showroom / Workshop Rent</option>
+              <option value="electricity_bill">Electricity Utility</option>
+              <option value="wasa_bill">WASA (Water)</option>
+              <option value="mobile_bill">Internet & Phone</option>
+              <option value="petty_cash">Petty Cash Top-up</option>
+              <option value="withdraw_profit">Shareholder Profit Withdrawal</option>
+              <option value="others">Other Expenses</option>
+            </select>
+          </div>
+
+          @if (formOut.type === 'purchase') {
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Vendor Bill (Invoice Ref)</label>
+              @if (vendorBills().length > 0) {
+                <select [(ngModel)]="formOut.vendorBillId" class="w-full p-2.5 rounded-xl border border-slate-200">
+                  <option value="">Select Vendor Bill</option>
+                  @for (vb of vendorBills(); track vb._id) {
+                    <option [value]="vb._id">{{ vb.billNumber }} (Ref: {{ vb.billRef || '—' }}) — Due: ৳{{ vb.vendorDue }}</option>
+                  }
+                </select>
+              } @else {
+                <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800">
+                  No open vendor bills found. Please create a vendor bill first.
+                </div>
+              }
+            </div>
+          }
+
+          @if (formOut.type === 'withdraw_profit') {
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Shareholder / Owner</label>
+              @if (shareholders().length > 0) {
+                <select [(ngModel)]="formOut.shareholderId" class="w-full p-2.5 rounded-xl border border-slate-200">
+                  <option value="">Select Shareholder</option>
+                  @for (sh of shareholders(); track sh._id) {
+                    <option [value]="sh.shareholderId?._id">
+                      {{ sh.shareholderId?.name }} (Avail Balance: ৳{{ sh.currentBalance }})
+                    </option>
+                  }
+                </select>
+              } @else {
+                <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800">
+                  No shareholder accounts registered yet.
+                </div>
+              }
+            </div>
+          }
+
+          @if (formOut.type !== 'purchase' && formOut.type !== 'withdraw_profit') {
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Beneficiary / Payee Name</label>
+              <input
+                type="text"
+                [(ngModel)]="formOut.recipientName"
+                placeholder="e.g. Electrician, Landlord, Transport driver, etc."
+                class="w-full p-2.5 rounded-xl border border-slate-200"
+              />
+            </div>
+          }
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Disbursement Amount (৳) *</label>
+            <input type="number" [(ngModel)]="formOut.amount" class="w-full p-2.5 rounded-xl border border-slate-200 font-bold text-rose-600" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Payment Method</label>
+            <select [(ngModel)]="formOut.paymentMethod" class="w-full p-2.5 rounded-xl border border-slate-200">
+              <option value="cash">Cash</option>
+              <option value="bank">Bank</option>
+              <option value="cheque">Cheque</option>
+              <option value="mfs">bKash / Nagad (MFS)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Notes / Remarks</label>
+            <input type="text" [(ngModel)]="formOut.notes" placeholder="e.g. Voucher details, payment purpose, etc." class="w-full p-2.5 rounded-xl border border-slate-200" />
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <button (click)="showOutModal.set(false)" class="px-4 py-2 border rounded-xl text-slate-600 text-sm">Cancel</button>
+          <button (click)="submitCashOut()" class="px-4 py-2 bg-rose-600 text-white rounded-xl text-sm font-semibold">Confirm Disbursement</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

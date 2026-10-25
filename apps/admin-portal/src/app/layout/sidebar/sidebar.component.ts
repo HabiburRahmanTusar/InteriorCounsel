@@ -17,27 +17,32 @@ export class SidebarComponent {
 
   readonly currentRole = this.auth.currentRole;
   readonly loggingOut = signal(false);
+
+  readonly salesOpen = signal(true);
+  readonly inventoryOpen = signal(true);
+  readonly financeOpen = signal(true);
+  readonly hrOpen = signal(false);
   readonly settingsOpen = signal(false);
-  readonly calendarOpen = signal(false);
-  readonly leavesOpen = signal(false);
-  readonly salaryOpen = signal(false);
   readonly reportsOpen = signal(false);
 
+  toggleSales() {
+    this.salesOpen.update((v) => !v);
+  }
+
+  toggleInventory() {
+    this.inventoryOpen.update((v) => !v);
+  }
+
+  toggleFinance() {
+    this.financeOpen.update((v) => !v);
+  }
+
+  toggleHr() {
+    this.hrOpen.update((v) => !v);
+  }
 
   toggleSettings() {
     this.settingsOpen.update((v) => !v);
-  }
-
-  toggleSalary() {
-    this.salaryOpen.update((v) => !v);
-  }
-
-  toggleCalendar() {
-    this.calendarOpen.update((v) => !v);
-  }
-
-  toggleLeaves() {
-    this.leavesOpen.update((v) => !v);
   }
 
   toggleReports() {

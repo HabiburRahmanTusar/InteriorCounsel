@@ -50,19 +50,31 @@ exports.create = async function create(payload) {
     throw error;
   }
 
-  // Auto-generate sequential employee ID
-  const lastUser = await User.findOne({ employeeId: /^EMP\d+$/ }).sort({ employeeId: -1 });
-  let nextNum = 1;
-  if (lastUser) {
-    const match = lastUser.employeeId.match(/^EMP(\d+)$/);
-    if (match) {
-      nextNum = parseInt(match[1], 10) + 1;
+  // Auto-generate sequential employee ID if not provided
+  if (!payload.employeeId || !payload.employeeId.trim()) {
+    const lastUser = await User.findOne({ employeeId: /^EMP\d+$/ }).sort({ employeeId: -1 });
+    let nextNum = 1;
+    if (lastUser) {
+      const match = lastUser.employeeId.match(/^EMP(\d+)$/);
+      if (match) {
+        nextNum = parseInt(match[1], 10) + 1;
+      }
+    }
+    payload.employeeId = `EMP${String(nextNum).padStart(5, '0')}`;
+  } else {
+    payload.employeeId = payload.employeeId.trim().toUpperCase();
+    const idExists = await User.findOne({ employeeId: payload.employeeId });
+    if (idExists) {
+      const error = new Error(`Employee ID "${payload.employeeId}" is already taken`);
+      error.status = 400;
+      throw error;
     }
   }
-  payload.employeeId = `EMP${String(nextNum).padStart(5, '0')}`;
 
-  // Set the password to the generated employee ID
-  payload.password = payload.employeeId;
+  // Set the password to the employee ID or default
+  if (!payload.password) {
+    payload.password = payload.employeeId || 'Attendly@123';
+  }
 
   const user = await User.create(payload);
   return user.toSafeJSON();
