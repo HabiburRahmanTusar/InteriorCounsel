@@ -23,10 +23,18 @@ export class LoginComponent {
   readonly errorMessage = signal<string | null>(null);
 
   readonly form = this.fb.nonNullable.group({
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(8)]],
-    rememberMe: [false],
+    email: ['admin@attendly.com', [Validators.required, Validators.email]],
+    password: ['password123', [Validators.required, Validators.minLength(8)]],
+    rememberMe: [true],
   });
+
+  fillAdminDemo() {
+    this.form.patchValue({
+      email: 'admin@attendly.com',
+      password: 'password123',
+      rememberMe: true,
+    });
+  }
 
   private handleError(error: any): void {
     console.error('Login failed', error);

@@ -113,6 +113,19 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'attendance/manual',
+        title: 'Manual Attendance',
+        loadComponent: () =>
+          import('./features/attendance/manual-attendance/manual-attendance.component').then(
+            (m) => m.ManualAttendanceComponent,
+          ),
+      },
+      {
+        path: 'manual-attendance',
+        redirectTo: 'attendance/manual',
+        pathMatch: 'full',
+      },
+      {
         path: 'reports',
         title: 'Attendance Report',
         canActivate: [roleGuard('admin', 'hr', 'manager')],
@@ -212,6 +225,23 @@ export const routes: Routes = [
           },
         ],
       },
+      {
+        path: 'projects',
+        title: 'Projects & Quotations',
+        loadComponent: () =>
+          import('./features/commercial/projects/projects.component').then(
+            (m) => m.ProjectsComponent,
+          ),
+      },
+      {
+        path: 'access-control',
+        title: 'Access Control (RBAC)',
+        loadComponent: () =>
+          import('./features/access-control/access-control.component').then(
+            (m) => m.AccessControlComponent,
+          ),
+      },
+      { path: 'access', redirectTo: 'access-control', pathMatch: 'full' },
       { path: 'billing', redirectTo: 'commercial/bills', pathMatch: 'full' },
       { path: 'sales', redirectTo: 'commercial/bills', pathMatch: 'full' },
       { path: 'customers', redirectTo: 'commercial/clients', pathMatch: 'full' },

@@ -202,12 +202,13 @@ exports.generateTodayRoster = async function generateTodayRoster() {
 exports.recordManualAttendance = async function recordManualAttendance(data) {
   const { employeeId, date, status = 'present', checkInTime, checkInPeriod, checkOutTime, checkOutPeriod, note } = data;
 
-  const user = await User.findById(employeeId).populate('shiftId');
+  const user = (mongoose.Types.ObjectId.isValid(employeeId) ? await User.findById(employeeId).populate('shiftId') : await User.findOne({ employeeId }).populate('shiftId')) || await User.findOne({ employeeId }).populate('shiftId');
   if (!user) {
     const error = new Error('Employee not found');
     error.status = 404;
     throw error;
   }
+  const empId = user._id;
 
   const targetDate = date ? dayjs(date).tz('Asia/Dhaka').startOf('day').toDate() : dayjs().tz('Asia/Dhaka').startOf('day').toDate();
 
@@ -274,9 +275,9 @@ exports.recordManualAttendance = async function recordManualAttendance(data) {
   const workingHoursDisplay = formatWorkingHours(workingMinutesVal);
 
   const updated = await Attendance.findOneAndUpdate(
-    { employeeId, attendanceDate: targetDate },
+    { employeeId: empId, attendanceDate: targetDate },
     {
-      employeeId,
+      employeeId: empId,
       attendanceDate: targetDate,
       status,
       late,
@@ -296,10 +297,39 @@ exports.recordManualAttendance = async function recordManualAttendance(data) {
 
   // Re-evaluate salary & late deductions for the month
   const monthStr = dayjs(targetDate).tz('Asia/Dhaka').format('YYYY-MM');
-  await automationService.evaluateLateDeductions(employeeId, monthStr);
-  await automationService.recalculateSalary(employeeId, monthStr);
+  await automationService.evaluateLateDeductions(empId, monthStr);
+  await automationService.recalculateSalary(empId, monthStr);
 
   return updated;
+};
+
+exports.listManualAttendance = async function listManualAttendance(filter = {}) {
+  const query = {};
+  if (filter.employeeId) {
+    const user = (mongoose.Types.ObjectId.isValid(filter.employeeId) ? await User.findById(filter.employeeId) : await User.findOne({ employeeId: filter.employeeId })) || await User.findOne({ employeeId: filter.employeeId });
+    if (user) query.employeeId = user._id;
+  }
+  if (filter.date) {
+    query.attendanceDate = dayjs(filter.date).tz('Asia/Dhaka').startOf('day').toDate();
+  }
+
+  const list = await Attendance.find(query)
+    .populate('employeeId', 'name employeeId designation')
+    .sort({ attendanceDate: -1, updatedAt: -1 })
+    .limit(150);
+
+  return list;
+};
+
+exports.deleteManualAttendance = async function deleteManualAttendance(id) {
+  const record = await Attendance.findById(id);
+  if (!record) {
+    const error = new Error('Attendance record not found');
+    error.status = 404;
+    throw error;
+  }
+  await record.deleteOne();
+  return { id };
 };
 
 exports.getSalarySummary = async function getSalarySummary(employeeId, refDate) {

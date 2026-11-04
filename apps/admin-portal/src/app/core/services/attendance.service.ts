@@ -51,4 +51,19 @@ export class AttendanceService {
     const params = new HttpParams().set('date', date);
     return this.http.get<DailyAttendanceRow[]>(`${this.baseUrl}/daily`, { params });
   }
+
+  recordManual(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/manual`, payload);
+  }
+
+  getManualList(params?: any): Observable<any> {
+    let httpParams = new HttpParams();
+    if (params?.employeeId) httpParams = httpParams.set('employeeId', params.employeeId);
+    if (params?.date) httpParams = httpParams.set('date', params.date);
+    return this.http.get<any>(`${this.baseUrl}/manual`, { params: httpParams });
+  }
+
+  deleteManual(id: string): Observable<any> {
+    return this.http.delete<any>(`${this.baseUrl}/manual/${id}`);
+  }
 }

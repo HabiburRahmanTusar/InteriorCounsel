@@ -304,5 +304,26 @@ export class CommercialService {
     const params = new HttpParams().set('period', period);
     return this.http.get<any>(`${this.baseUrl}/financial-analytics/summary`, { params });
   }
+
+  // ---------------- Projects ----------------
+  getProjects(params?: any): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/projects`, { params });
+  }
+
+  getProject(id: string): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/projects/${id}`);
+  }
+
+  createProject(data: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/projects`, data);
+  }
+
+  updateProject(id: string, data: any): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/projects/${id}`, data);
+  }
+
+  deleteProject(id: string): Observable<any> {
+    return this.http.delete<any>(`${this.baseUrl}/projects/${id}`);
+  }
 }
 

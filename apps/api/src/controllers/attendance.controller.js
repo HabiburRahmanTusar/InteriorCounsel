@@ -100,6 +100,24 @@ exports.recordManual = async (req, res, next) => {
   }
 };
 
+exports.getManualList = async (req, res, next) => {
+  try {
+    const records = await attendanceService.listManualAttendance(req.query);
+    return apiResponse.ok(res, records);
+  } catch (err) {
+    return next(err);
+  }
+};
+
+exports.deleteManual = async (req, res, next) => {
+  try {
+    const result = await attendanceService.deleteManualAttendance(req.params.id);
+    return apiResponse.ok(res, result, 'Attendance record deleted successfully');
+  } catch (err) {
+    return next(err);
+  }
+};
+
 // Odoo Action: Get exact monthly salary & late deduction summary for an employee
 exports.getSalarySummary = async (req, res, next) => {
   try {

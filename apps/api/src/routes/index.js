@@ -44,5 +44,7 @@ router.use('/financial-analytics', require('./financialDashboard.routes'));
 router.use('/shareholders', require('./shareholder.routes'));
 router.use('/products', require('./product.routes'));
 router.use('/transfers', require('./bankTransfer.routes'));
+router.use('/projects', require('./project.routes'));
+router.use('/rbac', require('./rbac.routes'));
 
 module.exports = router;

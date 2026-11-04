@@ -1,0 +1,1121 @@
+<div class="p-6 max-w-7xl mx-auto space-y-6 relative select-none">
+
+  <!-- Toast Notification -->
+  @if (toastMessage()) {
+    <div class="fixed top-5 right-5 z-[9999] animate-in slide-in-from-top-3 fade-in duration-200">
+      <div class="bg-slate-900/95 backdrop-blur-md text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 border border-slate-700/60">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        </svg>
+        <span>{{ toastMessage() }}</span>
+      </div>
+    </div>
+  }
+
+  <!-- =========================================================================
+       MODE: LIST (PROJECTS OVERVIEW)
+       ========================================================================= -->
+  @if (mode() === 'list') {
+    <div class="space-y-5 animate-in fade-in duration-150">
+      <!-- Header -->
+      <div class="space-y-1">
+        <div class="flex items-center gap-2 text-xs font-semibold text-slate-400">
+          <span>Commercial</span>
+          <span>/</span>
+          <span class="text-blue-600 font-bold">Projects</span>
+        </div>
+
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-1">
+          <div>
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight">Project Management</h1>
+            <p class="text-xs text-slate-500 mt-1">
+              Interior fit-out projects across Bangladesh &mdash; budgets, execution progress, and client quotations.
+            </p>
+          </div>
+
+          <div>
+            <button
+              type="button"
+              (click)="openNewProjectModal()"
+              class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 shadow-sm transition"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              <span>+ New Project</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI Summary Cards (Exact Menu_RBAC .g-kpi) -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <!-- Total Projects -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex items-center justify-between">
+          <div>
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Projects</div>
+            <div class="text-2xl font-black text-slate-900 mt-1">{{ totalProjectsCount() }}</div>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- In Progress -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex items-center justify-between">
+          <div>
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">In Progress</div>
+            <div class="text-2xl font-black text-blue-600 mt-1">{{ inProgressCount() }}</div>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Completed -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex items-center justify-between">
+          <div>
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Completed</div>
+            <div class="text-2xl font-black text-emerald-600 mt-1">{{ completedCount() }}</div>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Total Budget -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex items-center justify-between">
+          <div>
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Budget</div>
+            <div class="text-xl font-black text-slate-900 mt-1">৳ {{ (totalBudgetSum() || 0) | number:'1.0-0' }}</div>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Projects Table Card -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        <!-- Toolbar -->
+        <div class="p-4 border-b border-slate-100 flex flex-wrap items-center gap-3">
+          <div class="relative flex-1 min-w-[200px]">
+            <input
+              type="text"
+              [(ngModel)]="searchQuery"
+              placeholder="Search project name, client, or location..."
+              class="w-full text-xs rounded-xl border border-slate-200 pl-9 pr-3 py-2 focus:border-blue-500 focus:outline-none"
+            />
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+
+          <select
+            [(ngModel)]="statusFilter"
+            class="text-xs rounded-xl border border-slate-200 px-3 py-2 bg-white focus:outline-none"
+          >
+            <option value="">All Status</option>
+            @for (st of statuses; track st) {
+              <option [value]="st">{{ st }}</option>
+            }
+          </select>
+
+          <select
+            [(ngModel)]="typeFilter"
+            class="text-xs rounded-xl border border-slate-200 px-3 py-2 bg-white focus:outline-none"
+          >
+            <option value="">All Types</option>
+            @for (ty of types; track ty) {
+              <option [value]="ty">{{ ty }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-50 text-[11px] uppercase font-bold text-slate-400 border-b border-slate-100">
+              <tr>
+                <th class="py-3 px-4">Project ID</th>
+                <th class="py-3 px-4">Project Name</th>
+                <th class="py-3 px-4">Customer</th>
+                <th class="py-3 px-4">Type</th>
+                <th class="py-3 px-4">Manager</th>
+                <th class="py-3 px-4">Location</th>
+                <th class="py-3 px-4 text-right">Budget</th>
+                <th class="py-3 px-4" style="min-width: 130px;">Progress</th>
+                <th class="py-3 px-4">Status</th>
+                <th class="py-3 px-4 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              @for (p of filteredProjects(); track p.projectId) {
+                <tr class="hover:bg-slate-50/50 transition">
+                  <td class="py-3 px-4 font-bold text-slate-500 whitespace-nowrap">
+                    {{ p.projectId }}
+                  </td>
+                  <td class="py-3 px-4 font-bold text-blue-600 cursor-pointer hover:underline" (click)="viewProjectProfile(p)">
+                    {{ p.name }}
+                  </td>
+                  <td class="py-3 px-4 font-semibold text-slate-800">
+                    {{ p.customer }}
+                  </td>
+                  <td class="py-3 px-4">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700">
+                      {{ p.type }}
+                    </span>
+                  </td>
+                  <td class="py-3 px-4 text-slate-700">
+                    {{ p.manager || '&mdash;' }}
+                  </td>
+                  <td class="py-3 px-4 text-slate-500">
+                    {{ p.loc }}
+                  </td>
+                  <td class="py-3 px-4 text-right font-black text-slate-900 whitespace-nowrap">
+                    ৳ {{ (p.budget || 0) | number:'1.0-0' }}
+                  </td>
+                  <td class="py-3 px-4">
+                    <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden mb-1">
+                      <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" [style.width.%]="p.progress"></div>
+                    </div>
+                    <span class="text-[10px] font-bold text-slate-500">{{ p.progress }}%</span>
+                  </td>
+                  <td class="py-3 px-4">
+                    <span
+                      class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold"
+                      [class.bg-blue-50]="p.status === 'In Progress' || p.status === 'Approved'"
+                      [class.text-blue-700]="p.status === 'In Progress' || p.status === 'Approved'"
+                      [class.bg-emerald-50]="p.status === 'Completed'"
+                      [class.text-emerald-700]="p.status === 'Completed'"
+                      [class.bg-amber-50]="p.status === 'Planning' || p.status === 'Quotation'"
+                      [class.text-amber-700]="p.status === 'Planning' || p.status === 'Quotation'"
+                      [class.bg-slate-100]="p.status === 'On Hold' || p.status === 'Cancelled'"
+                      [class.text-slate-600]="p.status === 'On Hold' || p.status === 'Cancelled'"
+                    >
+                      {{ p.status }}
+                    </span>
+                  </td>
+                  <td class="py-3 px-4 text-center whitespace-nowrap">
+                    <div class="inline-flex items-center gap-1">
+                      <button
+                        type="button"
+                        (click)="viewProjectProfile(p)"
+                        class="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-slate-100 transition"
+                        title="View Profile"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        (click)="editProject(p)"
+                        class="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-slate-100 transition"
+                        title="Edit Project"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        (click)="deleteProject(p)"
+                        class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                        title="Delete Project"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="10" class="py-12 text-center text-slate-400">
+                    No projects found matching criteria. Click "+ New Project" to add one.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- =========================================================================
+       MODE: PROFILE (PROJECT WORKSPACE & QUOTATION BUILDER)
+       ========================================================================= -->
+  @if (mode() === 'profile' && selectedProject(); as p) {
+    <div class="space-y-5 animate-in fade-in duration-150">
+      <!-- Back button -->
+      <div>
+        <button
+          type="button"
+          (click)="backToList()"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 shadow-2xs transition"
+        >
+          <span class="text-slate-400 font-bold">&lsaquo;</span>
+          <span>Back to Projects list</span>
+        </button>
+      </div>
+
+      <!-- Page Head -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-1">
+        <div>
+          <div class="flex items-center gap-2 text-xs font-semibold text-slate-400">
+            <span>Projects</span>
+            <span>/</span>
+            <span class="text-blue-600 font-bold">{{ p.projectId }}</span>
+          </div>
+          <h1 class="text-2xl font-black text-slate-900 tracking-tight mt-1">{{ p.name }}</h1>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            (click)="editProject(p)"
+            class="px-3.5 py-2 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-50 transition inline-flex items-center gap-1.5"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            <span>Edit</span>
+          </button>
+          <button
+            type="button"
+            (click)="openNewQuotationModal(p)"
+            class="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 shadow-sm transition inline-flex items-center gap-1.5"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span>+ Create Quotation</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Project Profile Card Head (Exact Menu_RBAC .profile-head) -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div class="flex items-center gap-4">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100 text-amber-700 border border-amber-200/60 shadow-xs flex flex-col items-center justify-center shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+              </svg>
+              <span class="text-[9px] font-black uppercase tracking-wider mt-0.5">{{ p.type }}</span>
+            </div>
+
+            <div>
+              <div class="text-xs font-bold text-slate-400">Client Account</div>
+              <div class="text-lg font-black text-slate-900">{{ p.customer }}</div>
+              <div class="text-xs text-slate-500 font-medium mt-0.5">Location: {{ p.loc }} &bull; Priority: {{ p.priority }}</div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-6">
+            <div>
+              <div class="text-[11px] font-bold text-slate-400 uppercase">Budget</div>
+              <div class="text-base font-black text-slate-900 mt-0.5">৳ {{ (p.budget || 0) | number:'1.0-0' }}</div>
+            </div>
+            <div>
+              <div class="text-[11px] font-bold text-slate-400 uppercase">Total Received</div>
+              <div class="text-base font-black text-emerald-600 mt-0.5">৳ {{ (p.received || 0) | number:'1.0-0' }}</div>
+            </div>
+            <div>
+              <div class="text-[11px] font-bold text-slate-400 uppercase">Status</div>
+              <div class="mt-0.5">
+                <span class="px-2.5 py-1 rounded-full text-xs font-black bg-blue-50 text-blue-700">
+                  {{ p.status }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="space-y-1.5 pt-2 border-t border-slate-100">
+          <div class="flex justify-between text-xs font-semibold text-slate-500">
+            <span>Overall Execution Progress</span>
+            <span class="text-slate-900 font-bold">{{ p.progress }}%</span>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+            <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" [style.width.%]="p.progress"></div>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex items-center gap-2 border-b border-slate-200 pt-2 -mb-6 overflow-x-auto">
+          @for (tab of ['Overview', 'Sales', 'Timeline', 'Tasks', 'Materials', 'Team']; track tab) {
+            <button
+              type="button"
+              (click)="activeProfileTab.set(tab == 'Sales' ? 'Sales' : (tab == 'Timeline' ? 'Timeline' : (tab == 'Tasks' ? 'Tasks' : (tab == 'Materials' ? 'Materials' : (tab == 'Team' ? 'Team' : 'Overview')))))"
+              [class.border-blue-600]="activeProfileTab() === tab"
+              [class.text-blue-600]="activeProfileTab() === tab"
+              [class.font-bold]="activeProfileTab() === tab"
+              class="px-4 py-2.5 text-xs font-semibold text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition -mb-px whitespace-nowrap"
+            >
+              {{ tab === 'Sales' ? 'Sales & Quotations' : tab }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- =========================================================================
+           TAB: OVERVIEW
+           ========================================================================= -->
+      @if (activeProfileTab() === 'Overview') {
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
+            <h3 class="text-sm font-black text-slate-900 border-b border-slate-100 pb-2">Project Particulars</h3>
+            <div class="grid grid-cols-2 gap-4 text-xs">
+              <div>
+                <span class="text-slate-400 font-bold block">Project Manager</span>
+                <span class="text-slate-800 font-black mt-0.5 block">{{ p.manager || 'Unassigned' }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 font-bold block">Interior Designer</span>
+                <span class="text-slate-800 font-black mt-0.5 block">{{ p.designer || 'Unassigned' }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 font-bold block">Start Date</span>
+                <span class="text-slate-800 font-semibold mt-0.5 block">{{ (p.start | date:'dd MMM yyyy') || '&mdash;' }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 font-bold block">Target Handover</span>
+                <span class="text-slate-800 font-semibold mt-0.5 block">{{ (p.expected | date:'dd MMM yyyy') || '&mdash;' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
+            <h3 class="text-sm font-black text-slate-900 border-b border-slate-100 pb-2">Commercial Overview</h3>
+            <div class="grid grid-cols-2 gap-4 text-xs">
+              <div>
+                <span class="text-slate-400 font-bold block">Contracted Budget</span>
+                <span class="text-slate-900 font-black text-sm mt-0.5 block">৳ {{ (p.budget || 0) | number:'1.2-2' }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 font-bold block">Total Invoiced</span>
+                <span class="text-blue-600 font-black text-sm mt-0.5 block">৳ {{ (p.received || 0) | number:'1.2-2' }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 font-bold block">Quoted Value</span>
+                <span class="text-indigo-600 font-black text-sm mt-0.5 block">৳ {{ (projectQuotedTotal() || 0) | number:'1.2-2' }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 font-bold block">Active Quotations</span>
+                <span class="text-slate-800 font-black text-sm mt-0.5 block">{{ projectQuotations().length }} proposal(s)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- =========================================================================
+           TAB: SALES & QUOTATIONS (PROPOSAL ENGINE)
+           ========================================================================= -->
+      @if (activeProfileTab() === 'Sales') {
+        <div class="space-y-6">
+          <!-- Quotation KPIs -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs">
+              <div class="text-[11px] font-bold text-slate-400 uppercase">Quotations</div>
+              <div class="text-xl font-black text-slate-900 mt-1">{{ projectQuotations().length }}</div>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs">
+              <div class="text-[11px] font-bold text-slate-400 uppercase">Quoted Value</div>
+              <div class="text-xl font-black text-blue-600 mt-1">৳ {{ (projectQuotedTotal() || 0) | number:'1.0-0' }}</div>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs">
+              <div class="text-[11px] font-bold text-slate-400 uppercase">Invoices</div>
+              <div class="text-xl font-black text-indigo-600 mt-1">{{ projectInvoices().length }}</div>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs">
+              <div class="text-[11px] font-bold text-slate-400 uppercase">Total Received</div>
+              <div class="text-xl font-black text-emerald-600 mt-1">৳ {{ (p.received || 0) | number:'1.0-0' }}</div>
+            </div>
+          </div>
+
+          <!-- Quotations Table Card -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+            <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <h3 class="text-sm font-black text-slate-900">Project Quotations & Estimates</h3>
+              </div>
+
+              <button
+                type="button"
+                (click)="openNewQuotationModal(p)"
+                class="px-3.5 py-1.5 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 shadow-2xs transition inline-flex items-center gap-1.5"
+              >
+                <span>+ New Quotation</span>
+              </button>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs text-slate-600">
+                <thead class="bg-slate-50 text-[11px] uppercase font-bold text-slate-400 border-b border-slate-100">
+                  <tr>
+                    <th class="py-3 px-4">Quotation No.</th>
+                    <th class="py-3 px-4">Date</th>
+                    <th class="py-3 px-4">Valid Until</th>
+                    <th class="py-3 px-4">Subject</th>
+                    <th class="py-3 px-4 text-right">Amount</th>
+                    <th class="py-3 px-4">Status</th>
+                    <th class="py-3 px-4 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  @for (q of projectQuotations(); track q._id || q.quotationNumber) {
+                    <tr class="hover:bg-slate-50/50 transition">
+                      <td class="py-3 px-4 font-bold text-blue-600 whitespace-nowrap cursor-pointer hover:underline" (click)="viewQuotationPaper(q)">
+                        {{ q.quotationNumber }}
+                      </td>
+                      <td class="py-3 px-4 text-slate-500 whitespace-nowrap">
+                        {{ q.date | date:'dd MMM yyyy' }}
+                      </td>
+                      <td class="py-3 px-4 text-slate-500 whitespace-nowrap">
+                        {{ (q.validUntil | date:'dd MMM yyyy') || '&mdash;' }}
+                      </td>
+                      <td class="py-3 px-4 text-slate-800 font-medium max-w-[220px] truncate" [title]="q.subject || ''">
+                        {{ q.subject }}
+                      </td>
+                      <td class="py-3 px-4 text-right font-black text-slate-900 whitespace-nowrap">
+                        ৳ {{ (q.totalAmount || 0) | number:'1.2-2' }}
+                      </td>
+                      <td class="py-3 px-4">
+                        <span
+                          class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold"
+                          [class.bg-emerald-50]="q.status === 'Approved' || q.status === 'Converted to Bill'"
+                          [class.text-emerald-700]="q.status === 'Approved' || q.status === 'Converted to Bill'"
+                          [class.bg-blue-50]="q.status === 'Sent'"
+                          [class.text-blue-700]="q.status === 'Sent'"
+                          [class.bg-amber-50]="q.status === 'Draft'"
+                          [class.text-amber-700]="q.status === 'Draft'"
+                          [class.bg-rose-50]="q.status === 'Rejected' || q.status === 'Declined'"
+                          [class.text-rose-700]="q.status === 'Rejected' || q.status === 'Declined'"
+                        >
+                          {{ q.status }}
+                        </span>
+                      </td>
+                      <td class="py-3 px-4 text-center whitespace-nowrap">
+                        <div class="inline-flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            (click)="viewQuotationPaper(q)"
+                            class="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-slate-100 transition"
+                            title="View & Print"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          </button>
+
+                          @if (q.status === 'Draft' || q.status === 'Sent') {
+                            <button
+                              type="button"
+                              (click)="approveQuotation(q)"
+                              class="px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700 font-bold hover:bg-emerald-100 transition text-[11px]"
+                              title="Approve Proposal"
+                            >
+                              Approve
+                            </button>
+                          }
+
+                          @if (q.status === 'Approved') {
+                            <button
+                              type="button"
+                              (click)="convertQuotation(q)"
+                              class="px-2 py-1 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-700 transition text-[11px]"
+                              title="Convert to Confirmed Bill"
+                            >
+                              To Bill &rarr;
+                            </button>
+                          }
+
+                          @if (q.status === 'Draft') {
+                            <button
+                              type="button"
+                              (click)="deleteQuotation(q)"
+                              class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                              title="Delete Draft"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          }
+                        </div>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="7" class="py-12 text-center text-slate-400">
+                        No quotations created yet for this project. Click "+ New Quotation" to prepare a proposal.
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Other tabs placeholder -->
+      @if (['Timeline', 'Tasks', 'Materials', 'Team'].includes(activeProfileTab())) {
+        <div class="bg-white rounded-2xl border border-slate-200 p-8 shadow-xs text-center text-slate-400 space-y-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto opacity-40 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          <div class="text-sm font-bold text-slate-700">{{ activeProfileTab() }} Workspace</div>
+          <div class="text-xs text-slate-400">Integrated site milestones and team tracking for {{ p.name }}.</div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- =========================================================================
+       MODAL: CREATE / EDIT PROJECT
+       ========================================================================= -->
+  @if (showProjectModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+      <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-100 overflow-hidden animate-in zoom-in-95 duration-150 my-8">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <h3 class="font-bold text-slate-900 text-sm">
+            {{ isEditingProject ? 'Edit Project — ' + projectForm.projectId : 'New Project' }}
+          </h3>
+          <button (click)="showProjectModal.set(false)" class="text-slate-400 hover:text-slate-600 p-1 text-base">&times;</button>
+        </div>
+
+        <div class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Project Name -->
+            <div class="md:col-span-2">
+              <label class="block text-xs font-bold text-slate-700 mb-1">Project Name *</label>
+              <input
+                type="text"
+                [(ngModel)]="projectForm.name"
+                class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none"
+                placeholder="e.g. Gulshan Residence Interior"
+              />
+            </div>
+
+            <!-- Customer -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Customer / Client *</label>
+              <input
+                type="text"
+                list="custDatalist"
+                [(ngModel)]="projectForm.customer"
+                class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none"
+                placeholder="Select or enter customer"
+              />
+              <datalist id="custDatalist">
+                @for (c of clients(); track c._id) {
+                  <option [value]="c.name">{{ c.name }}</option>
+                }
+              </datalist>
+            </div>
+
+            <!-- Project Type -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Project Type</label>
+              <select
+                [(ngModel)]="projectForm.type"
+                class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2.5 bg-white focus:outline-none"
+              >
+                @for (ty of types; track ty) {
+                  <option [value]="ty">{{ ty }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Manager -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Project Manager</label>
+              <select
+                [(ngModel)]="projectForm.manager"
+                class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2.5 bg-white focus:outline-none"
+              >
+                <option value="">Select manager...</option>
+                @for (mg of managers(); track mg) {
+                  <option [value]="mg">{{ mg }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Designer -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Interior Designer</label>
+              <select
+                [(ngModel)]="projectForm.designer"
+                class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2.5 bg-white focus:outline-none"
+              >
+                <option value="">Select designer...</option>
+                @for (dg of designers(); track dg) {
+                  <option [value]="dg">{{ dg }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Location -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Work Location</label>
+              <select
+                [(ngModel)]="projectForm.loc"
+                class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2.5 bg-white focus:outline-none"
+              >
+                @for (l of locations; track l) {
+                  <option [value]="l">{{ l }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Budget -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Project Budget (৳) *</label>
+              <input
+                type="number"
+                min="0"
+                [(ngModel)]="projectForm.budget"
+                class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none font-bold"
+                placeholder="0"
+              />
+            </div>
+
+            <!-- Status -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Status</label>
+              <select
+                [(ngModel)]="projectForm.status"
+                class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2.5 bg-white focus:outline-none"
+              >
+                @for (st of statuses; track st) {
+                  <option [value]="st">{{ st }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Priority -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Priority</label>
+              <select
+                [(ngModel)]="projectForm.priority"
+                class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2.5 bg-white focus:outline-none"
+              >
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+            </div>
+
+            <!-- Start Date -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Start Date</label>
+              <input
+                type="date"
+                [(ngModel)]="projectForm.start"
+                class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+
+            <!-- Expected Handover -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Expected Completion</label>
+              <input
+                type="date"
+                [(ngModel)]="projectForm.expected"
+                class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-2 bg-slate-50/50">
+          <button
+            type="button"
+            (click)="showProjectModal.set(false)"
+            class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-100 transition"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            (click)="saveProject()"
+            class="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-sm transition"
+          >
+            Save Project
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- =========================================================================
+       MODAL: CREATE NEW QUOTATION
+       ========================================================================= -->
+  @if (showQuotationModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+      <div class="bg-white rounded-2xl max-w-4xl w-full shadow-2xl border border-slate-100 overflow-hidden animate-in zoom-in-95 duration-150 my-8">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <h3 class="font-bold text-slate-900 text-sm">
+            New Quotation &mdash; {{ quotationForm.projectName }}
+          </h3>
+          <button (click)="showQuotationModal.set(false)" class="text-slate-400 hover:text-slate-600 p-1 text-base">&times;</button>
+        </div>
+
+        <div class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+          <!-- Top Parameters -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Quotation No.</label>
+              <input
+                type="text"
+                [(ngModel)]="quotationForm.quotationNumber"
+                class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 font-bold"
+                readonly
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Proposal Date</label>
+              <input
+                type="date"
+                [(ngModel)]="quotationForm.date"
+                class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Valid Until</label>
+              <input
+                type="date"
+                [(ngModel)]="quotationForm.validUntil"
+                class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Client</label>
+              <input
+                type="text"
+                [(ngModel)]="quotationForm.customerName"
+                class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 font-bold"
+                readonly
+              />
+            </div>
+          </div>
+
+          <!-- Subject -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Proposal Subject *</label>
+            <input
+              type="text"
+              [(ngModel)]="quotationForm.subject"
+              class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 focus:outline-none font-semibold text-slate-800"
+              placeholder="e.g. Interior Decoration & Architectural Fit-out Proposal"
+            />
+          </div>
+
+          <!-- Items Table -->
+          <div class="border border-slate-200 rounded-xl overflow-hidden mt-3">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-[11px] uppercase font-bold text-slate-400 border-b border-slate-200">
+                <tr>
+                  <th class="py-2.5 px-3">Item Particulars / Description</th>
+                  <th class="py-2.5 px-3 w-20">Unit</th>
+                  <th class="py-2.5 px-3 w-24">Qty</th>
+                  <th class="py-2.5 px-3 w-28">Rate (৳)</th>
+                  <th class="py-2.5 px-3 text-right w-32">Amount (৳)</th>
+                  <th class="py-2.5 px-2 w-10"></th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                @for (it of quotationForm.items; track $index) {
+                  <tr>
+                    <td class="p-2">
+                      <input
+                        type="text"
+                        [(ngModel)]="it.description"
+                        placeholder="Description of work"
+                        class="w-full text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none"
+                      />
+                    </td>
+                    <td class="p-2">
+                      <select [(ngModel)]="it.unit" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5 bg-white">
+                        <option value="sft">sft</option>
+                        <option value="rft">rft</option>
+                        <option value="piece">piece</option>
+                        <option value="set">set</option>
+                        <option value="job">job</option>
+                      </select>
+                    </td>
+                    <td class="p-2">
+                      <input
+                        type="number"
+                        min="0"
+                        [(ngModel)]="it.quantity"
+                        (input)="calcQuotationLine(it)"
+                        class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5 text-center focus:outline-none"
+                      />
+                    </td>
+                    <td class="p-2">
+                      <input
+                        type="number"
+                        min="0"
+                        [(ngModel)]="it.unitPrice"
+                        (input)="calcQuotationLine(it)"
+                        class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5 text-right focus:outline-none"
+                      />
+                    </td>
+                    <td class="p-2 text-right font-black text-slate-900 whitespace-nowrap">
+                      ৳ {{ (it.amount || 0) | number:'1.2-2' }}
+                    </td>
+                    <td class="p-2 text-center">
+                      <button
+                        type="button"
+                        (click)="removeQuotationLine($index)"
+                        class="text-slate-400 hover:text-rose-600 p-1"
+                      >
+                        &times;
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="flex justify-between items-center pt-1">
+            <button
+              type="button"
+              (click)="addQuotationLine()"
+              class="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-blue-600 hover:bg-blue-50 transition inline-flex items-center gap-1"
+            >
+              <span>+ Add Line Item</span>
+            </button>
+
+            <!-- Totals Box -->
+            <div class="w-64 space-y-1.5 text-xs text-slate-600">
+              <div class="flex justify-between">
+                <span>Subtotal:</span>
+                <span class="font-bold text-slate-800">৳ {{ quotationSubtotal | number:'1.2-2' }}</span>
+              </div>
+              <div class="flex justify-between items-center gap-2">
+                <span>Discount:</span>
+                <div class="flex items-center gap-1">
+                  <select [(ngModel)]="quotationForm.discountType" class="text-[11px] border border-slate-200 rounded px-1 py-0.5 bg-white">
+                    <option value="none">None</option>
+                    <option value="fixed">৳ Fixed</option>
+                    <option value="percent">%</option>
+                  </select>
+                  @if (quotationForm.discountType !== 'none') {
+                    <input
+                      type="number"
+                      min="0"
+                      [(ngModel)]="quotationForm.discountValue"
+                      class="w-16 text-[11px] border border-slate-200 rounded px-1.5 py-0.5 text-right"
+                    />
+                  }
+                </div>
+              </div>
+              <div class="flex justify-between border-t border-slate-200 pt-1 text-sm font-black text-slate-900">
+                <span>Total Amount:</span>
+                <span class="text-blue-600">৳ {{ quotationGrandTotal | number:'1.2-2' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Terms & Conditions -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Terms &amp; Payment Conditions</label>
+            <textarea
+              [(ngModel)]="quotationForm.termsAndConditions"
+              rows="3"
+              class="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:outline-none"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-2 bg-slate-50/50">
+          <button
+            type="button"
+            (click)="showQuotationModal.set(false)"
+            class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-100 transition"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            (click)="saveQuotation('Draft')"
+            class="px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50 shadow-2xs transition"
+          >
+            Save Draft
+          </button>
+          <button
+            type="button"
+            (click)="saveQuotation('Sent')"
+            class="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-sm transition"
+          >
+            Save &amp; Mark Sent
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- =========================================================================
+       PRINTABLE QUOTATION PAPER MODAL (OFFICIAL LETTERHEAD)
+       ========================================================================= -->
+  @if (showQuotationPaper() && activeQuotation(); as q) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+      <div class="bg-white rounded-2xl max-w-3xl w-full shadow-2xl border border-slate-100 overflow-hidden animate-in zoom-in-95 duration-150 my-8">
+        <!-- Modal Toolbar -->
+        <div class="px-6 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
+          <div class="text-xs font-black text-slate-800">
+            Quotation Paper &mdash; {{ q.quotationNumber }}
+          </div>
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              (click)="printQuotation()"
+              class="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 font-bold text-xs hover:bg-white shadow-2xs transition inline-flex items-center gap-1.5"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+              </svg>
+              <span>Print / Save PDF</span>
+            </button>
+            <button (click)="showQuotationPaper.set(false)" class="text-slate-400 hover:text-slate-600 p-1 text-base">&times;</button>
+          </div>
+        </div>
+
+        <!-- Printable Document Body -->
+        <div class="p-8 space-y-6 max-h-[80vh] overflow-y-auto bg-white">
+          <!-- Official Letterhead (Exact Menu_RBAC .ic-letterhead) -->
+          <div class="flex items-center justify-between border-b-2 border-slate-900 pb-4">
+            <div class="flex items-center gap-3">
+              <div class="h-12 w-12 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center p-1 shrink-0 overflow-hidden">
+                <img
+                  src="assets/logo.png"
+                  alt="Interior Counsel"
+                  class="max-h-full max-w-full object-contain"
+                  onerror="this.onerror=null;this.src='https://interiorcounsel.com/wp-content/uploads/2025/08/515437069_122096031092965832_8744308631215311737_n-removebg-preview-1.png';"
+                />
+              </div>
+              <div>
+                <div class="text-base font-black text-slate-900 leading-tight">
+                  Interior <span class="text-amber-500 font-extrabold">Counsel</span>
+                </div>
+                <div class="text-[11px] font-semibold text-slate-500">
+                  Smart Interior Solutions &bull; Mohakhali, Dhaka, Bangladesh
+                </div>
+              </div>
+            </div>
+
+            <div class="text-right">
+              <div class="text-xs font-black uppercase tracking-wider text-blue-600">Official Quotation</div>
+              <div class="text-base font-black text-slate-900">{{ q.quotationNumber }}</div>
+              <div class="text-[11px] text-slate-500">Date: {{ q.date | date:'dd MMM yyyy' }}</div>
+            </div>
+          </div>
+
+          <!-- Client & Project Details -->
+          <div class="grid grid-cols-2 gap-4 text-xs bg-slate-50 p-4 rounded-xl border border-slate-100">
+            <div>
+              <span class="text-slate-400 font-bold uppercase block text-[10px]">Client / Recipient</span>
+              <span class="text-slate-900 font-black text-sm mt-0.5 block">{{ q.customerName || q.customerId?.name }}</span>
+            </div>
+            <div>
+              <span class="text-slate-400 font-bold uppercase block text-[10px]">Project</span>
+              <span class="text-slate-900 font-black text-sm mt-0.5 block">{{ q.projectName }}</span>
+              <span class="text-slate-500 text-[11px] block mt-0.5">Valid Until: {{ (q.validUntil | date:'dd MMM yyyy') || '30 Days' }}</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="text-xs font-bold text-slate-400 uppercase text-[10px]">Subject</div>
+            <div class="text-sm font-black text-slate-900 mt-0.5">{{ q.subject }}</div>
+          </div>
+
+          <!-- Items Table -->
+          <table class="w-full text-left text-xs border border-slate-200">
+            <thead class="bg-slate-100 text-[11px] font-bold text-slate-700">
+              <tr>
+                <th class="py-2.5 px-3 border-b border-slate-200 w-10 text-center">#</th>
+                <th class="py-2.5 px-3 border-b border-slate-200">Item Particulars</th>
+                <th class="py-2.5 px-3 border-b border-slate-200 text-center w-16">Unit</th>
+                <th class="py-2.5 px-3 border-b border-slate-200 text-right w-20">Qty</th>
+                <th class="py-2.5 px-3 border-b border-slate-200 text-right w-24">Rate (৳)</th>
+                <th class="py-2.5 px-3 border-b border-slate-200 text-right w-28">Amount (৳)</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              @for (it of q.items; track $index) {
+                <tr>
+                  <td class="py-2 px-3 text-center text-slate-400">{{ $index + 1 }}</td>
+                  <td class="py-2 px-3 font-semibold text-slate-800">{{ it.description }}</td>
+                  <td class="py-2 px-3 text-center text-slate-500">{{ it.unit }}</td>
+                  <td class="py-2 px-3 text-right font-medium text-slate-800">{{ it.quantity }}</td>
+                  <td class="py-2 px-3 text-right text-slate-700">{{ (it.unitPrice || 0) | number:'1.2-2' }}</td>
+                  <td class="py-2 px-3 text-right font-black text-slate-900">৳ {{ (it.amount || 0) | number:'1.2-2' }}</td>
+                </tr>
+              }
+            </tbody>
+            <tfoot class="bg-slate-50 font-bold border-t-2 border-slate-300">
+              <tr>
+                <td colspan="5" class="py-2.5 px-3 text-right font-black text-slate-900 uppercase">Grand Total (BDT):</td>
+                <td class="py-2.5 px-3 text-right font-black text-blue-600 text-sm">
+                  ৳ {{ (q.totalAmount || 0) | number:'1.2-2' }}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <!-- Taka in Words -->
+          <div class="text-xs bg-slate-50 p-3 rounded-xl border border-slate-100">
+            <span class="text-slate-400 font-bold">In Words: </span>
+            <span class="font-extrabold text-slate-800">{{ getTakaWords(q.totalAmount || 0) }} Taka Only</span>
+          </div>
+
+          <!-- Terms -->
+          @if (q.termsAndConditions) {
+            <div class="space-y-1 text-xs">
+              <div class="font-bold text-slate-700 uppercase text-[10px]">Terms &amp; Conditions</div>
+              <div class="text-slate-600 whitespace-pre-line text-[11px] leading-relaxed bg-slate-50/60 p-3 rounded-xl border border-slate-100">
+                {{ q.termsAndConditions }}
+              </div>
+            </div>
+          }
+
+          <!-- Signatures Footer -->
+          <div class="pt-8 flex justify-between text-xs text-slate-600 border-t border-slate-200">
+            <div class="text-center">
+              <div class="w-40 border-b border-slate-400 mb-1"></div>
+              <span class="font-bold">Prepared By</span>
+            </div>
+            <div class="text-center">
+              <div class="w-40 border-b border-slate-400 mb-1"></div>
+              <span class="font-bold">Authorized Signature</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+

@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, signal, inject, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { catchError, finalize, of, tap } from 'rxjs';
 
@@ -10,7 +10,7 @@ import { AuthService } from '../../core/services/auth.service';
   selector: 'wfm-settings',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './settings.component.html',
 })
 export class SettingsComponent implements OnDestroy {

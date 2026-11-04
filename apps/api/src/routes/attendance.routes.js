@@ -22,6 +22,8 @@ router.get('/daily', rbac('admin', 'hr', 'manager'), validate(schemas.daily, 'qu
 // Odoo daily attendance actions & salary deduction calculations
 router.post('/roster/today', rbac('admin', 'hr'), ctrl.generateTodayRoster);
 router.post('/manual', rbac('admin', 'hr'), ctrl.recordManual);
+router.get('/manual', rbac('admin', 'hr', 'manager'), ctrl.getManualList);
+router.delete('/manual/:id', rbac('admin', 'hr'), ctrl.deleteManual);
 router.get('/salary-summary/:employeeId?', rbac('admin', 'hr', 'manager', 'employee'), ctrl.getSalarySummary);
 
 module.exports = router;

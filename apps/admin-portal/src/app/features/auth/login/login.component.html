@@ -161,8 +161,18 @@
       </div>
 
       <button type="submit" [disabled]="loading()" class="btn btn-primary btn-primary-lg btn-full">
-        <span>Sign in</span>
+        <span>{{ loading() ? 'Signing in...' : 'Sign in' }}</span>
       </button>
+
+      <div class="mt-4 p-3 bg-blue-50/70 border border-blue-100 rounded-xl text-xs text-slate-600 flex items-center justify-between">
+        <div>
+          <p class="font-semibold text-slate-800">Admin Credentials</p>
+          <p class="text-slate-500 font-mono text-[11px]">admin&#64;attendly.com &bull; password123</p>
+        </div>
+        <button type="button" (click)="fillAdminDemo()" class="px-2.5 py-1 text-xs font-semibold bg-white border border-blue-200 text-blue-700 rounded-lg hover:bg-blue-50 shadow-xs">
+          Quick Fill
+        </button>
+      </div>
     </form>
   </div>
 </div>

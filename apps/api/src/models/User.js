@@ -19,6 +19,7 @@ const userSchema = new mongoose.Schema(
     salary: { type: Number, min: 0, default: 0 },
     attendanceDeductionDays: { type: Number, default: 3, min: 1 }, // Odoo: Late Days per Deduction (e.g. 3 = 1 day salary deduction per 3 late check-ins in month)
     role: { type: String, default: 'employee' },
+    customMenus: [{ type: String }],
     shiftId: { type: mongoose.Schema.Types.ObjectId, ref: 'Shift' },
     joiningDate: { type: Date, default: Date.now },
     resignationDate: { type: Date },
