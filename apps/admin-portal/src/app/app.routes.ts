@@ -79,6 +79,7 @@ export const routes: Routes = [
             (m) => m.EmployeeListComponent,
           ),
       },
+
       {
         path: 'employees/new',
         title: 'New employee',
