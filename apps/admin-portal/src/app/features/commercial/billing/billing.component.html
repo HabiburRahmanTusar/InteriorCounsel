@@ -2,1910 +2,1700 @@
 
   <!-- Floating Toast Notification (Matching Menu_RBAC toast) -->
   @if (toastMessage()) {
-    <div class="fixed top-5 right-5 z-[9999] animate-in slide-in-from-top-3 fade-in duration-200">
-      <div class="bg-slate-900/95 backdrop-blur-md text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 border border-slate-700/60">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-        </svg>
-        <span>{{ toastMessage() }}</span>
-      </div>
+  <div class="fixed top-5 right-5 z-[9999] animate-in slide-in-from-top-3 fade-in duration-200">
+    <div
+      class="bg-slate-900/95 backdrop-blur-md text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 border border-slate-700/60">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-400 shrink-0" viewBox="0 0 20 20"
+        fill="currentColor">
+        <path fill-rule="evenodd"
+          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+          clip-rule="evenodd" />
+      </svg>
+      <span>{{ toastMessage() }}</span>
     </div>
+  </div>
   }
 
   <!-- =========================================================================
        MODE: NEW BILL (EXACT MATCH TO USER SCREENSHOT)
        ========================================================================= -->
   @if (mode() === 'new') {
-    <div class="space-y-4 animate-in fade-in duration-150">
-      <!-- Back button -->
+  <div class="space-y-4 animate-in fade-in duration-150">
+    <!-- Back button -->
+    <div>
+      <button type="button" (click)="backToList()"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 shadow-2xs transition">
+        <span class="text-slate-400 font-bold">&lsaquo;</span>
+        <span>Back</span>
+      </button>
+    </div>
+
+    <!-- Breadcrumb & Title Bar -->
+    <div class="space-y-1">
+      <div class="flex items-center gap-2 text-xs font-medium text-slate-400">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+        <span>Sales & Invoice</span>
+        <span>/</span>
+        <span>New</span>
+      </div>
+
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-1">
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Sales & Invoice / New</h1>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- DRAFT / CONFIRMED Step Pills -->
+          <div class="inline-flex rounded-lg overflow-hidden border border-slate-200 shadow-2xs">
+            <span class="px-4 py-1.5 text-xs font-bold bg-blue-600 text-white select-none">
+              DRAFT
+            </span>
+            <span
+              class="px-4 py-1.5 text-xs font-semibold bg-white text-slate-400 border-l border-slate-200 select-none">
+              CONFIRMED
+            </span>
+          </div>
+
+          <!-- POST Button -->
+          <button type="button" (click)="submitBill(true)"
+            class="px-4 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-2xs transition">
+            POST
+          </button>
+
+          <!-- Configure Button -->
+          <button type="button" (click)="showConfigModal.set(true)"
+            class="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50 shadow-2xs inline-flex items-center gap-1.5 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-slate-500" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span>Configure</span>
+          </button>
+
+          <!-- Back to list Button -->
+          <button type="button" (click)="backToList()"
+            class="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50 shadow-2xs transition">
+            Back to list
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Layout: Form Card + Right Side Activity Log -->
+    <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_240px] gap-6 items-start">
+      <!-- Main Bill Card (.bf) -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 relative overflow-hidden shadow-xs space-y-6">
+        <!-- Red DUE Ribbon (Top-Right Angle) -->
+        <div
+          class="absolute top-4 -right-9 bg-rose-600 text-white font-extrabold text-[11px] tracking-widest uppercase py-1 px-10 shadow-md select-none transform rotate-45 pointer-events-none">
+          DUE
+        </div>
+
+        <!-- Form Fields (Matching exact grid layout from screenshot) -->
+        <div class="space-y-3.5 max-w-2xl text-xs">
+          <!-- Bill Date -->
+          <div class="grid grid-cols-1 sm:grid-cols-[140px_minmax(0,1fr)] items-center gap-2">
+            <label class="font-bold text-slate-800">
+              Bill Date <span class="text-rose-500">*</span>
+            </label>
+            <div class="relative max-w-md">
+              <input type="date" [(ngModel)]="formBill.date"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium" />
+            </div>
+          </div>
+
+          <!-- Bill Number -->
+          <div class="grid grid-cols-1 sm:grid-cols-[140px_minmax(0,1fr)] items-center gap-2">
+            <label class="font-bold text-slate-800">
+              Bill Number <span class="text-rose-500">*</span>
+            </label>
+            <div class="max-w-md">
+              <input type="text" [(ngModel)]="formBill.billNumber" placeholder="e.g. A747"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold" />
+            </div>
+          </div>
+
+          <!-- Salesperson (Inline Search & Create Combobox) -->
+          <div class="grid grid-cols-1 sm:grid-cols-[140px_minmax(0,1fr)] items-center gap-2">
+            <label class="font-bold text-slate-800">
+              Salesperson <span class="text-rose-500">*</span>
+            </label>
+            <div class="relative max-w-md cb-container-sp">
+              <div class="flex items-center gap-2">
+                <input type="text" id="bf-sp" autocomplete="off" [(ngModel)]="formBill.salesperson"
+                  (focus)="showSpDropdown.set(true)" (input)="onSalespersonInput()" (blur)="onSalespersonBlur()"
+                  (keydown)="onSalespersonKeydown($event)" placeholder="Select or type to search…"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium" />
+                @if (canCreateNewSalesperson()) {
+                <button type="button" (mousedown)="createSalesperson(formBill.salesperson)"
+                  class="shrink-0 px-2.5 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs border border-blue-200 transition flex items-center gap-1 shadow-sm"
+                  title="Create this salesperson">
+                  <span>＋</span> Create
+                </button>
+                }
+              </div>
+              @if (showSpDropdown()) {
+              <div
+                class="absolute z-50 left-0 right-0 top-[calc(100%+4px)] max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl py-1 text-xs divide-y divide-slate-50">
+                @for (sp of filteredSalespersons(); track sp) {
+                <div (mousedown)="selectSalesperson(sp)"
+                  class="px-3.5 py-2 hover:bg-slate-50 cursor-pointer font-medium text-slate-700 transition">
+                  {{ sp }}
+                </div>
+                }
+                @if (canCreateNewSalesperson()) {
+                <div (mousedown)="createSalesperson(formBill.salesperson)"
+                  class="px-3.5 py-2 hover:bg-blue-50 cursor-pointer font-bold text-blue-600 transition flex items-center gap-1.5">
+                  <span>＋</span> Create salesperson "{{ formBill.salesperson }}"
+                </div>
+                }
+                @if (filteredSalespersons().length === 0 && !canCreateNewSalesperson()) {
+                <div class="px-3.5 py-2.5 text-slate-400 italic">No match found</div>
+                }
+              </div>
+              }
+            </div>
+          </div>
+
+          <!-- Customer (Inline Search & Create Combobox with Hint) -->
+          <div class="grid grid-cols-1 sm:grid-cols-[140px_minmax(0,1fr)] items-center gap-2">
+            <label class="font-bold text-slate-800">
+              Customer <span class="text-rose-500">*</span>
+            </label>
+            <div class="relative max-w-md cb-container-cust">
+              <div class="flex items-center gap-2">
+                <input type="text" id="bf-cu" autocomplete="off" [(ngModel)]="formBill.customerName"
+                  (focus)="showCustDropdown.set(true)" (input)="onCustomerInput()" (blur)="onCustomerBlur()"
+                  (keydown)="onCustomerKeydown($event)" placeholder="Select or type to search…"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold" />
+                @if (canCreateNewCustomer()) {
+                <button type="button" (mousedown)="createCustomer(formBill.customerName)"
+                  class="shrink-0 px-2.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold text-xs border border-amber-200 transition flex items-center gap-1 shadow-sm"
+                  title="Create this customer (keeps mobile and address)">
+                  <span>＋</span> Create
+                </button>
+                }
+              </div>
+              @if (showCustDropdown()) {
+              <div
+                class="absolute z-50 left-0 right-0 top-[calc(100%+4px)] max-h-60 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl py-1 text-xs divide-y divide-slate-100">
+                @for (client of filteredClients(); track client._id || client.name) {
+                <div (mousedown)="selectCustomer(client)"
+                  class="px-3.5 py-2 hover:bg-slate-50 cursor-pointer text-slate-800 transition">
+                  <div class="font-semibold text-slate-900">{{ client.name }}</div>
+                  @if (client.phone || client.address || client.billingAddress || client.siteAddress) {
+                  <small class="block text-[11px] text-slate-500 mt-0.5">
+                    {{ client.phone || 'No phone' }} {{ (client.address || client.siteAddress || client.billingAddress)
+                    ? ' · ' + (client.address || client.siteAddress || client.billingAddress) : '' }}
+                  </small>
+                  }
+                </div>
+                }
+                @if (canCreateNewCustomer()) {
+                <div (mousedown)="createCustomer(formBill.customerName)"
+                  class="px-3.5 py-2 hover:bg-amber-50 cursor-pointer font-bold text-amber-700 transition flex items-center gap-1.5">
+                  <span>＋</span> Create customer "{{ formBill.customerName }}" (keeps mobile &amp; address)
+                </div>
+                }
+                @if (filteredClients().length === 0 && !canCreateNewCustomer()) {
+                <div class="px-3.5 py-2.5 text-slate-400 italic">No match found</div>
+                }
+              </div>
+              }
+              @if (custHint().text) {
+              <small [class]="'block text-[11.5px] mt-1.5 font-medium ' + custHint().cls">
+                {{ custHint().text }}
+              </small>
+              }
+            </div>
+          </div>
+
+          <!-- Customer Mobile -->
+          <div class="grid grid-cols-1 sm:grid-cols-[140px_minmax(0,1fr)] items-center gap-2">
+            <label class="font-bold text-slate-800">Customer Mobile</label>
+            <div class="max-w-md">
+              <input type="text" id="bf-mob" [(ngModel)]="formBill.customerMobile" placeholder="01XXX-XXXXXX"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+
+          <!-- Address -->
+          <div class="grid grid-cols-1 sm:grid-cols-[140px_minmax(0,1fr)] items-center gap-2">
+            <label class="font-bold text-slate-800">Address</label>
+            <div class="max-w-md">
+              <input type="text" id="bf-ad" [(ngModel)]="formBill.address" placeholder="Customer address"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Product Lines Table (Matching screenshot) -->
+        <div class="pt-4 space-y-2">
+          <div class="overflow-x-auto min-h-[220px] pb-16">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="bg-slate-50/80 text-[11px] uppercase font-bold text-slate-400 border-b border-slate-100">
+                  <th class="py-3 px-3">PRODUCT</th>
+                  <th class="py-3 px-3 w-28 text-center">QUANTITY</th>
+                  <th class="py-3 px-3 w-36">RATE</th>
+                  <th class="py-3 px-3 w-32 text-right">AMOUNT</th>
+                  <th class="py-3 px-3 w-10"></th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                @for (it of formBill.items; track $index) {
+                <tr>
+                  <td class="py-2.5 px-3 relative cb-container-prod">
+                    <div class="flex items-center gap-1.5 relative">
+                      <input type="text" autocomplete="off" [(ngModel)]="it.description"
+                        (focus)="onProductFocus($index)" (input)="onProductInput($index)" (blur)="onProductBlur($index)"
+                        (keydown)="onProductKeydown($event, $index, it)" placeholder="Select or type product…"
+                        class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium" />
+                      @if (canCreateNewProduct(it.description)) {
+                      <button type="button" (mousedown)="createProductForLine($index, it.description)"
+                        class="shrink-0 px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[11px] border border-emerald-200 transition flex items-center gap-1 shadow-2xs"
+                        title="Create this product in catalog">
+                        <span>＋</span> Create
+                      </button>
+                      }
+                    </div>
+
+                    <!-- Product Autocomplete Dropdown List -->
+                    @if (activeProductRow() === $index) {
+                    <div
+                      class="absolute z-50 left-3 right-3 top-[calc(100%+2px)] max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl py-1 text-xs divide-y divide-slate-100 min-w-[280px]">
+                      @for (prod of filteredProductsFor(it.description); track prod._id || prod.name) {
+                      <div (mousedown)="selectProduct($index, prod)"
+                        class="px-3.5 py-2 hover:bg-slate-50 cursor-pointer text-slate-800 transition flex items-center justify-between gap-2">
+                        <div>
+                          <div class="font-semibold text-slate-900">{{ prod.name }}</div>
+                          @if (prod.category && prod.category !== 'General') {
+                          <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-medium">
+                            {{ prod.category }}
+                          </span>
+                          }
+                        </div>
+                        <div class="text-right shrink-0">
+                          <span class="font-bold text-slate-900">৳ {{ prod.salesPrice | number:'1.2-2' }}</span>
+                          @if (prod.unit) {
+                          <span class="text-[10px] text-slate-400"> / {{ prod.unit }}</span>
+                          }
+                        </div>
+                      </div>
+                      }
+
+                      @if (canCreateNewProduct(it.description)) {
+                      <div (mousedown)="createProductForLine($index, it.description)"
+                        class="px-3.5 py-2 hover:bg-emerald-50 cursor-pointer font-bold text-emerald-700 transition flex items-center gap-1.5">
+                        <span>＋</span> Create product "{{ it.description }}"
+                      </div>
+                      }
+
+                      @if (filteredProductsFor(it.description).length === 0 && !canCreateNewProduct(it.description)) {
+                      <div class="px-3.5 py-2.5 text-slate-400 italic">No products found</div>
+                      }
+                    </div>
+                    }
+
+                    @if (it.hint) {
+                    <small [class]="'block text-[11px] mt-1 ' + (it.hintCls || 'text-slate-500')">
+                      {{ it.hint }}
+                    </small>
+                    }
+                  </td>
+                  <td class="py-2.5 px-3">
+                    <input type="number" [(ngModel)]="it.quantity" (ngModelChange)="calcBillItem(it)" min="0.01"
+                      class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-center font-semibold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </td>
+                  <td class="py-2.5 px-3">
+                    <input type="number" [(ngModel)]="it.unitPrice" (ngModelChange)="calcBillItem(it)" min="0"
+                      placeholder="0.00"
+                      class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold" />
+                  </td>
+                  <td class="py-2.5 px-3 text-right font-bold text-slate-900 text-xs">
+                    {{ it.amount | number:'1.2-2' }}
+                  </td>
+                  <td class="py-2.5 px-3 text-center">
+                    <button type="button" (click)="removeBillItem($index)"
+                      class="text-rose-500 hover:text-rose-700 transition p-1" title="Delete row">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Add product line link -->
+          <div class="pt-2">
+            <button type="button" (click)="addBillItem()"
+              class="text-blue-600 hover:text-blue-800 text-xs font-semibold inline-flex items-center gap-1 transition">
+              <span>Add a product line</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- =========================================================================
+               OTHER CHARGES & TOTALS BREAKDOWN (MATCHING SCREENSHOT)
+               ========================================================================= -->
+        <div class="pt-4 border-t border-slate-100">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+            <!-- Left: Other Charges Table -->
+            <div class="space-y-3">
+              <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                OTHER CHARGES
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr class="text-[11px] uppercase font-bold text-slate-400 border-b border-slate-100">
+                      <th class="py-2 px-2">CHARGE NAME</th>
+                      <th class="py-2 px-2 w-32 text-right">AMOUNT</th>
+                      <th class="py-2 px-2 w-8"></th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    @for (c of formBill.otherCharges; track $index) {
+                    <tr>
+                      <td class="py-1.5 px-2">
+                        <input type="text" [(ngModel)]="c.name" placeholder="e.g. Transport Charge, Fitting..."
+                          class="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium" />
+                      </td>
+                      <td class="py-1.5 px-2">
+                        <input type="number" [(ngModel)]="c.amount" min="0" placeholder="0.00"
+                          class="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-right text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold" />
+                      </td>
+                      <td class="py-1.5 px-2 text-center">
+                        <button type="button" (click)="removeOtherCharge($index)"
+                          class="text-rose-500 hover:text-rose-700 transition" title="Delete charge">
+                          &times;
+                        </button>
+                      </td>
+                    </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+
+              <div>
+                <button type="button" (click)="addOtherCharge()"
+                  class="text-blue-600 hover:text-blue-800 text-xs font-semibold inline-flex items-center gap-1 transition">
+                  <span>Add other charge</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Right: Bill Totals Breakdown -->
+            <div class="space-y-2 text-xs max-w-sm ml-auto w-full pt-1">
+              <div class="flex justify-between items-center text-slate-600">
+                <span>Sales Amount</span>
+                <span class="font-semibold text-slate-900">{{ formSalesAmount | number:'1.2-2' }}</span>
+              </div>
+
+              <div class="flex justify-between items-center text-slate-600">
+                <span>Other Charges</span>
+                <span class="font-semibold text-slate-900">{{ formOtherChargesTotal | number:'1.2-2' }}</span>
+              </div>
+
+              <div class="flex justify-between items-center font-bold text-slate-900 pt-1.5 border-t border-slate-100">
+                <span>Subtotal</span>
+                <span class="text-sm font-black">{{ formSubtotal | number:'1.2-2' }}</span>
+              </div>
+
+              <div class="flex justify-between items-center text-slate-600 pt-1">
+                <span>Discount Amount</span>
+                <div class="w-32">
+                  <input type="number" [(ngModel)]="formBill.discountAmount" min="0" placeholder="0"
+                    class="w-full px-3 py-1 rounded-lg border border-slate-200 text-xs text-right font-semibold text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+              </div>
+
+              <div class="flex justify-between items-center font-bold text-slate-900 pt-2 border-t border-slate-100">
+                <span>Grand Total / Payable Amount</span>
+                <span class="text-sm font-black text-slate-900">{{ formGrandTotal | number:'1.2-2' }}</span>
+              </div>
+
+              <div class="flex justify-between items-center text-emerald-600 font-semibold pt-1">
+                <span>Payment Received</span>
+                <span>{{ (formBill.paidAmount || 0) | number:'1.2-2' }}</span>
+              </div>
+
+              <div class="flex justify-between items-center font-extrabold text-rose-600 pt-1">
+                <span>Balance Due</span>
+                <span class="text-sm">{{ formBalanceDue | number:'1.2-2' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- =========================================================================
+               SUPPLIER INFORMATION (MATCHING SCREENSHOT)
+               ========================================================================= -->
+        <div class="pt-6 border-t border-slate-100 space-y-3">
+          <div class="text-[11px] font-bold text-slate-900 uppercase tracking-wider">
+            SUPPLIER INFORMATION
+          </div>
+
+          <div class="overflow-x-auto border border-slate-100 rounded-xl">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="bg-slate-50/80 text-[10px] uppercase font-bold text-slate-400 border-b border-slate-100">
+                  <th class="py-2.5 px-3 w-16">SERIAL NUMBER</th>
+                  <th class="py-2.5 px-3">PARTICULARS</th>
+                  <th class="py-2.5 px-3 w-20 text-center">QUANTITY</th>
+                  <th class="py-2.5 px-3 w-24 text-right">RATE</th>
+                  <th class="py-2.5 px-3 w-24 text-right">AMOUNT</th>
+                  <th class="py-2.5 px-3 w-48">SUPPLIER NAME</th>
+                  <th class="py-2.5 px-3 w-36">SUPPLIER INVOICE NO.</th>
+                  <th class="py-2.5 px-3 w-32 text-right">PURCHASE AMOUNT</th>
+                  <th class="py-2.5 px-3 w-28 text-center">SUPPLIER DISCOUNT</th>
+                  <th class="py-2.5 px-3 w-28 text-right">NET PURCHASE</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                @for (it of formBill.items; track $index) {
+                <tr class="hover:bg-slate-50/50 transition">
+                  <td class="py-2.5 px-3 text-slate-500 font-semibold">{{ $index + 1 }}</td>
+                  <td class="py-2.5 px-3 font-semibold text-slate-800">
+                    {{ it.description || '—' }}
+                  </td>
+                  <td class="py-2.5 px-3 text-center text-slate-700">{{ it.quantity }}</td>
+                  <td class="py-2.5 px-3 text-right text-slate-600">{{ it.unitPrice | number:'1.2-2' }}</td>
+                  <td class="py-2.5 px-3 text-right font-semibold text-slate-900">{{ it.amount | number:'1.2-2' }}</td>
+                  <td class="py-2.5 px-3">
+                    <div class="space-y-1">
+                      <input type="text" list="sup-dl" [(ngModel)]="it.supplierName"
+                        placeholder="Select or type supplie..."
+                        class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                      @if (it.supplierName) {
+                      <div>
+                        @if (isExistingSupplier(it.supplierName)) {
+                        <span
+                          class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                          Existing
+                        </span>
+                        } @else {
+                        <span
+                          class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
+                          <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                          New
+                        </span>
+                        <a (click)="quickCreateSupplier(it.supplierName)"
+                          class="text-blue-600 font-bold hover:underline cursor-pointer text-[11px] ml-1.5">
+                          ＋ Create
+                        </a>
+                        }
+                      </div>
+                      }
+                    </div>
+                  </td>
+                  <td class="py-2.5 px-3">
+                    <input type="text" [(ngModel)]="it.supplierInvoiceNo" placeholder="Invoice no."
+                      class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </td>
+                  <td class="py-2.5 px-3">
+                    <input type="number" [(ngModel)]="it.purchaseAmount" (ngModelChange)="calcSupplierRow(it)" min="0"
+                      step="0.01" placeholder="0.00"
+                      class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-right font-semibold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </td>
+                  <td class="py-2.5 px-3 text-center">
+                    @if (it.supplierDiscount > 0) {
+                    <span class="text-emerald-600 font-bold">- {{ it.supplierDiscount | number:'1.2-2' }}</span>
+                    } @else {
+                    <span class="text-slate-400">—</span>
+                    }
+                  </td>
+                  <td class="py-2.5 px-3 text-right font-bold text-slate-900">
+                    {{ ((it.purchaseAmount || 0) - (it.supplierDiscount || 0)) | number:'1.2-2' }}
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Supplier Datalist -->
+          <datalist id="sup-dl">
+            @for (s of suppliers(); track s._id || s.name) {
+            <option [value]="s.name"></option>
+            }
+          </datalist>
+
+          <!-- Bottom Totals of Supplier Info -->
+          <div class="space-y-1.5 text-xs max-w-sm ml-auto pt-2">
+            <div class="flex justify-between items-center text-slate-600">
+              <span>Total Purchase Amount</span>
+              <span class="font-bold text-slate-900">{{ totalPurchaseAmount | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex justify-between items-center text-slate-600">
+              <span>Supplier Discount (given from Suppliers menu)</span>
+              <span class="font-bold text-emerald-600">{{ totalSupplierDiscount | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex justify-between items-center font-bold text-slate-900 pt-1 border-t border-slate-100">
+              <span>Net Purchase Amount</span>
+              <span class="text-sm font-black">{{ netPurchaseAmount | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <!-- Explanatory note -->
+          <p class="text-[11px] text-slate-400 italic pt-1">
+            All billed products appear here automatically. Select a supplier for each product and enter the supplier's
+            invoice number. If the supplier is not in the list, type the name and click <b>Create</b> — it is added to
+            Suppliers (or created automatically when you save).
+          </p>
+        </div>
+
+        <!-- =========================================================================
+               SUMMARY (5 KPI BOXES MATCHING SCREENSHOT)
+               ========================================================================= -->
+        <div class="pt-6 border-t border-slate-100 space-y-3">
+          <div class="text-[11px] font-bold text-slate-900 uppercase tracking-wider">
+            SUMMARY
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div class="bg-slate-50/80 p-3.5 rounded-xl border border-slate-100 space-y-1">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Cash In</span>
+              <span class="text-base font-black text-slate-900">{{ (formBill.paidAmount || 0) | number:'1.2-2' }}</span>
+            </div>
+
+            <div class="bg-slate-50/80 p-3.5 rounded-xl border border-slate-100 space-y-1">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Cash Out</span>
+              <span class="text-base font-black text-slate-900">{{ (netPurchaseAmount + formOtherChargesTotal) |
+                number:'1.2-2' }}</span>
+            </div>
+
+            <div class="bg-slate-50/80 p-3.5 rounded-xl border border-slate-100 space-y-1">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Customer Due</span>
+              <span class="text-base font-black" [class.text-rose-600]="formBalanceDue > 0"
+                [class.text-slate-900]="formBalanceDue <= 0">
+                {{ formBalanceDue | number:'1.2-2' }}
+              </span>
+            </div>
+
+            <div class="bg-slate-50/80 p-3.5 rounded-xl border border-slate-100 space-y-1">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Purchase</span>
+              <span class="text-base font-black text-slate-900">{{ netPurchaseAmount | number:'1.2-2' }}</span>
+            </div>
+
+            <div class="bg-slate-50/80 p-3.5 rounded-xl border border-slate-100 space-y-1">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Profit</span>
+              <span class="text-base font-black" [class.text-emerald-600]="formBillProfit >= 0"
+                [class.text-rose-600]="formBillProfit < 0">
+                {{ formBillProfit | number:'1.2-2' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- =========================================================================
+               BOTTOM TABS (PAYMENTS RECEIVED | CASH OUT | VENDOR INFO)
+               ========================================================================= -->
+        <div class="pt-6 border-t border-slate-100 space-y-3">
+          <div class="flex items-center gap-4 border-b border-slate-100 text-xs">
+            <button type="button" (click)="activeBillSubTab.set('payments')"
+              [class.text-blue-600]="activeBillSubTab() === 'payments'"
+              [class.font-bold]="activeBillSubTab() === 'payments'"
+              [class.border-b-2]="activeBillSubTab() === 'payments'"
+              [class.border-blue-600]="activeBillSubTab() === 'payments'"
+              class="pb-2 text-slate-600 hover:text-slate-900 transition">
+              Payments Received
+            </button>
+
+            <button type="button" (click)="activeBillSubTab.set('cashout')"
+              [class.text-blue-600]="activeBillSubTab() === 'cashout'"
+              [class.font-bold]="activeBillSubTab() === 'cashout'" [class.border-b-2]="activeBillSubTab() === 'cashout'"
+              [class.border-blue-600]="activeBillSubTab() === 'cashout'"
+              class="pb-2 text-slate-600 hover:text-slate-900 transition">
+              Cash Out
+            </button>
+
+            <button type="button" (click)="activeBillSubTab.set('vendorinfo')"
+              [class.text-blue-600]="activeBillSubTab() === 'vendorinfo'"
+              [class.font-bold]="activeBillSubTab() === 'vendorinfo'"
+              [class.border-b-2]="activeBillSubTab() === 'vendorinfo'"
+              [class.border-blue-600]="activeBillSubTab() === 'vendorinfo'"
+              class="pb-2 text-slate-600 hover:text-slate-900 transition">
+              Vendor Info
+            </button>
+          </div>
+
+          <!-- Tab Content: Payments Received -->
+          @if (activeBillSubTab() === 'payments') {
+          <div class="overflow-x-auto border border-slate-100 rounded-xl">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="bg-slate-50/80 text-[10px] uppercase font-bold text-slate-400 border-b border-slate-100">
+                  <th class="py-2.5 px-3">PAYMENT DATE</th>
+                  <th class="py-2.5 px-3 text-right">AMOUNT</th>
+                  <th class="py-2.5 px-3">JOURNAL</th>
+                  <th class="py-2.5 px-3">RECEIVED BY</th>
+                  <th class="py-2.5 px-3 text-center">STATUS</th>
+                  <th class="py-2.5 px-3">JOURNAL ENTRY</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="6" class="py-8 text-center text-slate-400 text-xs italic">
+                    No payments recorded yet for this bill. Payments can be registered once posted.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          }
+
+          <!-- Tab Content: Cash Out -->
+          @if (activeBillSubTab() === 'cashout') {
+          <div class="overflow-x-auto border border-slate-100 rounded-xl">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="bg-slate-50/80 text-[10px] uppercase font-bold text-slate-400 border-b border-slate-100">
+                  <th class="py-2.5 px-3">PAYMENT DATE</th>
+                  <th class="py-2.5 px-3">BILL / PROJECT</th>
+                  <th class="py-2.5 px-3">TYPE</th>
+                  <th class="py-2.5 px-3">VENDOR</th>
+                  <th class="py-2.5 px-3">JOURNAL</th>
+                  <th class="py-2.5 px-3 text-right">AMOUNT</th>
+                  <th class="py-2.5 px-3 text-center">STATUS</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="7" class="py-8 text-center text-slate-400 text-xs italic">
+                    No cash out payments recorded yet for this bill.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          }
+
+          <!-- Tab Content: Vendor Info -->
+          @if (activeBillSubTab() === 'vendorinfo') {
+          <div class="p-4 rounded-xl bg-slate-50/60 border border-slate-100 text-xs space-y-2">
+            <div class="font-bold text-slate-800">Assigned Procurement Vendors</div>
+            <div class="text-slate-500">
+              Vendors specified in the Supplier Information table will have purchase bills generated upon confirmation.
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+
+      <!-- Right Side Panel (Today / User Activity Log) -->
+      <div class="space-y-3 pt-2">
+        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">
+          Today
+        </div>
+        <div class="space-y-0.5">
+          <div class="text-xs font-bold text-slate-800">
+            {{ currentUser()?.name || 'Mr. Abdul Ahad Khan' }}
+          </div>
+          <div class="text-[11px] text-slate-400 italic">
+            Creating a new record...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Action Bar (Matching screenshot) -->
+    <div class="pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-slate-100">
+      <!-- Bottom Left Back Button -->
       <div>
-        <button
-          type="button"
-          (click)="backToList()"
-          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 shadow-2xs transition"
-        >
+        <button type="button" (click)="backToList()"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 shadow-2xs transition">
           <span class="text-slate-400 font-bold">&lsaquo;</span>
           <span>Back</span>
         </button>
       </div>
 
-      <!-- Breadcrumb & Title Bar -->
-      <div class="space-y-1">
-        <div class="flex items-center gap-2 text-xs font-medium text-slate-400">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+      <!-- Bottom Right Buttons: Cancel | Save as Draft | Submit -->
+      <div class="flex items-center gap-2">
+        <button type="button" (click)="backToList()"
+          class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 shadow-2xs transition">
+          Cancel
+        </button>
+
+        <button type="button" (click)="submitBill(false)"
+          class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 shadow-2xs transition">
+          Save as Draft
+        </button>
+
+        <button type="button" (click)="submitBill(true)"
+          class="px-5 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-2xs inline-flex items-center gap-1.5 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
           </svg>
-          <span>Sales & Invoice</span>
-          <span>/</span>
-          <span>New</span>
-        </div>
-
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-1">
-          <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Sales & Invoice / New</h1>
-
-          <div class="flex flex-wrap items-center gap-2">
-            <!-- DRAFT / CONFIRMED Step Pills -->
-            <div class="inline-flex rounded-lg overflow-hidden border border-slate-200 shadow-2xs">
-              <span class="px-4 py-1.5 text-xs font-bold bg-blue-600 text-white select-none">
-                DRAFT
-              </span>
-              <span class="px-4 py-1.5 text-xs font-semibold bg-white text-slate-400 border-l border-slate-200 select-none">
-                CONFIRMED
-              </span>
-            </div>
-
-            <!-- POST Button -->
-            <button
-              type="button"
-              (click)="submitBill(true)"
-              class="px-4 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-2xs transition"
-            >
-              POST
-            </button>
-
-            <!-- Configure Button -->
-            <button
-              type="button"
-              (click)="showConfigModal.set(true)"
-              class="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50 shadow-2xs inline-flex items-center gap-1.5 transition"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              <span>Configure</span>
-            </button>
-
-            <!-- Back to list Button -->
-            <button
-              type="button"
-              (click)="backToList()"
-              class="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50 shadow-2xs transition"
-            >
-              Back to list
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Main Layout: Form Card + Right Side Activity Log -->
-      <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_240px] gap-6 items-start">
-        <!-- Main Bill Card (.bf) -->
-        <div class="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 relative overflow-hidden shadow-xs space-y-6">
-          <!-- Red DUE Ribbon (Top-Right Angle) -->
-          <div
-            class="absolute top-4 -right-9 bg-rose-600 text-white font-extrabold text-[11px] tracking-widest uppercase py-1 px-10 shadow-md select-none transform rotate-45 pointer-events-none"
-          >
-            DUE
-          </div>
-
-          <!-- Form Fields (Matching exact grid layout from screenshot) -->
-          <div class="space-y-3.5 max-w-2xl text-xs">
-            <!-- Bill Date -->
-            <div class="grid grid-cols-1 sm:grid-cols-[140px_minmax(0,1fr)] items-center gap-2">
-              <label class="font-bold text-slate-800">
-                Bill Date <span class="text-rose-500">*</span>
-              </label>
-              <div class="relative max-w-md">
-                <input
-                  type="date"
-                  [(ngModel)]="formBill.date"
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
-                />
-              </div>
-            </div>
-
-            <!-- Bill Number -->
-            <div class="grid grid-cols-1 sm:grid-cols-[140px_minmax(0,1fr)] items-center gap-2">
-              <label class="font-bold text-slate-800">
-                Bill Number <span class="text-rose-500">*</span>
-              </label>
-              <div class="max-w-md">
-                <input
-                  type="text"
-                  [(ngModel)]="formBill.billNumber"
-                  placeholder="e.g. A747"
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold"
-                />
-              </div>
-            </div>
-
-            <!-- Salesperson (Inline Search & Create Combobox) -->
-            <div class="grid grid-cols-1 sm:grid-cols-[140px_minmax(0,1fr)] items-center gap-2">
-              <label class="font-bold text-slate-800">
-                Salesperson <span class="text-rose-500">*</span>
-              </label>
-              <div class="relative max-w-md cb-container-sp">
-                <div class="flex items-center gap-2">
-                  <input
-                    type="text"
-                    id="bf-sp"
-                    autocomplete="off"
-                    [(ngModel)]="formBill.salesperson"
-                    (focus)="showSpDropdown.set(true)"
-                    (input)="onSalespersonInput()"
-                    (blur)="onSalespersonBlur()"
-                    (keydown)="onSalespersonKeydown($event)"
-                    placeholder="Select or type to search…"
-                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
-                  />
-                  @if (canCreateNewSalesperson()) {
-                    <button
-                      type="button"
-                      (mousedown)="createSalesperson(formBill.salesperson)"
-                      class="shrink-0 px-2.5 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs border border-blue-200 transition flex items-center gap-1 shadow-sm"
-                      title="Create this salesperson"
-                    >
-                      <span>＋</span> Create
-                    </button>
-                  }
-                </div>
-                @if (showSpDropdown()) {
-                  <div class="absolute z-50 left-0 right-0 top-[calc(100%+4px)] max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl py-1 text-xs divide-y divide-slate-50">
-                    @for (sp of filteredSalespersons(); track sp) {
-                      <div
-                        (mousedown)="selectSalesperson(sp)"
-                        class="px-3.5 py-2 hover:bg-slate-50 cursor-pointer font-medium text-slate-700 transition"
-                      >
-                        {{ sp }}
-                      </div>
-                    }
-                    @if (canCreateNewSalesperson()) {
-                      <div
-                        (mousedown)="createSalesperson(formBill.salesperson)"
-                        class="px-3.5 py-2 hover:bg-blue-50 cursor-pointer font-bold text-blue-600 transition flex items-center gap-1.5"
-                      >
-                        <span>＋</span> Create salesperson "{{ formBill.salesperson }}"
-                      </div>
-                    }
-                    @if (filteredSalespersons().length === 0 && !canCreateNewSalesperson()) {
-                      <div class="px-3.5 py-2.5 text-slate-400 italic">No match found</div>
-                    }
-                  </div>
-                }
-              </div>
-            </div>
-
-            <!-- Customer (Inline Search & Create Combobox with Hint) -->
-            <div class="grid grid-cols-1 sm:grid-cols-[140px_minmax(0,1fr)] items-center gap-2">
-              <label class="font-bold text-slate-800">
-                Customer <span class="text-rose-500">*</span>
-              </label>
-              <div class="relative max-w-md cb-container-cust">
-                <div class="flex items-center gap-2">
-                  <input
-                    type="text"
-                    id="bf-cu"
-                    autocomplete="off"
-                    [(ngModel)]="formBill.customerName"
-                    (focus)="showCustDropdown.set(true)"
-                    (input)="onCustomerInput()"
-                    (blur)="onCustomerBlur()"
-                    (keydown)="onCustomerKeydown($event)"
-                    placeholder="Select or type to search…"
-                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold"
-                  />
-                  @if (canCreateNewCustomer()) {
-                    <button
-                      type="button"
-                      (mousedown)="createCustomer(formBill.customerName)"
-                      class="shrink-0 px-2.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold text-xs border border-amber-200 transition flex items-center gap-1 shadow-sm"
-                      title="Create this customer (keeps mobile and address)"
-                    >
-                      <span>＋</span> Create
-                    </button>
-                  }
-                </div>
-                @if (showCustDropdown()) {
-                  <div class="absolute z-50 left-0 right-0 top-[calc(100%+4px)] max-h-60 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl py-1 text-xs divide-y divide-slate-100">
-                    @for (client of filteredClients(); track client._id || client.name) {
-                      <div
-                        (mousedown)="selectCustomer(client)"
-                        class="px-3.5 py-2 hover:bg-slate-50 cursor-pointer text-slate-800 transition"
-                      >
-                        <div class="font-semibold text-slate-900">{{ client.name }}</div>
-                        @if (client.phone || client.address || client.billingAddress || client.siteAddress) {
-                          <small class="block text-[11px] text-slate-500 mt-0.5">
-                            {{ client.phone || 'No phone' }} {{ (client.address || client.siteAddress || client.billingAddress) ? ' · ' + (client.address || client.siteAddress || client.billingAddress) : '' }}
-                          </small>
-                        }
-                      </div>
-                    }
-                    @if (canCreateNewCustomer()) {
-                      <div
-                        (mousedown)="createCustomer(formBill.customerName)"
-                        class="px-3.5 py-2 hover:bg-amber-50 cursor-pointer font-bold text-amber-700 transition flex items-center gap-1.5"
-                      >
-                        <span>＋</span> Create customer "{{ formBill.customerName }}" (keeps mobile &amp; address)
-                      </div>
-                    }
-                    @if (filteredClients().length === 0 && !canCreateNewCustomer()) {
-                      <div class="px-3.5 py-2.5 text-slate-400 italic">No match found</div>
-                    }
-                  </div>
-                }
-                @if (custHint().text) {
-                  <small [class]="'block text-[11.5px] mt-1.5 font-medium ' + custHint().cls">
-                    {{ custHint().text }}
-                  </small>
-                }
-              </div>
-            </div>
-
-            <!-- Customer Mobile -->
-            <div class="grid grid-cols-1 sm:grid-cols-[140px_minmax(0,1fr)] items-center gap-2">
-              <label class="font-bold text-slate-800">Customer Mobile</label>
-              <div class="max-w-md">
-                <input
-                  type="text"
-                  id="bf-mob"
-                  [(ngModel)]="formBill.customerMobile"
-                  placeholder="01XXX-XXXXXX"
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            <!-- Address -->
-            <div class="grid grid-cols-1 sm:grid-cols-[140px_minmax(0,1fr)] items-center gap-2">
-              <label class="font-bold text-slate-800">Address</label>
-              <div class="max-w-md">
-                <input
-                  type="text"
-                  id="bf-ad"
-                  [(ngModel)]="formBill.address"
-                  placeholder="Customer address"
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Product Lines Table (Matching screenshot) -->
-          <div class="pt-4 space-y-2">
-            <div class="overflow-x-auto min-h-[220px] pb-16">
-              <table class="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr class="bg-slate-50/80 text-[11px] uppercase font-bold text-slate-400 border-b border-slate-100">
-                    <th class="py-3 px-3">PRODUCT</th>
-                    <th class="py-3 px-3 w-28 text-center">QUANTITY</th>
-                    <th class="py-3 px-3 w-36">RATE</th>
-                    <th class="py-3 px-3 w-32 text-right">AMOUNT</th>
-                    <th class="py-3 px-3 w-10"></th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                  @for (it of formBill.items; track $index) {
-                    <tr>
-                      <td class="py-2.5 px-3 relative cb-container-prod">
-                        <div class="flex items-center gap-1.5 relative">
-                          <input
-                            type="text"
-                            autocomplete="off"
-                            [(ngModel)]="it.description"
-                            (focus)="onProductFocus($index)"
-                            (input)="onProductInput($index)"
-                            (blur)="onProductBlur($index)"
-                            (keydown)="onProductKeydown($event, $index, it)"
-                            placeholder="Select or type product…"
-                            class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
-                          />
-                          @if (canCreateNewProduct(it.description)) {
-                            <button
-                              type="button"
-                              (mousedown)="createProductForLine($index, it.description)"
-                              class="shrink-0 px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[11px] border border-emerald-200 transition flex items-center gap-1 shadow-2xs"
-                              title="Create this product in catalog"
-                            >
-                              <span>＋</span> Create
-                            </button>
-                          }
-                        </div>
-
-                        <!-- Product Autocomplete Dropdown List -->
-                        @if (activeProductRow() === $index) {
-                          <div
-                            class="absolute z-50 left-3 right-3 top-[calc(100%+2px)] max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl py-1 text-xs divide-y divide-slate-100 min-w-[280px]"
-                          >
-                            @for (prod of filteredProductsFor(it.description); track prod._id || prod.name) {
-                              <div
-                                (mousedown)="selectProduct($index, prod)"
-                                class="px-3.5 py-2 hover:bg-slate-50 cursor-pointer text-slate-800 transition flex items-center justify-between gap-2"
-                              >
-                                <div>
-                                  <div class="font-semibold text-slate-900">{{ prod.name }}</div>
-                                  @if (prod.category && prod.category !== 'General') {
-                                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-medium">
-                                      {{ prod.category }}
-                                    </span>
-                                  }
-                                </div>
-                                <div class="text-right shrink-0">
-                                  <span class="font-bold text-slate-900">৳ {{ prod.salesPrice | number:'1.2-2' }}</span>
-                                  @if (prod.unit) {
-                                    <span class="text-[10px] text-slate-400"> / {{ prod.unit }}</span>
-                                  }
-                                </div>
-                              </div>
-                            }
-
-                            @if (canCreateNewProduct(it.description)) {
-                              <div
-                                (mousedown)="createProductForLine($index, it.description)"
-                                class="px-3.5 py-2 hover:bg-emerald-50 cursor-pointer font-bold text-emerald-700 transition flex items-center gap-1.5"
-                              >
-                                <span>＋</span> Create product "{{ it.description }}"
-                              </div>
-                            }
-
-                            @if (filteredProductsFor(it.description).length === 0 && !canCreateNewProduct(it.description)) {
-                              <div class="px-3.5 py-2.5 text-slate-400 italic">No products found</div>
-                            }
-                          </div>
-                        }
-
-                        @if (it.hint) {
-                          <small [class]="'block text-[11px] mt-1 ' + (it.hintCls || 'text-slate-500')">
-                            {{ it.hint }}
-                          </small>
-                        }
-                      </td>
-                      <td class="py-2.5 px-3">
-                        <input
-                          type="number"
-                          [(ngModel)]="it.quantity"
-                          (ngModelChange)="calcBillItem(it)"
-                          min="0.01"
-                          class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-center font-semibold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </td>
-                      <td class="py-2.5 px-3">
-                        <input
-                          type="number"
-                          [(ngModel)]="it.unitPrice"
-                          (ngModelChange)="calcBillItem(it)"
-                          min="0"
-                          placeholder="0.00"
-                          class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold"
-                        />
-                      </td>
-                      <td class="py-2.5 px-3 text-right font-bold text-slate-900 text-xs">
-                        {{ it.amount | number:'1.2-2' }}
-                      </td>
-                      <td class="py-2.5 px-3 text-center">
-                        <button
-                          type="button"
-                          (click)="removeBillItem($index)"
-                          class="text-rose-500 hover:text-rose-700 transition p-1"
-                          title="Delete row"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-
-            <!-- Add product line link -->
-            <div class="pt-2">
-              <button
-                type="button"
-                (click)="addBillItem()"
-                class="text-blue-600 hover:text-blue-800 text-xs font-semibold inline-flex items-center gap-1 transition"
-              >
-                <span>Add a product line</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- =========================================================================
-               OTHER CHARGES & TOTALS BREAKDOWN (MATCHING SCREENSHOT)
-               ========================================================================= -->
-          <div class="pt-4 border-t border-slate-100">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-              <!-- Left: Other Charges Table -->
-              <div class="space-y-3">
-                <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                  OTHER CHARGES
-                </div>
-
-                <div class="overflow-x-auto">
-                  <table class="w-full text-left text-xs border-collapse">
-                    <thead>
-                      <tr class="text-[11px] uppercase font-bold text-slate-400 border-b border-slate-100">
-                        <th class="py-2 px-2">CHARGE NAME</th>
-                        <th class="py-2 px-2 w-32 text-right">AMOUNT</th>
-                        <th class="py-2 px-2 w-8"></th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                      @for (c of formBill.otherCharges; track $index) {
-                        <tr>
-                          <td class="py-1.5 px-2">
-                            <input
-                              type="text"
-                              [(ngModel)]="c.name"
-                              placeholder="e.g. Transport Charge, Fitting..."
-                              class="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
-                            />
-                          </td>
-                          <td class="py-1.5 px-2">
-                            <input
-                              type="number"
-                              [(ngModel)]="c.amount"
-                              min="0"
-                              placeholder="0.00"
-                              class="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-right text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold"
-                            />
-                          </td>
-                          <td class="py-1.5 px-2 text-center">
-                            <button
-                              type="button"
-                              (click)="removeOtherCharge($index)"
-                              class="text-rose-500 hover:text-rose-700 transition"
-                              title="Delete charge"
-                            >
-                              &times;
-                            </button>
-                          </td>
-                        </tr>
-                      }
-                    </tbody>
-                  </table>
-                </div>
-
-                <div>
-                  <button
-                    type="button"
-                    (click)="addOtherCharge()"
-                    class="text-blue-600 hover:text-blue-800 text-xs font-semibold inline-flex items-center gap-1 transition"
-                  >
-                    <span>Add other charge</span>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Right: Bill Totals Breakdown -->
-              <div class="space-y-2 text-xs max-w-sm ml-auto w-full pt-1">
-                <div class="flex justify-between items-center text-slate-600">
-                  <span>Sales Amount</span>
-                  <span class="font-semibold text-slate-900">{{ formSalesAmount | number:'1.2-2' }}</span>
-                </div>
-
-                <div class="flex justify-between items-center text-slate-600">
-                  <span>Other Charges</span>
-                  <span class="font-semibold text-slate-900">{{ formOtherChargesTotal | number:'1.2-2' }}</span>
-                </div>
-
-                <div class="flex justify-between items-center font-bold text-slate-900 pt-1.5 border-t border-slate-100">
-                  <span>Subtotal</span>
-                  <span class="text-sm font-black">{{ formSubtotal | number:'1.2-2' }}</span>
-                </div>
-
-                <div class="flex justify-between items-center text-slate-600 pt-1">
-                  <span>Discount Amount</span>
-                  <div class="w-32">
-                    <input
-                      type="number"
-                      [(ngModel)]="formBill.discountAmount"
-                      min="0"
-                      placeholder="0"
-                      class="w-full px-3 py-1 rounded-lg border border-slate-200 text-xs text-right font-semibold text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-
-                <div class="flex justify-between items-center font-bold text-slate-900 pt-2 border-t border-slate-100">
-                  <span>Grand Total / Payable Amount</span>
-                  <span class="text-sm font-black text-slate-900">{{ formGrandTotal | number:'1.2-2' }}</span>
-                </div>
-
-                <div class="flex justify-between items-center text-emerald-600 font-semibold pt-1">
-                  <span>Payment Received</span>
-                  <span>{{ (formBill.paidAmount || 0) | number:'1.2-2' }}</span>
-                </div>
-
-                <div class="flex justify-between items-center font-extrabold text-rose-600 pt-1">
-                  <span>Balance Due</span>
-                  <span class="text-sm">{{ formBalanceDue | number:'1.2-2' }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- =========================================================================
-               SUPPLIER INFORMATION (MATCHING SCREENSHOT)
-               ========================================================================= -->
-          <div class="pt-6 border-t border-slate-100 space-y-3">
-            <div class="text-[11px] font-bold text-slate-900 uppercase tracking-wider">
-              SUPPLIER INFORMATION
-            </div>
-
-            <div class="overflow-x-auto border border-slate-100 rounded-xl">
-              <table class="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr class="bg-slate-50/80 text-[10px] uppercase font-bold text-slate-400 border-b border-slate-100">
-                    <th class="py-2.5 px-3 w-16">SERIAL NUMBER</th>
-                    <th class="py-2.5 px-3">PARTICULARS</th>
-                    <th class="py-2.5 px-3 w-20 text-center">QUANTITY</th>
-                    <th class="py-2.5 px-3 w-24 text-right">RATE</th>
-                    <th class="py-2.5 px-3 w-24 text-right">AMOUNT</th>
-                    <th class="py-2.5 px-3 w-48">SUPPLIER NAME</th>
-                    <th class="py-2.5 px-3 w-36">SUPPLIER INVOICE NO.</th>
-                    <th class="py-2.5 px-3 w-32 text-right">PURCHASE AMOUNT</th>
-                    <th class="py-2.5 px-3 w-28 text-center">SUPPLIER DISCOUNT</th>
-                    <th class="py-2.5 px-3 w-28 text-right">NET PURCHASE</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                  @for (it of formBill.items; track $index) {
-                    <tr class="hover:bg-slate-50/50 transition">
-                      <td class="py-2.5 px-3 text-slate-500 font-semibold">{{ $index + 1 }}</td>
-                      <td class="py-2.5 px-3 font-semibold text-slate-800">
-                        {{ it.description || '—' }}
-                      </td>
-                      <td class="py-2.5 px-3 text-center text-slate-700">{{ it.quantity }}</td>
-                      <td class="py-2.5 px-3 text-right text-slate-600">{{ it.unitPrice | number:'1.2-2' }}</td>
-                      <td class="py-2.5 px-3 text-right font-semibold text-slate-900">{{ it.amount | number:'1.2-2' }}</td>
-                      <td class="py-2.5 px-3">
-                        <div class="space-y-1">
-                          <input
-                            type="text"
-                            list="sup-dl"
-                            [(ngModel)]="it.supplierName"
-                            placeholder="Select or type supplie..."
-                            class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                          @if (it.supplierName) {
-                            <div>
-                              @if (isExistingSupplier(it.supplierName)) {
-                                <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
-                                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                  Existing
-                                </span>
-                              } @else {
-                                <span class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
-                                  <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                                  New
-                                </span>
-                                <a
-                                  (click)="quickCreateSupplier(it.supplierName)"
-                                  class="text-blue-600 font-bold hover:underline cursor-pointer text-[11px] ml-1.5"
-                                >
-                                  ＋ Create
-                                </a>
-                              }
-                            </div>
-                          }
-                        </div>
-                      </td>
-                      <td class="py-2.5 px-3">
-                        <input
-                          type="text"
-                          [(ngModel)]="it.supplierInvoiceNo"
-                          placeholder="Invoice no."
-                          class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </td>
-                      <td class="py-2.5 px-3">
-                        <input
-                          type="number"
-                          [(ngModel)]="it.purchaseAmount"
-                          (ngModelChange)="calcSupplierRow(it)"
-                          min="0"
-                          step="0.01"
-                          placeholder="0.00"
-                          class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-right font-semibold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </td>
-                      <td class="py-2.5 px-3 text-center">
-                        @if (it.supplierDiscount > 0) {
-                          <span class="text-emerald-600 font-bold">- {{ it.supplierDiscount | number:'1.2-2' }}</span>
-                        } @else {
-                          <span class="text-slate-400">—</span>
-                        }
-                      </td>
-                      <td class="py-2.5 px-3 text-right font-bold text-slate-900">
-                        {{ ((it.purchaseAmount || 0) - (it.supplierDiscount || 0)) | number:'1.2-2' }}
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-
-            <!-- Supplier Datalist -->
-            <datalist id="sup-dl">
-              @for (s of suppliers(); track s._id || s.name) {
-                <option [value]="s.name"></option>
-              }
-            </datalist>
-
-            <!-- Bottom Totals of Supplier Info -->
-            <div class="space-y-1.5 text-xs max-w-sm ml-auto pt-2">
-              <div class="flex justify-between items-center text-slate-600">
-                <span>Total Purchase Amount</span>
-                <span class="font-bold text-slate-900">{{ totalPurchaseAmount | number:'1.2-2' }}</span>
-              </div>
-              <div class="flex justify-between items-center text-slate-600">
-                <span>Supplier Discount (given from Suppliers menu)</span>
-                <span class="font-bold text-emerald-600">{{ totalSupplierDiscount | number:'1.2-2' }}</span>
-              </div>
-              <div class="flex justify-between items-center font-bold text-slate-900 pt-1 border-t border-slate-100">
-                <span>Net Purchase Amount</span>
-                <span class="text-sm font-black">{{ netPurchaseAmount | number:'1.2-2' }}</span>
-              </div>
-            </div>
-
-            <!-- Explanatory note -->
-            <p class="text-[11px] text-slate-400 italic pt-1">
-              All billed products appear here automatically. Select a supplier for each product and enter the supplier's invoice number. If the supplier is not in the list, type the name and click <b>Create</b> — it is added to Suppliers (or created automatically when you save).
-            </p>
-          </div>
-
-          <!-- =========================================================================
-               SUMMARY (5 KPI BOXES MATCHING SCREENSHOT)
-               ========================================================================= -->
-          <div class="pt-6 border-t border-slate-100 space-y-3">
-            <div class="text-[11px] font-bold text-slate-900 uppercase tracking-wider">
-              SUMMARY
-            </div>
-
-            <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
-              <div class="bg-slate-50/80 p-3.5 rounded-xl border border-slate-100 space-y-1">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Cash In</span>
-                <span class="text-base font-black text-slate-900">{{ (formBill.paidAmount || 0) | number:'1.2-2' }}</span>
-              </div>
-
-              <div class="bg-slate-50/80 p-3.5 rounded-xl border border-slate-100 space-y-1">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Cash Out</span>
-                <span class="text-base font-black text-slate-900">{{ (netPurchaseAmount + formOtherChargesTotal) | number:'1.2-2' }}</span>
-              </div>
-
-              <div class="bg-slate-50/80 p-3.5 rounded-xl border border-slate-100 space-y-1">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Customer Due</span>
-                <span class="text-base font-black" [class.text-rose-600]="formBalanceDue > 0" [class.text-slate-900]="formBalanceDue <= 0">
-                  {{ formBalanceDue | number:'1.2-2' }}
-                </span>
-              </div>
-
-              <div class="bg-slate-50/80 p-3.5 rounded-xl border border-slate-100 space-y-1">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Purchase</span>
-                <span class="text-base font-black text-slate-900">{{ netPurchaseAmount | number:'1.2-2' }}</span>
-              </div>
-
-              <div class="bg-slate-50/80 p-3.5 rounded-xl border border-slate-100 space-y-1">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Profit</span>
-                <span class="text-base font-black" [class.text-emerald-600]="formBillProfit >= 0" [class.text-rose-600]="formBillProfit < 0">
-                  {{ formBillProfit | number:'1.2-2' }}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- =========================================================================
-               BOTTOM TABS (PAYMENTS RECEIVED | CASH OUT | VENDOR INFO)
-               ========================================================================= -->
-          <div class="pt-6 border-t border-slate-100 space-y-3">
-            <div class="flex items-center gap-4 border-b border-slate-100 text-xs">
-              <button
-                type="button"
-                (click)="activeBillSubTab.set('payments')"
-                [class.text-blue-600]="activeBillSubTab() === 'payments'"
-                [class.font-bold]="activeBillSubTab() === 'payments'"
-                [class.border-b-2]="activeBillSubTab() === 'payments'"
-                [class.border-blue-600]="activeBillSubTab() === 'payments'"
-                class="pb-2 text-slate-600 hover:text-slate-900 transition"
-              >
-                Payments Received
-              </button>
-
-              <button
-                type="button"
-                (click)="activeBillSubTab.set('cashout')"
-                [class.text-blue-600]="activeBillSubTab() === 'cashout'"
-                [class.font-bold]="activeBillSubTab() === 'cashout'"
-                [class.border-b-2]="activeBillSubTab() === 'cashout'"
-                [class.border-blue-600]="activeBillSubTab() === 'cashout'"
-                class="pb-2 text-slate-600 hover:text-slate-900 transition"
-              >
-                Cash Out
-              </button>
-
-              <button
-                type="button"
-                (click)="activeBillSubTab.set('vendorinfo')"
-                [class.text-blue-600]="activeBillSubTab() === 'vendorinfo'"
-                [class.font-bold]="activeBillSubTab() === 'vendorinfo'"
-                [class.border-b-2]="activeBillSubTab() === 'vendorinfo'"
-                [class.border-blue-600]="activeBillSubTab() === 'vendorinfo'"
-                class="pb-2 text-slate-600 hover:text-slate-900 transition"
-              >
-                Vendor Info
-              </button>
-            </div>
-
-            <!-- Tab Content: Payments Received -->
-            @if (activeBillSubTab() === 'payments') {
-              <div class="overflow-x-auto border border-slate-100 rounded-xl">
-                <table class="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr class="bg-slate-50/80 text-[10px] uppercase font-bold text-slate-400 border-b border-slate-100">
-                      <th class="py-2.5 px-3">PAYMENT DATE</th>
-                      <th class="py-2.5 px-3 text-right">AMOUNT</th>
-                      <th class="py-2.5 px-3">JOURNAL</th>
-                      <th class="py-2.5 px-3">RECEIVED BY</th>
-                      <th class="py-2.5 px-3 text-center">STATUS</th>
-                      <th class="py-2.5 px-3">JOURNAL ENTRY</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td colspan="6" class="py-8 text-center text-slate-400 text-xs italic">
-                        No payments recorded yet for this bill. Payments can be registered once posted.
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            }
-
-            <!-- Tab Content: Cash Out -->
-            @if (activeBillSubTab() === 'cashout') {
-              <div class="overflow-x-auto border border-slate-100 rounded-xl">
-                <table class="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr class="bg-slate-50/80 text-[10px] uppercase font-bold text-slate-400 border-b border-slate-100">
-                      <th class="py-2.5 px-3">PAYMENT DATE</th>
-                      <th class="py-2.5 px-3">BILL / PROJECT</th>
-                      <th class="py-2.5 px-3">TYPE</th>
-                      <th class="py-2.5 px-3">VENDOR</th>
-                      <th class="py-2.5 px-3">JOURNAL</th>
-                      <th class="py-2.5 px-3 text-right">AMOUNT</th>
-                      <th class="py-2.5 px-3 text-center">STATUS</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td colspan="7" class="py-8 text-center text-slate-400 text-xs italic">
-                        No cash out payments recorded yet for this bill.
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            }
-
-            <!-- Tab Content: Vendor Info -->
-            @if (activeBillSubTab() === 'vendorinfo') {
-              <div class="p-4 rounded-xl bg-slate-50/60 border border-slate-100 text-xs space-y-2">
-                <div class="font-bold text-slate-800">Assigned Procurement Vendors</div>
-                <div class="text-slate-500">
-                  Vendors specified in the Supplier Information table will have purchase bills generated upon confirmation.
-                </div>
-              </div>
-            }
-          </div>
-        </div>
-
-        <!-- Right Side Panel (Today / User Activity Log) -->
-        <div class="space-y-3 pt-2">
-          <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">
-            Today
-          </div>
-          <div class="space-y-0.5">
-            <div class="text-xs font-bold text-slate-800">
-              {{ currentUser()?.name || 'Mr. Abdul Ahad Khan' }}
-            </div>
-            <div class="text-[11px] text-slate-400 italic">
-              Creating a new record...
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Bottom Action Bar (Matching screenshot) -->
-      <div class="pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-slate-100">
-        <!-- Bottom Left Back Button -->
-        <div>
-          <button
-            type="button"
-            (click)="backToList()"
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 shadow-2xs transition"
-          >
-            <span class="text-slate-400 font-bold">&lsaquo;</span>
-            <span>Back</span>
-          </button>
-        </div>
-
-        <!-- Bottom Right Buttons: Cancel | Save as Draft | Submit -->
-        <div class="flex items-center gap-2">
-          <button
-            type="button"
-            (click)="backToList()"
-            class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 shadow-2xs transition"
-          >
-            Cancel
-          </button>
-
-          <button
-            type="button"
-            (click)="submitBill(false)"
-            class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 shadow-2xs transition"
-          >
-            Save as Draft
-          </button>
-
-          <button
-            type="button"
-            (click)="submitBill(true)"
-            class="px-5 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-2xs inline-flex items-center gap-1.5 transition"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-            </svg>
-            <span>Submit</span>
-          </button>
-        </div>
+          <span>Submit</span>
+        </button>
       </div>
     </div>
+  </div>
   }
 
   <!-- =========================================================================
        MODE: LIST (BILLS & INVOICES / QUOTATIONS DASHBOARD)
        ========================================================================= -->
   @if (mode() === 'list') {
-    <!-- Top Header & Navigation -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+  <!-- Top Header & Navigation -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2 text-xs font-semibold text-slate-400 mb-1">
+        <span>Interior Operations</span>
+        <span>/</span>
+        <span class="text-indigo-600 font-bold">Sales & Invoicing</span>
+      </div>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Sales Bills & Quotations</h1>
+      <p class="text-sm text-slate-500 mt-1">
+        Master billing engine, client quotations, direct job costs, and official printable tax invoices.
+      </p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <!-- Tab Switcher -->
+      <div class="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner">
+        <button (click)="activeTab.set('bills')" [class.bg-white]="activeTab() === 'bills'"
+          [class.shadow-xs]="activeTab() === 'bills'" [class.font-bold]="activeTab() === 'bills'"
+          [class.text-indigo-600]="activeTab() === 'bills'"
+          class="px-4 py-2 text-xs rounded-lg transition text-slate-600 font-medium">
+          Bills & Invoices ({{ bills().length }})
+        </button>
+        <button (click)="activeTab.set('quotations')" [class.bg-white]="activeTab() === 'quotations'"
+          [class.shadow-xs]="activeTab() === 'quotations'" [class.font-bold]="activeTab() === 'quotations'"
+          [class.text-indigo-600]="activeTab() === 'quotations'"
+          class="px-4 py-2 text-xs rounded-lg transition text-slate-600 font-medium">
+          Quotations ({{ quotations().length }})
+        </button>
+      </div>
+
+      @if (activeTab() === 'bills') {
+      <button (click)="openNewBill()"
+        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 shadow-xs transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        <span>+ New Master Bill</span>
+      </button>
+      } @else {
+      <button (click)="openNewQuotationModal()"
+        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 shadow-xs transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        <span>+ New Quotation</span>
+      </button>
+      }
+    </div>
+  </div>
+
+  <!-- KPI Grid (Matching Menu_RBAC Design) -->
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+      <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total Sales</span>
+      <span class="text-lg font-bold text-emerald-600 mt-1 block">৳ {{ totalSales() | number:'1.0-0' }}</span>
+      <span class="text-[10px] text-slate-400">All confirmed bills</span>
+    </div>
+
+    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+      <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total Received</span>
+      <span class="text-lg font-bold text-emerald-700 mt-1 block">৳ {{ totalReceived() | number:'1.0-0' }}</span>
+      <span class="text-[10px] text-slate-400">Advance & payments</span>
+    </div>
+
+    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+      <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Outstanding Due</span>
+      <span class="text-lg font-bold text-rose-600 mt-1 block">৳ {{ totalDue() | number:'1.0-0' }}</span>
+      <span class="text-[10px] text-slate-400">Client receivables</span>
+    </div>
+
+    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+      <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total Invoices</span>
+      <span class="text-lg font-bold text-slate-900 mt-1 block">{{ bills().length }}</span>
+      <span class="text-[10px] text-slate-400">Master bill records</span>
+    </div>
+
+    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+      <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Paid Invoices</span>
+      <span class="text-lg font-bold text-emerald-600 mt-1 block">{{ paidInvoicesCount() }}</span>
+      <span class="text-[10px] text-emerald-600 font-semibold">Fully cleared</span>
+    </div>
+
+    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+      <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Overdue / Unpaid</span>
+      <span class="text-lg font-bold text-amber-600 mt-1 block">{{ overdueInvoicesCount() }}</span>
+      <span class="text-[10px] text-amber-600 font-semibold">Pending collection</span>
+    </div>
+  </div>
+
+  <!-- TAB 1: BILLS & INVOICES -->
+  @if (activeTab() === 'bills') {
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+    <!-- Search Toolbar -->
+    <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div class="relative flex-1 max-w-md">
+        <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="loadBills()"
+          placeholder="Search bill number, customer, project, salesperson..."
+          class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-2.5 text-slate-400" fill="none"
+          viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <select [(ngModel)]="paymentFilter" (change)="loadBills()"
+          class="px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
+          <option value="">All Payment States</option>
+          <option value="not_paid">Due / Not Paid</option>
+          <option value="partial">Partial Payment</option>
+          <option value="paid">Fully Paid</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs text-slate-600">
+        <thead class="bg-slate-50 text-[11px] uppercase font-bold text-slate-400 border-b border-slate-100">
+          <tr>
+            <th class="py-3 px-4">Date</th>
+            <th class="py-3 px-4">Bill No.</th>
+            <th class="py-3 px-4">Client & Project</th>
+            <th class="py-3 px-4">Salesperson</th>
+            <th class="py-3 px-4 text-right">Total Sale</th>
+            <th class="py-3 px-4 text-right">Received</th>
+            <th class="py-3 px-4 text-right">Due</th>
+            <th class="py-3 px-4 text-right">Direct Costs</th>
+            <th class="py-3 px-4 text-right">Purchases</th>
+            <th class="py-3 px-4 text-right">Bill Profit</th>
+            <th class="py-3 px-4 text-center">Status</th>
+            <th class="py-3 px-4 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          @for (b of bills(); track b._id) {
+          <tr class="hover:bg-slate-50/60 transition">
+            <td class="py-3 px-4 whitespace-nowrap text-slate-500">
+              {{ b.date | date:'dd/MM/yyyy' }}
+            </td>
+            <td class="py-3 px-4 font-bold text-slate-900 whitespace-nowrap">
+              {{ b.billNumber }}
+            </td>
+            <td class="py-3 px-4">
+              <div class="font-semibold text-slate-900">{{ getInvoiceCustomerName(b) || 'Customer' }}</div>
+              <div class="text-[11px] text-slate-400">{{ b.projectName }}</div>
+            </td>
+            <td class="py-3 px-4 text-slate-700">
+              {{ getInvoiceSalesperson(b) }}
+            </td>
+            <td class="py-3 px-4 text-right font-bold text-slate-900">
+              ৳ {{ b.totalAmount | number:'1.2-2' }}
+            </td>
+            <td class="py-3 px-4 text-right font-medium text-emerald-600">
+              ৳ {{ (b.totalCashIn || 0) | number:'1.2-2' }}
+            </td>
+            <td class="py-3 px-4 text-right font-bold" [class.text-rose-600]="(b.customerDue || 0) > 0"
+              [class.text-slate-400]="!(b.customerDue || 0)">
+              ৳ {{ (b.customerDue || 0) | number:'1.2-2' }}
+            </td>
+            <td class="py-3 px-4 text-right font-medium text-rose-500">
+              ৳ {{ (b.directCosts || 0) | number:'1.2-2' }}
+            </td>
+            <td class="py-3 px-4 text-right font-medium text-slate-700">
+              ৳ {{ (b.vendorTotalPurchase || 0) | number:'1.2-2' }}
+            </td>
+            <td class="py-3 px-4 text-right font-bold" [class.text-emerald-600]="(b.billProfit || 0) >= 0"
+              [class.text-rose-600]="(b.billProfit || 0) < 0">
+              ৳ {{ (b.billProfit || 0) | number:'1.2-2' }}
+            </td>
+            <td class="py-3 px-4 text-center">
+              @let ps = getPayState(b.totalAmount, b.totalCashIn);
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                [class.bg-emerald-50]="ps.cls === 'paid'" [class.text-emerald-700]="ps.cls === 'paid'"
+                [class.bg-amber-50]="ps.cls === 'part'" [class.text-amber-700]="ps.cls === 'part'"
+                [class.bg-rose-50]="ps.cls === 'due'" [class.text-rose-700]="ps.cls === 'due'">
+                {{ ps.label }}
+              </span>
+            </td>
+            <td class="py-3 px-4 text-center whitespace-nowrap">
+              <div class="inline-flex items-center gap-1.5">
+                <button (click)="viewInvoice(b)"
+                  class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-bold hover:bg-indigo-100 transition inline-flex items-center gap-1"
+                  title="View & Print Official Invoice">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                  </svg>
+                  <span>Invoice</span>
+                </button>
+                <button (click)="deleteBill(b._id)"
+                  class="p-1 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                  title="Delete Bill">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+          } @empty {
+          <tr>
+            <td colspan="12" class="py-12 text-center text-slate-400">
+              No sales bills found. Click "+ New Master Bill" to create one.
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  }
+
+  <!-- TAB 2: QUOTATIONS -->
+  @if (activeTab() === 'quotations') {
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+    <div class="p-4 border-b border-slate-100 flex items-center justify-between">
       <div>
-        <div class="flex items-center gap-2 text-xs font-semibold text-slate-400 mb-1">
-          <span>Interior Operations</span>
-          <span>/</span>
-          <span class="text-indigo-600 font-bold">Sales & Invoicing</span>
-        </div>
-        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Sales Bills & Quotations</h1>
-        <p class="text-sm text-slate-500 mt-1">
-          Master billing engine, client quotations, direct job costs, and official printable tax invoices.
-        </p>
-      </div>
-
-      <div class="flex flex-wrap items-center gap-2">
-        <!-- Tab Switcher -->
-        <div class="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner">
-          <button
-            (click)="activeTab.set('bills')"
-            [class.bg-white]="activeTab() === 'bills'"
-            [class.shadow-xs]="activeTab() === 'bills'"
-            [class.font-bold]="activeTab() === 'bills'"
-            [class.text-indigo-600]="activeTab() === 'bills'"
-            class="px-4 py-2 text-xs rounded-lg transition text-slate-600 font-medium"
-          >
-            Bills & Invoices ({{ bills().length }})
-          </button>
-          <button
-            (click)="activeTab.set('quotations')"
-            [class.bg-white]="activeTab() === 'quotations'"
-            [class.shadow-xs]="activeTab() === 'quotations'"
-            [class.font-bold]="activeTab() === 'quotations'"
-            [class.text-indigo-600]="activeTab() === 'quotations'"
-            class="px-4 py-2 text-xs rounded-lg transition text-slate-600 font-medium"
-          >
-            Quotations ({{ quotations().length }})
-          </button>
-        </div>
-
-        @if (activeTab() === 'bills') {
-          <button
-            (click)="openNewBill()"
-            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 shadow-xs transition"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            <span>+ New Master Bill</span>
-          </button>
-        } @else {
-          <button
-            (click)="openNewQuotationModal()"
-            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 shadow-xs transition"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            <span>+ New Quotation</span>
-          </button>
-        }
+        <h3 class="text-sm font-bold text-slate-900">Client Quotations & Estimates</h3>
+        <p class="text-xs text-slate-400">Create, send, and convert proposals directly into confirmed sales bills.</p>
       </div>
     </div>
 
-    <!-- KPI Grid (Matching Menu_RBAC Design) -->
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total Sales</span>
-        <span class="text-lg font-bold text-emerald-600 mt-1 block">৳ {{ totalSales() | number:'1.0-0' }}</span>
-        <span class="text-[10px] text-slate-400">All confirmed bills</span>
-      </div>
-
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total Received</span>
-        <span class="text-lg font-bold text-emerald-700 mt-1 block">৳ {{ totalReceived() | number:'1.0-0' }}</span>
-        <span class="text-[10px] text-slate-400">Advance & payments</span>
-      </div>
-
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Outstanding Due</span>
-        <span class="text-lg font-bold text-rose-600 mt-1 block">৳ {{ totalDue() | number:'1.0-0' }}</span>
-        <span class="text-[10px] text-slate-400">Client receivables</span>
-      </div>
-
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total Invoices</span>
-        <span class="text-lg font-bold text-slate-900 mt-1 block">{{ bills().length }}</span>
-        <span class="text-[10px] text-slate-400">Master bill records</span>
-      </div>
-
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Paid Invoices</span>
-        <span class="text-lg font-bold text-emerald-600 mt-1 block">{{ paidInvoicesCount() }}</span>
-        <span class="text-[10px] text-emerald-600 font-semibold">Fully cleared</span>
-      </div>
-
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Overdue / Unpaid</span>
-        <span class="text-lg font-bold text-amber-600 mt-1 block">{{ overdueInvoicesCount() }}</span>
-        <span class="text-[10px] text-amber-600 font-semibold">Pending collection</span>
-      </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs text-slate-600">
+        <thead class="bg-slate-50 text-[11px] uppercase font-bold text-slate-400 border-b border-slate-100">
+          <tr>
+            <th class="py-3 px-4">Quotation No.</th>
+            <th class="py-3 px-4">Date</th>
+            <th class="py-3 px-4">Valid Until</th>
+            <th class="py-3 px-4">Client & Project</th>
+            <th class="py-3 px-4">Subject</th>
+            <th class="py-3 px-4 text-right">Quoted Amount</th>
+            <th class="py-3 px-4 text-center">Status</th>
+            <th class="py-3 px-4 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          @for (q of quotations(); track q._id) {
+          <tr class="hover:bg-slate-50/60 transition">
+            <td class="py-3 px-4 font-bold text-blue-600 whitespace-nowrap">
+              {{ q.quotationNumber }}
+            </td>
+            <td class="py-3 px-4 text-slate-500 whitespace-nowrap">
+              {{ q.date | date:'dd/MM/yyyy' }}
+            </td>
+            <td class="py-3 px-4 text-slate-500 whitespace-nowrap">
+              {{ q.validUntil ? (q.validUntil | date:'dd/MM/yyyy') : '30 Days' }}
+            </td>
+            <td class="py-3 px-4">
+              <div class="font-semibold text-slate-900">{{ q.customerId?.name || 'Customer' }}</div>
+              <div class="text-[11px] text-slate-400">{{ q.projectName }}</div>
+            </td>
+            <td class="py-3 px-4 text-slate-700 max-w-xs truncate">
+              {{ q.subject || '—' }}
+            </td>
+            <td class="py-3 px-4 text-right font-bold text-slate-900">
+              ৳ {{ q.totalAmount | number:'1.2-2' }}
+            </td>
+            <td class="py-3 px-4 text-center">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold" [class.bg-slate-100]="q.status === 'Draft'"
+                [class.text-slate-600]="q.status === 'Draft'" [class.bg-blue-50]="q.status === 'Sent'"
+                [class.text-blue-700]="q.status === 'Sent'" [class.bg-emerald-50]="q.status === 'Approved'"
+                [class.text-emerald-700]="q.status === 'Approved'"
+                [class.bg-purple-50]="q.status === 'Converted to Bill'"
+                [class.text-purple-700]="q.status === 'Converted to Bill'">
+                {{ q.status }}
+              </span>
+            </td>
+            <td class="py-3 px-4 text-center whitespace-nowrap">
+              <div class="inline-flex items-center gap-2">
+                @if (q.status !== 'Converted to Bill') {
+                <button (click)="convertQuotation(q)"
+                  class="px-2.5 py-1 rounded-lg bg-emerald-600 text-white font-bold text-[11px] hover:bg-emerald-700 transition shadow-2xs">
+                  Convert to Bill &rarr;
+                </button>
+                } @else {
+                <span class="text-[11px] text-purple-600 font-bold">Converted</span>
+                }
+              </div>
+            </td>
+          </tr>
+          } @empty {
+          <tr>
+            <td colspan="8" class="py-12 text-center text-slate-400">
+              No quotations created yet. Click "+ New Quotation" to prepare a proposal.
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
     </div>
-
-    <!-- TAB 1: BILLS & INVOICES -->
-    @if (activeTab() === 'bills') {
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-        <!-- Search Toolbar -->
-        <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div class="relative flex-1 max-w-md">
-            <input
-              type="text"
-              [(ngModel)]="searchQuery"
-              (keyup.enter)="loadBills()"
-              placeholder="Search bill number, customer, project, salesperson..."
-              class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-2.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <select
-              [(ngModel)]="paymentFilter"
-              (change)="loadBills()"
-              class="px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700"
-            >
-              <option value="">All Payment States</option>
-              <option value="not_paid">Due / Not Paid</option>
-              <option value="partial">Partial Payment</option>
-              <option value="paid">Fully Paid</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Table -->
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs text-slate-600">
-            <thead class="bg-slate-50 text-[11px] uppercase font-bold text-slate-400 border-b border-slate-100">
-              <tr>
-                <th class="py-3 px-4">Date</th>
-                <th class="py-3 px-4">Bill No.</th>
-                <th class="py-3 px-4">Client & Project</th>
-                <th class="py-3 px-4">Salesperson</th>
-                <th class="py-3 px-4 text-right">Total Sale</th>
-                <th class="py-3 px-4 text-right">Received</th>
-                <th class="py-3 px-4 text-right">Due</th>
-                <th class="py-3 px-4 text-right">Direct Costs</th>
-                <th class="py-3 px-4 text-right">Purchases</th>
-                <th class="py-3 px-4 text-right">Bill Profit</th>
-                <th class="py-3 px-4 text-center">Status</th>
-                <th class="py-3 px-4 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-              @for (b of bills(); track b._id) {
-                <tr class="hover:bg-slate-50/60 transition">
-                  <td class="py-3 px-4 whitespace-nowrap text-slate-500">
-                    {{ b.date | date:'dd/MM/yyyy' }}
-                  </td>
-                  <td class="py-3 px-4 font-bold text-slate-900 whitespace-nowrap">
-                    {{ b.billNumber }}
-                  </td>
-                  <td class="py-3 px-4">
-                    <div class="font-semibold text-slate-900">{{ b.customerId?.name || 'Customer' }}</div>
-                    <div class="text-[11px] text-slate-400">{{ b.projectName }}</div>
-                  </td>
-                  <td class="py-3 px-4 text-slate-700">
-                    {{ b.salespersonId?.name || 'In-House' }}
-                  </td>
-                  <td class="py-3 px-4 text-right font-bold text-slate-900">
-                    ৳ {{ b.totalAmount | number:'1.2-2' }}
-                  </td>
-                  <td class="py-3 px-4 text-right font-medium text-emerald-600">
-                    ৳ {{ (b.totalCashIn || 0) | number:'1.2-2' }}
-                  </td>
-                  <td class="py-3 px-4 text-right font-bold" [class.text-rose-600]="(b.customerDue || 0) > 0" [class.text-slate-400]="!(b.customerDue || 0)">
-                    ৳ {{ (b.customerDue || 0) | number:'1.2-2' }}
-                  </td>
-                  <td class="py-3 px-4 text-right font-medium text-rose-500">
-                    ৳ {{ (b.directCosts || 0) | number:'1.2-2' }}
-                  </td>
-                  <td class="py-3 px-4 text-right font-medium text-slate-700">
-                    ৳ {{ (b.vendorTotalPurchase || 0) | number:'1.2-2' }}
-                  </td>
-                  <td
-                    class="py-3 px-4 text-right font-bold"
-                    [class.text-emerald-600]="(b.billProfit || 0) >= 0"
-                    [class.text-rose-600]="(b.billProfit || 0) < 0"
-                  >
-                    ৳ {{ (b.billProfit || 0) | number:'1.2-2' }}
-                  </td>
-                  <td class="py-3 px-4 text-center">
-                    @let ps = getPayState(b.totalAmount, b.totalCashIn);
-                    <span
-                      class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
-                      [class.bg-emerald-50]="ps.cls === 'paid'"
-                      [class.text-emerald-700]="ps.cls === 'paid'"
-                      [class.bg-amber-50]="ps.cls === 'part'"
-                      [class.text-amber-700]="ps.cls === 'part'"
-                      [class.bg-rose-50]="ps.cls === 'due'"
-                      [class.text-rose-700]="ps.cls === 'due'"
-                    >
-                      {{ ps.label }}
-                    </span>
-                  </td>
-                  <td class="py-3 px-4 text-center whitespace-nowrap">
-                    <div class="inline-flex items-center gap-1.5">
-                      <button
-                        (click)="viewInvoice(b)"
-                        class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-bold hover:bg-indigo-100 transition inline-flex items-center gap-1"
-                        title="View & Print Official Invoice"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                        </svg>
-                        <span>Invoice</span>
-                      </button>
-                      <button
-                        (click)="deleteBill(b._id)"
-                        class="p-1 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 transition"
-                        title="Delete Bill"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="12" class="py-12 text-center text-slate-400">
-                    No sales bills found. Click "+ New Master Bill" to create one.
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </div>
-    }
-
-    <!-- TAB 2: QUOTATIONS -->
-    @if (activeTab() === 'quotations') {
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-        <div class="p-4 border-b border-slate-100 flex items-center justify-between">
-          <div>
-            <h3 class="text-sm font-bold text-slate-900">Client Quotations & Estimates</h3>
-            <p class="text-xs text-slate-400">Create, send, and convert proposals directly into confirmed sales bills.</p>
-          </div>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs text-slate-600">
-            <thead class="bg-slate-50 text-[11px] uppercase font-bold text-slate-400 border-b border-slate-100">
-              <tr>
-                <th class="py-3 px-4">Quotation No.</th>
-                <th class="py-3 px-4">Date</th>
-                <th class="py-3 px-4">Valid Until</th>
-                <th class="py-3 px-4">Client & Project</th>
-                <th class="py-3 px-4">Subject</th>
-                <th class="py-3 px-4 text-right">Quoted Amount</th>
-                <th class="py-3 px-4 text-center">Status</th>
-                <th class="py-3 px-4 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-              @for (q of quotations(); track q._id) {
-                <tr class="hover:bg-slate-50/60 transition">
-                  <td class="py-3 px-4 font-bold text-blue-600 whitespace-nowrap">
-                    {{ q.quotationNumber }}
-                  </td>
-                  <td class="py-3 px-4 text-slate-500 whitespace-nowrap">
-                    {{ q.date | date:'dd/MM/yyyy' }}
-                  </td>
-                  <td class="py-3 px-4 text-slate-500 whitespace-nowrap">
-                    {{ q.validUntil ? (q.validUntil | date:'dd/MM/yyyy') : '30 Days' }}
-                  </td>
-                  <td class="py-3 px-4">
-                    <div class="font-semibold text-slate-900">{{ q.customerId?.name || 'Customer' }}</div>
-                    <div class="text-[11px] text-slate-400">{{ q.projectName }}</div>
-                  </td>
-                  <td class="py-3 px-4 text-slate-700 max-w-xs truncate">
-                    {{ q.subject || '—' }}
-                  </td>
-                  <td class="py-3 px-4 text-right font-bold text-slate-900">
-                    ৳ {{ q.totalAmount | number:'1.2-2' }}
-                  </td>
-                  <td class="py-3 px-4 text-center">
-                    <span
-                      class="px-2.5 py-0.5 rounded-full text-[10px] font-bold"
-                      [class.bg-slate-100]="q.status === 'Draft'"
-                      [class.text-slate-600]="q.status === 'Draft'"
-                      [class.bg-blue-50]="q.status === 'Sent'"
-                      [class.text-blue-700]="q.status === 'Sent'"
-                      [class.bg-emerald-50]="q.status === 'Approved'"
-                      [class.text-emerald-700]="q.status === 'Approved'"
-                      [class.bg-purple-50]="q.status === 'Converted to Bill'"
-                      [class.text-purple-700]="q.status === 'Converted to Bill'"
-                    >
-                      {{ q.status }}
-                    </span>
-                  </td>
-                  <td class="py-3 px-4 text-center whitespace-nowrap">
-                    <div class="inline-flex items-center gap-2">
-                      @if (q.status !== 'Converted to Bill') {
-                        <button
-                          (click)="convertQuotation(q)"
-                          class="px-2.5 py-1 rounded-lg bg-emerald-600 text-white font-bold text-[11px] hover:bg-emerald-700 transition shadow-2xs"
-                        >
-                          Convert to Bill &rarr;
-                        </button>
-                      } @else {
-                        <span class="text-[11px] text-purple-600 font-bold">Converted</span>
-                      }
-                    </div>
-                  </td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="8" class="py-12 text-center text-slate-400">
-                    No quotations created yet. Click "+ New Quotation" to prepare a proposal.
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </div>
-    }
+  </div>
+  }
   }
 
   <!-- =========================================================================
        MODE: VIEW INVOICE PAPER (PRINT & PDF DOWNLOAD)
        ========================================================================= -->
   @if (mode() === 'view' && activeInvoice()) {
-    <div class="space-y-4 animate-in fade-in duration-150">
-      <!-- Header & Breadcrumbs matching screenshot -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div class="flex items-center gap-2 text-xs font-semibold text-slate-400 mb-1">
-            <button
-              type="button"
-              (click)="backToList()"
-              class="inline-flex items-center gap-1 text-slate-500 hover:text-slate-800 transition"
-            >
-              <span>&lsaquo;</span>
-              <span>Back</span>
-            </button>
-            <span>/</span>
-            <span>Sales & Invoice</span>
-            <span>/</span>
-            <span class="text-slate-700">{{ activeInvoice().billNumber }}</span>
-          </div>
-          <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Sales & Invoice / {{ activeInvoice().billNumber }}</h1>
+  <div class="space-y-4 animate-in fade-in duration-150">
+    <!-- Header & Breadcrumbs matching screenshot -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 text-xs font-semibold text-slate-400 mb-1">
+          <button type="button" (click)="backToList()"
+            class="inline-flex items-center gap-1 text-slate-500 hover:text-slate-800 transition">
+            <span>&lsaquo;</span>
+            <span>Back</span>
+          </button>
+          <span>/</span>
+          <span>Sales & Invoice</span>
+          <span>/</span>
+          <span class="text-slate-700">{{ activeInvoice().billNumber }}</span>
         </div>
-
-        <div class="flex items-center gap-2">
-          <button
-            type="button"
-            (click)="backToList()"
-            class="px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50 shadow-2xs transition"
-          >
-            Back to list
-          </button>
-          <button
-            type="button"
-            (click)="printInvoice()"
-            class="px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50 shadow-2xs inline-flex items-center gap-1.5 transition"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-            </svg>
-            <span>Print / Save PDF</span>
-          </button>
-          <button
-            type="button"
-            (click)="editBill(activeInvoice())"
-            class="px-4 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-2xs inline-flex items-center gap-1.5 transition"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-            <span>Edit</span>
-          </button>
-        </div>
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Sales & Invoice / {{ activeInvoice().billNumber }}
+        </h1>
       </div>
 
-      <!-- The Authentic Invoice Paper (.inv-paper) matching screenshot -->
-      <div class="overflow-x-auto flex justify-center py-4 inv-wrap">
-        <div class="inv-paper relative bg-white text-slate-900 shadow-2xl overflow-hidden flex flex-col" style="width: 794px; min-height: 1123px; padding: 34px 38px 0; font-family: 'Inter', sans-serif;">
-          <!-- Geometric Facet Accents -->
-          <div class="ip-corner tl absolute top-0 left-0" style="width: 210px; height: 44px; background: #2b4aa8; clip-path: polygon(0 0, 100% 0, 88% 100%, 0 100%);">
-            <div style="position: absolute; left: 190px; top: 12px; width: 96px; height: 22px; background: #e8812b; clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%);"></div>
-          </div>
-          <div class="ip-corner tr absolute top-0 right-0" style="width: 70px; height: 46px; background: #2b4aa8; clip-path: polygon(0 0, 100% 0, 100% 100%);"></div>
-          <div class="ip-corner bl absolute left-0" style="bottom: 40px; width: 60px; height: 60px; background: #2b4aa8; clip-path: polygon(0 0, 0 100%, 100% 100%);"></div>
+      <div class="flex items-center gap-2">
+        <button type="button" (click)="backToList()"
+          class="px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50 shadow-2xs transition">
+          Back to list
+        </button>
+        <button type="button" (click)="printInvoice()"
+          class="px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50 shadow-2xs inline-flex items-center gap-1.5 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-slate-500" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+          </svg>
+          <span>Print / Save PDF</span>
+        </button>
+        <button type="button" (click)="editBill(activeInvoice())"
+          class="px-4 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-2xs inline-flex items-center gap-1.5 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          </svg>
+          <span>Edit</span>
+        </button>
+      </div>
+    </div>
 
-          <!-- Dynamic Payment Stamp -->
-          @let ps = getPayState(activeInvoice().totalAmount, activeInvoice().totalCashIn);
+    <!-- The Authentic Invoice Paper (.inv-paper) matching screenshot -->
+    <div class="overflow-x-auto flex justify-center py-4 inv-wrap">
+      <div class="inv-paper relative bg-white text-slate-900 shadow-2xl overflow-hidden flex flex-col"
+        style="width: 794px; min-height: 1123px; padding: 34px 38px 0; font-family: 'Inter', sans-serif;">
+        <!-- Geometric Facet Accents -->
+        <div class="ip-corner tl absolute top-0 left-0"
+          style="width: 210px; height: 44px; background: #2b4aa8; clip-path: polygon(0 0, 100% 0, 88% 100%, 0 100%);">
           <div
-            class="ip-stamp absolute font-extrabold uppercase tracking-widest pointer-events-none select-none"
-            [class.text-emerald-600]="ps.cls === 'paid'"
-            [class.border-emerald-600]="ps.cls === 'paid'"
-            [class.text-amber-500]="ps.cls === 'part'"
-            [class.border-amber-500]="ps.cls === 'part'"
-            [class.text-rose-600]="ps.cls === 'due'"
-            [class.border-rose-600]="ps.cls === 'due'"
-            style="top: 145px; right: 44px; z-index: 10; transform: rotate(-12deg); border: 3px solid; border-radius: 8px; padding: 4px 14px; font-size: 20px; opacity: 0.85;"
-          >
-            {{ ps.label }}
+            style="position: absolute; left: 190px; top: 12px; width: 96px; height: 22px; background: #e8812b; clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%);">
+          </div>
+        </div>
+        <div class="ip-corner tr absolute top-0 right-0"
+          style="width: 70px; height: 46px; background: #2b4aa8; clip-path: polygon(0 0, 100% 0, 100% 100%);"></div>
+        <div class="ip-corner bl absolute left-0"
+          style="bottom: 40px; width: 60px; height: 60px; background: #2b4aa8; clip-path: polygon(0 0, 0 100%, 100% 100%);">
+        </div>
+
+        <!-- Dynamic Payment Stamp -->
+        @let ps = getPayState(activeInvoice().totalAmount, activeInvoice().totalCashIn);
+        <div class="ip-stamp absolute font-extrabold uppercase tracking-widest pointer-events-none select-none"
+          [class.text-emerald-600]="ps.cls === 'paid'" [class.border-emerald-600]="ps.cls === 'paid'"
+          [class.text-amber-500]="ps.cls === 'part'" [class.border-amber-500]="ps.cls === 'part'"
+          [class.text-rose-600]="ps.cls === 'due'" [class.border-rose-600]="ps.cls === 'due'"
+          style="top: 145px; right: 44px; z-index: 10; transform: rotate(-12deg); border: 3px solid; border-radius: 8px; padding: 4px 14px; font-size: 20px; opacity: 0.85;">
+          {{ ps.label }}
+        </div>
+
+        <!-- Brand Header with Logo -->
+        <div class="relative z-1 flex items-center justify-center gap-3 mt-1">
+          <img
+            src="https://interiorcounsel.com/wp-content/uploads/2025/08/515437069_122096031092965832_8744308631215311737_n-removebg-preview-1.png"
+            class="h-16 w-auto object-contain" alt="Logo" onerror="this.style.display='none'" />
+          <div class="text-left">
+            <div class="font-extrabold text-3xl tracking-wide leading-none"
+              style="font-family: Georgia, serif; color: #2b4aa8;">
+              INTERIOR <span style="color: #e8812b;">COUNSEL</span>
+            </div>
+            <div class="font-bold text-[10px] tracking-widest mt-1 text-slate-800 uppercase"
+              style="font-family: Georgia, serif;">
+              YOUR DREAM SPACE, OUR EXPERT COUNSEL
+            </div>
+            <div class="text-[11px] text-slate-600 mt-0.5">
+              www.interiorcounsel.com &nbsp;&nbsp; interiorcounsel&#64;gmail.com
+            </div>
+          </div>
+        </div>
+
+        <!-- Meta BIN & NO -->
+        <div class="relative z-1 flex justify-between items-baseline mt-4 text-xs font-semibold text-slate-800 pr-5">
+          <div>BIN : 007448216-0101</div>
+          <div class="text-sm">
+            NO : <b class="text-base text-slate-950 font-bold ml-1 font-mono">{{ activeInvoice().billNumber }}</b>
+          </div>
+        </div>
+
+        <!-- Title Badge -->
+        <div class="text-center mt-1">
+          <span class="inline-block bg-slate-950 text-white font-bold text-xs px-4 py-1.5 rounded-md tracking-wider">
+            BILL/INVOICE
+          </span>
+        </div>
+
+        <!-- Customer & Date Meta Grid -->
+        <div class="relative z-1 flex gap-6 mt-3 text-xs text-slate-800 font-medium">
+          <div class="flex-[1.9] space-y-1.5">
+            <div class="flex items-end gap-2">
+              <span class="font-bold whitespace-nowrap text-slate-900">NAME :</span>
+              <span class="flex-1 border-b border-dotted border-slate-600 font-bold px-1 text-slate-950">
+                {{ getInvoiceCustomerName(activeInvoice()) || 'Valued Client' }}
+              </span>
+            </div>
+            <div class="flex items-end gap-2">
+              <span class="font-bold whitespace-nowrap text-slate-900">ADDRESS :</span>
+              <span class="flex-1 border-b border-dotted border-slate-600 font-semibold px-1 text-slate-800">
+                {{ getInvoiceCustomerAddress(activeInvoice()) || '—' }}
+              </span>
+            </div>
           </div>
 
-          <!-- Brand Header with Logo -->
-          <div class="relative z-1 flex items-center justify-center gap-3 mt-1">
+          <div class="flex-1 space-y-1.5">
+            <div class="flex items-end gap-2">
+              <span class="font-bold whitespace-nowrap text-slate-900">DATE :</span>
+              <span class="flex-1 border-b border-dotted border-slate-600 font-semibold px-1 text-slate-900">
+                {{ activeInvoice().date | date:'dd/MM/yyyy' }}
+              </span>
+            </div>
+            <div class="flex items-end gap-2">
+              <span class="font-bold whitespace-nowrap text-slate-900">REF :</span>
+              <span class="flex-1 border-b border-dotted border-slate-600 font-semibold px-1 text-slate-800">
+                {{ getInvoiceSalesperson(activeInvoice()) }}
+              </span>
+            </div>
+            <div class="flex items-end gap-2">
+              <span class="font-bold whitespace-nowrap text-slate-900">MOB :</span>
+              <span class="flex-1 border-b border-dotted border-slate-600 font-semibold px-1 text-slate-800">
+                {{ getInvoiceCustomerMobile(activeInvoice()) || '—' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Items Table with 16 rows + Centered Watermark -->
+        <div class="relative z-1 mt-4 border border-slate-800 border-b-0 overflow-hidden">
+          <!-- Center Watermark Logo -->
+          <div class="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none select-none z-0">
             <img
               src="https://interiorcounsel.com/wp-content/uploads/2025/08/515437069_122096031092965832_8744308631215311737_n-removebg-preview-1.png"
-              class="h-16 w-auto object-contain"
-              alt="Logo"
-              onerror="this.style.display='none'"
-            />
-            <div class="text-left">
-              <div class="font-extrabold text-3xl tracking-wide leading-none" style="font-family: Georgia, serif; color: #2b4aa8;">
-                INTERIOR <span style="color: #e8812b;">COUNSEL</span>
-              </div>
-              <div class="font-bold text-[10px] tracking-widest mt-1 text-slate-800 uppercase" style="font-family: Georgia, serif;">
-                YOUR DREAM SPACE, OUR EXPERT COUNSEL
-              </div>
-              <div class="text-[11px] text-slate-600 mt-0.5">
-                www.interiorcounsel.com &nbsp;&nbsp; interiorcounsel&#64;gmail.com
-              </div>
-            </div>
+              class="w-72 object-contain" alt="" onerror="this.style.display='none'" />
           </div>
 
-          <!-- Meta BIN & NO -->
-          <div class="relative z-1 flex justify-between items-baseline mt-4 text-xs font-semibold text-slate-800 pr-5">
-            <div>BIN : 007448216-0101</div>
-            <div class="text-sm">
-              NO : <b class="text-base text-slate-950 font-bold ml-1 font-mono">{{ activeInvoice().billNumber }}</b>
-            </div>
-          </div>
-
-          <!-- Title Badge -->
-          <div class="text-center mt-1">
-            <span class="inline-block bg-slate-950 text-white font-bold text-xs px-4 py-1.5 rounded-md tracking-wider">
-              BILL/INVOICE
-            </span>
-          </div>
-
-          <!-- Customer & Date Meta Grid -->
-          <div class="relative z-1 flex gap-6 mt-3 text-xs text-slate-800 font-medium">
-            <div class="flex-[1.9] space-y-1.5">
-              <div class="flex items-end gap-2">
-                <span class="font-bold whitespace-nowrap text-slate-900">NAME :</span>
-                <span class="flex-1 border-b border-dotted border-slate-600 font-semibold px-1 text-slate-900">
-                  {{ activeInvoice().customerName || activeInvoice().customerId?.name || 'Valued Client' }}
-                </span>
-              </div>
-              <div class="flex items-end gap-2">
-                <span class="font-bold whitespace-nowrap text-slate-900">ADDRESS :</span>
-                <span class="flex-1 border-b border-dotted border-slate-600 font-semibold px-1 text-slate-700">
-                  {{ activeInvoice().siteLocation || activeInvoice().address || activeInvoice().customerId?.address || '' }}
-                </span>
-              </div>
-            </div>
-
-            <div class="flex-1 space-y-1.5">
-              <div class="flex items-end gap-2">
-                <span class="font-bold whitespace-nowrap text-slate-900">DATE :</span>
-                <span class="flex-1 border-b border-dotted border-slate-600 font-semibold px-1 text-slate-900">
-                  {{ activeInvoice().date | date:'dd/MM/yyyy' }}
-                </span>
-              </div>
-              <div class="flex items-end gap-2">
-                <span class="font-bold whitespace-nowrap text-slate-900">REF :</span>
-                <span class="flex-1 border-b border-dotted border-slate-600 font-semibold px-1 text-slate-700">
-                  {{ activeInvoice().salesperson || activeInvoice().salespersonId?.name || '' }}
-                </span>
-              </div>
-              <div class="flex items-end gap-2">
-                <span class="font-bold whitespace-nowrap text-slate-900">MOB :</span>
-                <span class="flex-1 border-b border-dotted border-slate-600 font-semibold px-1 text-slate-700">
-                  {{ activeInvoice().customerMobile || activeInvoice().customerId?.phone || '' }}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Items Table with 16 rows + Centered Watermark -->
-          <div class="relative z-1 mt-4 border border-slate-800 border-b-0 overflow-hidden">
-            <!-- Center Watermark Logo -->
-            <div class="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none select-none z-0">
-              <img
-                src="https://interiorcounsel.com/wp-content/uploads/2025/08/515437069_122096031092965832_8744308631215311737_n-removebg-preview-1.png"
-                class="w-72 object-contain"
-                alt=""
-                onerror="this.style.display='none'"
-              />
-            </div>
-
-            <table class="w-full text-xs border-collapse relative z-1" style="table-layout: fixed;">
-              <colgroup>
-                <col style="width: 8%;">
-                <col style="width: 46%;">
-                <col style="width: 14%;">
-                <col style="width: 14%;">
-                <col style="width: 18%;">
-              </colgroup>
-              <thead>
-                <tr class="bg-[#cfd1d4] border-b border-slate-800 text-slate-900 font-bold text-center">
-                  <th class="py-2 border-r border-slate-800">SL.NO.</th>
-                  <th class="py-2 border-r border-slate-800">PARTICULARS</th>
-                  <th class="py-2 border-r border-slate-800">QUANTITY</th>
-                  <th class="py-2 border-r border-slate-800">RATE</th>
-                  <th class="py-2">AMOUNT</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-300">
-                @for (row of getInvoiceTableRows(activeInvoice()); track $index) {
-                  <tr [class.bg-slate-100]="row.isShaded" class="h-8">
-                    <td class="text-center border-r border-slate-800 py-1">{{ row.sl }}</td>
-                    <td class="px-2 font-medium border-r border-slate-800 py-1 truncate">{{ row.description }}</td>
-                    <td class="text-center border-r border-slate-800 py-1">{{ row.quantity !== null ? row.quantity : '' }}</td>
-                    <td class="text-right px-2 border-r border-slate-800 py-1">{{ row.unitPrice !== null ? (row.unitPrice | number:'1.2-2') : '' }}</td>
-                    <td class="text-right px-2 font-semibold py-1">{{ row.amount !== null ? (row.amount | number:'1.2-2') : '' }}</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Bottom Words & Totals Box -->
-          <div class="relative z-1 flex justify-between items-start border-t border-slate-800">
-            <div class="flex-1 pt-4 pr-4">
-              <div class="flex items-baseline gap-2 text-xs">
-                <span class="font-bold whitespace-nowrap text-slate-900">Taka In Word:</span>
-                <span class="font-semibold text-slate-800 italic">
-                  {{ getTakaWords(activeInvoice().totalAmount) }} Taka Only
-                </span>
-              </div>
-              <div class="text-[11px] text-slate-500 italic mt-3 font-medium">
-                Note: Purchases are non-returnable and non-exchangeable.
-              </div>
-            </div>
-
-            <!-- Official Totals Box matching screenshot -->
-            <div class="w-56 border-l border-b border-slate-800 text-xs font-semibold divide-y divide-slate-800">
-              @if (activeInvoice().discountAmount > 0) {
-                <div class="flex justify-between px-3 py-1.5 bg-white">
-                  <span class="text-slate-600">SUBTOTAL</span>
-                  <span>{{ (activeInvoice().totalAmount + activeInvoice().discountAmount) | number:'1.2-2' }}</span>
-                </div>
-                <div class="flex justify-between px-3 py-1.5 text-rose-600 bg-white">
-                  <span class="text-slate-600">DISCOUNT</span>
-                  <span>- {{ activeInvoice().discountAmount | number:'1.2-2' }}</span>
-                </div>
-              }
-              <div class="flex justify-between px-3 py-2 bg-white">
-                <span class="text-slate-600 font-bold">TOTAL</span>
-                <span class="font-bold text-slate-900">{{ activeInvoice().totalAmount | number:'1.2-2' }}</span>
-              </div>
-              <div class="flex justify-between px-3 py-2 bg-white">
-                <span class="text-slate-600 font-bold">PAYMENT</span>
-                <span class="font-bold text-slate-900">{{ (activeInvoice().totalCashIn || 0) | number:'1.2-2' }}</span>
-              </div>
-              <div class="flex justify-between px-3 py-2 bg-white">
-                <span class="text-slate-600 font-bold">DUE</span>
-                <span class="font-bold text-slate-900">{{ ((activeInvoice().customerDue !== undefined ? activeInvoice().customerDue : (activeInvoice().totalAmount - (activeInvoice().totalCashIn || 0)))) | number:'1.2-2' }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Signatures & Address Footer -->
-          <div class="relative z-1 flex items-end gap-8 mt-auto pt-16 pb-3 px-4">
-            <div class="w-40 border-t border-slate-700 text-center text-[11px] italic text-slate-700 pt-1 font-medium">
-              Receiver's Signature
-            </div>
-            <div class="w-40 border-t border-slate-700 text-center text-[11px] italic text-slate-700 pt-1 font-medium">
-              Authorized Signature
-            </div>
-            <div class="ml-auto text-right text-[11px] leading-tight text-slate-600 font-medium">
-              10 New Airport Road, Amtoli<br />
-              Mohakhali, Dhaka-1213
-            </div>
-          </div>
-
-          <!-- Blue Contact Bar matching screenshot -->
-          <div class="relative z-1 -mx-10 bg-[#2b4aa8] text-white text-xs flex justify-around py-2.5 px-6 mt-1 font-medium tracking-wide">
-            <span>880 1805-226860</span>
-            <span>880 1805-226861-70</span>
-            <span>facebook.com/interiorcounsel</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Supplier Information Read-Only Card (Matching Menu_RBAC supInfoRO) -->
-      @if (hasSupplierInfo(activeInvoice())) {
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs max-w-[794px] mx-auto overflow-hidden mt-6">
-          <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-            <h3 class="text-sm font-bold text-slate-900">Supplier Information</h3>
-            <span class="text-[11px] font-semibold text-slate-500">Procurement & Material Suppliers</span>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr class="bg-slate-50/80 text-[10px] uppercase font-bold text-slate-400 border-b border-slate-100">
-                  <th class="py-2.5 px-3 w-16">SERIAL</th>
-                  <th class="py-2.5 px-3">PARTICULARS</th>
-                  <th class="py-2.5 px-3 w-16 text-center">QTY</th>
-                  <th class="py-2.5 px-3 w-20 text-right">RATE</th>
-                  <th class="py-2.5 px-3 w-24 text-right">AMOUNT</th>
-                  <th class="py-2.5 px-3">SUPPLIER NAME</th>
-                  <th class="py-2.5 px-3">SUPPLIER INVOICE NO.</th>
-                  <th class="py-2.5 px-3 w-28 text-right">PURCHASE AMOUNT</th>
-                  <th class="py-2.5 px-3 w-24 text-center">DISCOUNT</th>
-                  <th class="py-2.5 px-3 w-28 text-right">NET PURCHASE</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100">
-                @for (it of activeInvoice().items; track $index) {
-                  @if (it.supplierName || it.purchaseAmount > 0) {
-                    <tr class="hover:bg-slate-50/50">
-                      <td class="py-2.5 px-3 text-slate-500 font-semibold">{{ $index + 1 }}</td>
-                      <td class="py-2.5 px-3 font-semibold text-slate-800">{{ it.description || '—' }}</td>
-                      <td class="py-2.5 px-3 text-center text-slate-700">{{ it.quantity }}</td>
-                      <td class="py-2.5 px-3 text-right text-slate-600">{{ it.unitPrice | number:'1.2-2' }}</td>
-                      <td class="py-2.5 px-3 text-right font-semibold text-slate-900">{{ it.amount | number:'1.2-2' }}</td>
-                      <td class="py-2.5 px-3 font-semibold text-indigo-700">{{ it.supplierName || '—' }}</td>
-                      <td class="py-2.5 px-3 text-slate-600">{{ it.supplierInvoiceNo || '—' }}</td>
-                      <td class="py-2.5 px-3 text-right font-medium text-slate-900">৳ {{ (it.purchaseAmount || 0) | number:'1.2-2' }}</td>
-                      <td class="py-2.5 px-3 text-center">
-                        @if (it.supplierDiscount > 0) {
-                          <span class="text-emerald-600 font-bold">- ৳ {{ it.supplierDiscount | number:'1.2-2' }}</span>
-                        } @else {
-                          <span class="text-slate-400">—</span>
-                        }
-                      </td>
-                      <td class="py-2.5 px-3 text-right font-bold text-slate-900">
-                        ৳ {{ ((it.purchaseAmount || 0) - (it.supplierDiscount || 0)) | number:'1.2-2' }}
-                      </td>
-                    </tr>
-                  }
-                }
-              </tbody>
-              <tfoot class="bg-slate-50/80 font-bold border-t border-slate-100 text-xs">
-                <tr>
-                  <td colspan="7" class="py-2.5 px-3 text-right text-slate-600">Total Purchase:</td>
-                  <td class="py-2.5 px-3 text-right text-slate-900">৳ {{ getSupplierTotalPurchase(activeInvoice()) | number:'1.2-2' }}</td>
-                  <td class="py-2.5 px-3 text-center text-emerald-600">- ৳ {{ getSupplierTotalDiscount(activeInvoice()) | number:'1.2-2' }}</td>
-                  <td class="py-2.5 px-3 text-right text-slate-900">৳ {{ getSupplierTotalNet(activeInvoice()) | number:'1.2-2' }}</td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        </div>
-      }
-
-      <!-- Payments Received Card matching screenshot -->
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-xs max-w-[794px] mx-auto overflow-hidden mt-6">
-        <div class="px-6 py-4 border-b border-slate-100">
-          <h3 class="text-sm font-bold text-slate-900">Payments Received</h3>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs border-collapse">
+          <table class="w-full text-xs border-collapse relative z-1" style="table-layout: fixed;">
+            <colgroup>
+              <col style="width: 8%;">
+              <col style="width: 46%;">
+              <col style="width: 14%;">
+              <col style="width: 14%;">
+              <col style="width: 18%;">
+            </colgroup>
             <thead>
-              <tr class="bg-slate-50/80 text-[11px] uppercase font-bold text-slate-400 border-b border-slate-100">
-                <th class="py-3 px-4">PAYMENT DATE</th>
-                <th class="py-3 px-4 text-right">AMOUNT</th>
-                <th class="py-3 px-4">JOURNAL</th>
-                <th class="py-3 px-4">RECEIVED BY</th>
-                <th class="py-3 px-4">NOTE</th>
+              <tr class="bg-[#cfd1d4] border-b border-slate-800 text-slate-900 font-bold text-center">
+                <th class="py-2 border-r border-slate-800">SL.NO.</th>
+                <th class="py-2 border-r border-slate-800">PARTICULARS</th>
+                <th class="py-2 border-r border-slate-800">QUANTITY</th>
+                <th class="py-2 border-r border-slate-800">RATE</th>
+                <th class="py-2">AMOUNT</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
-              @if (getPaymentsForActiveInvoice().length === 0) {
-                <tr>
-                  <td colspan="5" class="py-6 text-center text-slate-400 italic">No payment received yet</td>
-                </tr>
-              } @else {
-                @for (p of getPaymentsForActiveInvoice(); track p._id || p.date) {
-                  <tr>
-                    <td class="py-3 px-4">{{ p.date | date:'dd/MM/yyyy' }}</td>
-                    <td class="py-3 px-4 text-right font-bold text-slate-900">{{ p.amount | number:'1.2-2' }}</td>
-                    <td class="py-3 px-4">{{ p.journal || 'Cash' }}</td>
-                    <td class="py-3 px-4">{{ p.receivedBy || 'Admin' }}</td>
-                    <td class="py-3 px-4 text-slate-500">{{ p.note || '—' }}</td>
-                  </tr>
-                }
+            <tbody class="divide-y divide-slate-300">
+              @for (row of getInvoiceTableRows(activeInvoice()); track $index) {
+              <tr [class.bg-slate-100]="row.isShaded" class="h-8">
+                <td class="text-center border-r border-slate-800 py-1">{{ row.sl }}</td>
+                <td class="px-2 font-medium border-r border-slate-800 py-1 truncate">{{ row.description }}</td>
+                <td class="text-center border-r border-slate-800 py-1">{{ row.quantity !== null ? row.quantity : '' }}
+                </td>
+                <td class="text-right px-2 border-r border-slate-800 py-1">{{ row.unitPrice !== null ? (row.unitPrice |
+                  number:'1.2-2') : '' }}</td>
+                <td class="text-right px-2 font-semibold py-1">{{ row.amount !== null ? (row.amount | number:'1.2-2') :
+                  '' }}</td>
+              </tr>
               }
             </tbody>
           </table>
         </div>
 
-        <!-- Summary KPI Boxes matching screenshot -->
-        <div class="p-6 space-y-3 bg-slate-50/50 border-t border-slate-100">
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div class="bg-white p-3.5 rounded-xl border border-slate-200">
-              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Bill Total</span>
-              <span class="text-base font-black text-slate-900">{{ activeInvoice().totalAmount | number:'1.2-2' }}</span>
+        <!-- Bottom Words & Totals Box -->
+        <div class="relative z-1 flex justify-between items-start border-t border-slate-800">
+          <div class="flex-1 pt-4 pr-4">
+            <div class="flex items-baseline gap-2 text-xs">
+              <span class="font-bold whitespace-nowrap text-slate-900">Taka In Word:</span>
+              <span class="font-semibold text-slate-800 italic">
+                {{ getTakaWords(activeInvoice().totalAmount) }} Taka Only
+              </span>
             </div>
-            <div class="bg-white p-3.5 rounded-xl border border-slate-200">
-              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Received</span>
-              <span class="text-base font-black text-slate-900">{{ (activeInvoice().totalCashIn || 0) | number:'1.2-2' }}</span>
-            </div>
-            <div class="bg-white p-3.5 rounded-xl border border-slate-200">
-              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Balance Due</span>
-              <span class="text-base font-black text-rose-600">{{ ((activeInvoice().customerDue !== undefined ? activeInvoice().customerDue : (activeInvoice().totalAmount - (activeInvoice().totalCashIn || 0)))) | number:'1.2-2' }}</span>
+            <div class="text-[11px] text-slate-500 italic mt-3 font-medium">
+              Note: Purchases are non-returnable and non-exchangeable.
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div class="bg-white p-3.5 rounded-xl border border-slate-200">
-              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Purchase from this Bill</span>
-              <span class="text-base font-black text-slate-900">{{ (activeInvoice().totalPurchase || 0) | number:'1.2-2' }}</span>
+          <!-- Official Totals Box matching screenshot -->
+          <div class="w-56 border-l border-b border-slate-800 text-xs font-semibold divide-y divide-slate-800">
+            @if (activeInvoice().discountAmount > 0) {
+            <div class="flex justify-between px-3 py-1.5 bg-white">
+              <span class="text-slate-600">SUBTOTAL</span>
+              <span>{{ (activeInvoice().totalAmount + activeInvoice().discountAmount) | number:'1.2-2' }}</span>
             </div>
-            <div class="bg-white p-3.5 rounded-xl border border-slate-200">
-              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Profit from this Bill</span>
-              <span class="text-base font-black text-emerald-600">{{ ((activeInvoice().billProfit !== undefined ? activeInvoice().billProfit : (activeInvoice().totalAmount - (activeInvoice().totalPurchase || 0)))) | number:'1.2-2' }}</span>
+            <div class="flex justify-between px-3 py-1.5 text-rose-600 bg-white">
+              <span class="text-slate-600">DISCOUNT</span>
+              <span>- {{ activeInvoice().discountAmount | number:'1.2-2' }}</span>
+            </div>
+            }
+            <div class="flex justify-between px-3 py-2 bg-white">
+              <span class="text-slate-600 font-bold">TOTAL</span>
+              <span class="font-bold text-slate-900">{{ activeInvoice().totalAmount | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex justify-between px-3 py-2 bg-white">
+              <span class="text-slate-600 font-bold">PAYMENT</span>
+              <span class="font-bold text-slate-900">{{ (activeInvoice().totalCashIn || 0) | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex justify-between px-3 py-2 bg-white">
+              <span class="text-slate-600 font-bold">DUE</span>
+              <span class="font-bold text-slate-900">{{ ((activeInvoice().customerDue !== undefined ?
+                activeInvoice().customerDue : (activeInvoice().totalAmount - (activeInvoice().totalCashIn || 0)))) |
+                number:'1.2-2' }}</span>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Bottom Toolbar matching screenshot -->
-      <div class="flex items-center justify-between max-w-[794px] mx-auto pt-4 pb-8">
-        <button
-          type="button"
-          (click)="backToList()"
-          class="px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50 shadow-2xs inline-flex items-center gap-1.5 transition"
-        >
-          <span>&lsaquo;</span> Back
-        </button>
+        <!-- Signatures & Address Footer -->
+        <div class="relative z-1 flex items-end gap-8 mt-auto pt-16 pb-3 px-4">
+          <div class="w-40 border-t border-slate-700 text-center text-[11px] italic text-slate-700 pt-1 font-medium">
+            Receiver's Signature
+          </div>
+          <div class="w-40 border-t border-slate-700 text-center text-[11px] italic text-slate-700 pt-1 font-medium">
+            Authorized Signature
+          </div>
+          <div class="ml-auto text-right text-[11px] leading-tight text-slate-600 font-medium">
+            10 New Airport Road, Amtoli<br />
+            Mohakhali, Dhaka-1213
+          </div>
+        </div>
 
-        <div class="flex items-center gap-2">
-          <button
-            type="button"
-            (click)="printInvoice()"
-            class="px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50 shadow-2xs inline-flex items-center gap-1.5 transition"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-            </svg>
-            <span>Print</span>
-          </button>
-          <button
-            type="button"
-            (click)="editBill(activeInvoice())"
-            class="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-xs inline-flex items-center gap-1.5 transition"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-            <span>Edit</span>
-          </button>
+        <!-- Blue Contact Bar matching screenshot -->
+        <div
+          class="relative z-1 -mx-10 bg-[#2b4aa8] text-white text-xs flex justify-around py-2.5 px-6 mt-1 font-medium tracking-wide">
+          <span>880 1805-226860</span>
+          <span>880 1805-226861-70</span>
+          <span>facebook.com/interiorcounsel</span>
         </div>
       </div>
     </div>
+
+    <!-- Supplier Information Read-Only Card (Matching Menu_RBAC supInfoRO) -->
+    @if (hasSupplierInfo(activeInvoice())) {
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-xs max-w-[794px] mx-auto overflow-hidden mt-6">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h3 class="text-sm font-bold text-slate-900">Supplier Information</h3>
+        <span class="text-[11px] font-semibold text-slate-500">Procurement & Material Suppliers</span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="bg-slate-50/80 text-[10px] uppercase font-bold text-slate-400 border-b border-slate-100">
+              <th class="py-2.5 px-3 w-16">SERIAL</th>
+              <th class="py-2.5 px-3">PARTICULARS</th>
+              <th class="py-2.5 px-3 w-16 text-center">QTY</th>
+              <th class="py-2.5 px-3 w-20 text-right">RATE</th>
+              <th class="py-2.5 px-3 w-24 text-right">AMOUNT</th>
+              <th class="py-2.5 px-3">SUPPLIER NAME</th>
+              <th class="py-2.5 px-3">SUPPLIER INVOICE NO.</th>
+              <th class="py-2.5 px-3 w-28 text-right">PURCHASE AMOUNT</th>
+              <th class="py-2.5 px-3 w-24 text-center">DISCOUNT</th>
+              <th class="py-2.5 px-3 w-28 text-right">NET PURCHASE</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (it of activeInvoice().items; track $index) {
+            @if (it.supplierName || it.purchaseAmount > 0) {
+            <tr class="hover:bg-slate-50/50">
+              <td class="py-2.5 px-3 text-slate-500 font-semibold">{{ $index + 1 }}</td>
+              <td class="py-2.5 px-3 font-semibold text-slate-800">{{ it.description || '—' }}</td>
+              <td class="py-2.5 px-3 text-center text-slate-700">{{ it.quantity }}</td>
+              <td class="py-2.5 px-3 text-right text-slate-600">{{ it.unitPrice | number:'1.2-2' }}</td>
+              <td class="py-2.5 px-3 text-right font-semibold text-slate-900">{{ it.amount | number:'1.2-2' }}</td>
+              <td class="py-2.5 px-3 font-semibold text-indigo-700">{{ it.supplierName || '—' }}</td>
+              <td class="py-2.5 px-3 text-slate-600">{{ it.supplierInvoiceNo || '—' }}</td>
+              <td class="py-2.5 px-3 text-right font-medium text-slate-900">৳ {{ (it.purchaseAmount || 0) |
+                number:'1.2-2' }}</td>
+              <td class="py-2.5 px-3 text-center">
+                @if (it.supplierDiscount > 0) {
+                <span class="text-emerald-600 font-bold">- ৳ {{ it.supplierDiscount | number:'1.2-2' }}</span>
+                } @else {
+                <span class="text-slate-400">—</span>
+                }
+              </td>
+              <td class="py-2.5 px-3 text-right font-bold text-slate-900">
+                ৳ {{ ((it.purchaseAmount || 0) - (it.supplierDiscount || 0)) | number:'1.2-2' }}
+              </td>
+            </tr>
+            }
+            }
+          </tbody>
+          <tfoot class="bg-slate-50/80 font-bold border-t border-slate-100 text-xs">
+            <tr>
+              <td colspan="7" class="py-2.5 px-3 text-right text-slate-600">Total Purchase:</td>
+              <td class="py-2.5 px-3 text-right text-slate-900">৳ {{ getSupplierTotalPurchase(activeInvoice()) |
+                number:'1.2-2' }}</td>
+              <td class="py-2.5 px-3 text-center text-emerald-600">- ৳ {{ getSupplierTotalDiscount(activeInvoice()) |
+                number:'1.2-2' }}</td>
+              <td class="py-2.5 px-3 text-right text-slate-900">৳ {{ getSupplierTotalNet(activeInvoice()) |
+                number:'1.2-2' }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+    }
+
+    <!-- Payments Received Card matching screenshot -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-xs max-w-[794px] mx-auto overflow-hidden mt-6">
+      <div class="px-6 py-4 border-b border-slate-100">
+        <h3 class="text-sm font-bold text-slate-900">Payments Received</h3>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="bg-slate-50/80 text-[11px] uppercase font-bold text-slate-400 border-b border-slate-100">
+              <th class="py-3 px-4">PAYMENT DATE</th>
+              <th class="py-3 px-4 text-right">AMOUNT</th>
+              <th class="py-3 px-4">JOURNAL</th>
+              <th class="py-3 px-4">RECEIVED BY</th>
+              <th class="py-3 px-4">NOTE</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @if (getPaymentsForActiveInvoice().length === 0) {
+            <tr>
+              <td colspan="5" class="py-6 text-center text-slate-400 italic">No payment received yet</td>
+            </tr>
+            } @else {
+            @for (p of getPaymentsForActiveInvoice(); track p._id || p.date) {
+            <tr>
+              <td class="py-3 px-4">{{ p.date | date:'dd/MM/yyyy' }}</td>
+              <td class="py-3 px-4 text-right font-bold text-slate-900">{{ p.amount | number:'1.2-2' }}</td>
+              <td class="py-3 px-4">{{ p.journal || 'Cash' }}</td>
+              <td class="py-3 px-4">{{ p.receivedBy || 'Admin' }}</td>
+              <td class="py-3 px-4 text-slate-500">{{ p.note || '—' }}</td>
+            </tr>
+            }
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Summary KPI Boxes matching screenshot -->
+      <div class="p-6 space-y-3 bg-slate-50/50 border-t border-slate-100">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="bg-white p-3.5 rounded-xl border border-slate-200">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Bill Total</span>
+            <span class="text-base font-black text-slate-900">{{ activeInvoice().totalAmount | number:'1.2-2' }}</span>
+          </div>
+          <div class="bg-white p-3.5 rounded-xl border border-slate-200">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Received</span>
+            <span class="text-base font-black text-slate-900">{{ (activeInvoice().totalCashIn || 0) | number:'1.2-2'
+              }}</span>
+          </div>
+          <div class="bg-white p-3.5 rounded-xl border border-slate-200">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Balance Due</span>
+            <span class="text-base font-black text-rose-600">{{ ((activeInvoice().customerDue !== undefined ?
+              activeInvoice().customerDue : (activeInvoice().totalAmount - (activeInvoice().totalCashIn || 0)))) |
+              number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="bg-white p-3.5 rounded-xl border border-slate-200">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Purchase from this
+              Bill</span>
+            <span class="text-base font-black text-slate-900">{{ (activeInvoice().totalPurchase || 0) | number:'1.2-2'
+              }}</span>
+          </div>
+          <div class="bg-white p-3.5 rounded-xl border border-slate-200">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Profit from this
+              Bill</span>
+            <span class="text-base font-black text-emerald-600">{{ ((activeInvoice().billProfit !== undefined ?
+              activeInvoice().billProfit : (activeInvoice().totalAmount - (activeInvoice().totalPurchase || 0)))) |
+              number:'1.2-2' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Toolbar matching screenshot -->
+    <div class="flex items-center justify-between max-w-[794px] mx-auto pt-4 pb-8">
+      <button type="button" (click)="backToList()"
+        class="px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50 shadow-2xs inline-flex items-center gap-1.5 transition">
+        <span>&lsaquo;</span> Back
+      </button>
+
+      <div class="flex items-center gap-2">
+        <button type="button" (click)="printInvoice()"
+          class="px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50 shadow-2xs inline-flex items-center gap-1.5 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-slate-500" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+          </svg>
+          <span>Print</span>
+        </button>
+        <button type="button" (click)="editBill(activeInvoice())"
+          class="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-xs inline-flex items-center gap-1.5 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          </svg>
+          <span>Edit</span>
+        </button>
+      </div>
+    </div>
+  </div>
   }
 
   <!-- =========================================================================
        NEW QUOTATION MODAL
        ========================================================================= -->
   @if (showQuotationModal()) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 overflow-y-auto">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col p-6 animate-in zoom-in-95 duration-150">
-        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 overflow-y-auto">
+    <div
+      class="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col p-6 animate-in zoom-in-95 duration-150">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div>
+          <h3 class="text-lg font-bold text-slate-900">New Client Quotation</h3>
+          <p class="text-xs text-slate-500">Prepare formal architectural and interior pricing proposal.</p>
+        </div>
+        <button (click)="showQuotationModal.set(false)"
+          class="text-slate-400 hover:text-slate-600 text-lg font-bold">✕</button>
+      </div>
+
+      <div class="overflow-y-auto flex-1 my-4 space-y-4 pr-1">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
-            <h3 class="text-lg font-bold text-slate-900">New Client Quotation</h3>
-            <p class="text-xs text-slate-500">Prepare formal architectural and interior pricing proposal.</p>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Select Client *</label>
+            <select [(ngModel)]="formQuotation.customerId"
+              class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+              @for (c of clients(); track c._id) {
+              <option [value]="c._id">{{ c.name }} ({{ c.company || 'Individual' }})</option>
+              }
+            </select>
           </div>
-          <button (click)="showQuotationModal.set(false)" class="text-slate-400 hover:text-slate-600 text-lg font-bold">✕</button>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Project Name *</label>
+            <input type="text" [(ngModel)]="formQuotation.projectName" placeholder="e.g. Modern Duplex Renovation"
+              class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Valid Until Date</label>
+            <input type="date" [(ngModel)]="formQuotation.validUntil"
+              class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
         </div>
 
-        <div class="overflow-y-auto flex-1 my-4 space-y-4 pr-1">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Select Client *</label>
-              <select
-                [(ngModel)]="formQuotation.customerId"
-                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                @for (c of clients(); track c._id) {
-                  <option [value]="c._id">{{ c.name }} ({{ c.company || 'Individual' }})</option>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Subject / Scope Summary</label>
+          <input type="text" [(ngModel)]="formQuotation.subject"
+            placeholder="e.g. Architectural Renovation & Interior Fit-out Proposal"
+            class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+
+        <!-- Quotation Items Table -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-900 uppercase tracking-wide">Quoted Items</span>
+            <button type="button" (click)="addQuotationItem()"
+              class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs font-semibold hover:bg-blue-100 transition">
+              + Add Item
+            </button>
+          </div>
+
+          <div class="border border-slate-200 rounded-xl overflow-hidden">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-[10px] uppercase font-bold text-slate-400 border-b border-slate-200">
+                <tr>
+                  <th class="py-2 px-3">Description</th>
+                  <th class="py-2 px-3 w-20">Unit</th>
+                  <th class="py-2 px-3 w-24">Qty</th>
+                  <th class="py-2 px-3 w-28">Rate (৳)</th>
+                  <th class="py-2 px-3 w-32 text-right">Amount (৳)</th>
+                  <th class="py-2 px-3 w-12"></th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                @for (it of formQuotation.items; track $index) {
+                <tr>
+                  <td class="p-2">
+                    <input type="text" [(ngModel)]="it.description" placeholder="Item description..."
+                      class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs" />
+                  </td>
+                  <td class="p-2">
+                    <input type="text" [(ngModel)]="it.unit" placeholder="sft"
+                      class="w-full px-2 py-1.5 rounded-lg border border-slate-200 text-xs text-center" />
+                  </td>
+                  <td class="p-2">
+                    <input type="number" [(ngModel)]="it.quantity" (ngModelChange)="calcQuotationItem(it)" min="0.01"
+                      class="w-full px-2 py-1.5 rounded-lg border border-slate-200 text-xs text-center" />
+                  </td>
+                  <td class="p-2">
+                    <input type="number" [(ngModel)]="it.unitPrice" (ngModelChange)="calcQuotationItem(it)" min="0"
+                      class="w-full px-2 py-1.5 rounded-lg border border-slate-200 text-xs text-right" />
+                  </td>
+                  <td class="p-2 text-right font-bold text-slate-900">
+                    {{ it.amount | number:'1.2-2' }}
+                  </td>
+                  <td class="p-2 text-center">
+                    <button type="button" (click)="removeQuotationItem($index)"
+                      class="text-rose-400 hover:text-rose-600 font-bold">
+                      ✕
+                    </button>
+                  </td>
+                </tr>
                 }
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Project Name *</label>
-              <input
-                type="text"
-                [(ngModel)]="formQuotation.projectName"
-                placeholder="e.g. Modern Duplex Renovation"
-                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Valid Until Date</label>
-              <input
-                type="date"
-                [(ngModel)]="formQuotation.validUntil"
-                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Subject / Scope Summary</label>
-            <input
-              type="text"
-              [(ngModel)]="formQuotation.subject"
-              placeholder="e.g. Architectural Renovation & Interior Fit-out Proposal"
-              class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <!-- Quotation Items Table -->
-          <div class="space-y-2">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-slate-900 uppercase tracking-wide">Quoted Items</span>
-              <button
-                type="button"
-                (click)="addQuotationItem()"
-                class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs font-semibold hover:bg-blue-100 transition"
-              >
-                + Add Item
-              </button>
-            </div>
-
-            <div class="border border-slate-200 rounded-xl overflow-hidden">
-              <table class="w-full text-left text-xs">
-                <thead class="bg-slate-50 text-[10px] uppercase font-bold text-slate-400 border-b border-slate-200">
-                  <tr>
-                    <th class="py-2 px-3">Description</th>
-                    <th class="py-2 px-3 w-20">Unit</th>
-                    <th class="py-2 px-3 w-24">Qty</th>
-                    <th class="py-2 px-3 w-28">Rate (৳)</th>
-                    <th class="py-2 px-3 w-32 text-right">Amount (৳)</th>
-                    <th class="py-2 px-3 w-12"></th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                  @for (it of formQuotation.items; track $index) {
-                    <tr>
-                      <td class="p-2">
-                        <input
-                          type="text"
-                          [(ngModel)]="it.description"
-                          placeholder="Item description..."
-                          class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs"
-                        />
-                      </td>
-                      <td class="p-2">
-                        <input
-                          type="text"
-                          [(ngModel)]="it.unit"
-                          placeholder="sft"
-                          class="w-full px-2 py-1.5 rounded-lg border border-slate-200 text-xs text-center"
-                        />
-                      </td>
-                      <td class="p-2">
-                        <input
-                          type="number"
-                          [(ngModel)]="it.quantity"
-                          (ngModelChange)="calcQuotationItem(it)"
-                          min="0.01"
-                          class="w-full px-2 py-1.5 rounded-lg border border-slate-200 text-xs text-center"
-                        />
-                      </td>
-                      <td class="p-2">
-                        <input
-                          type="number"
-                          [(ngModel)]="it.unitPrice"
-                          (ngModelChange)="calcQuotationItem(it)"
-                          min="0"
-                          class="w-full px-2 py-1.5 rounded-lg border border-slate-200 text-xs text-right"
-                        />
-                      </td>
-                      <td class="p-2 text-right font-bold text-slate-900">
-                        {{ it.amount | number:'1.2-2' }}
-                      </td>
-                      <td class="p-2 text-center">
-                        <button
-                          type="button"
-                          (click)="removeQuotationItem($index)"
-                          class="text-rose-400 hover:text-rose-600 font-bold"
-                        >
-                          ✕
-                        </button>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Terms & Conditions -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Terms & Conditions</label>
-              <textarea
-                [(ngModel)]="formQuotation.termsAndConditions"
-                rows="3"
-                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs"
-              ></textarea>
-            </div>
-
-            <!-- Quotation Totals Preview -->
-            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-center space-y-1 text-xs">
-              <div class="flex justify-between text-slate-600">
-                <span>Subtotal:</span>
-                <span>৳ {{ quotationSubtotal | number:'1.2-2' }}</span>
-              </div>
-              <div class="flex justify-between text-rose-600">
-                <span>Discount:</span>
-                <span>- ৳ {{ quotationDiscountAmount | number:'1.2-2' }}</span>
-              </div>
-              <div class="flex justify-between font-bold text-sm text-slate-900 pt-2 border-t border-slate-200">
-                <span>Quotation Grand Total:</span>
-                <span>৳ {{ quotationGrandTotal | number:'1.2-2' }}</span>
-              </div>
-            </div>
+              </tbody>
+            </table>
           </div>
         </div>
 
-        <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
-          <button
-            type="button"
-            (click)="showQuotationModal.set(false)"
-            class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            (click)="submitQuotation()"
-            class="px-4 py-2 rounded-xl bg-blue-600 text-xs font-semibold text-white hover:bg-blue-700 shadow-xs"
-          >
-            Save Quotation
-          </button>
+        <!-- Terms & Conditions -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Terms & Conditions</label>
+            <textarea [(ngModel)]="formQuotation.termsAndConditions" rows="3"
+              class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs"></textarea>
+          </div>
+
+          <!-- Quotation Totals Preview -->
+          <div
+            class="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-center space-y-1 text-xs">
+            <div class="flex justify-between text-slate-600">
+              <span>Subtotal:</span>
+              <span>৳ {{ quotationSubtotal | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex justify-between text-rose-600">
+              <span>Discount:</span>
+              <span>- ৳ {{ quotationDiscountAmount | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex justify-between font-bold text-sm text-slate-900 pt-2 border-t border-slate-200">
+              <span>Quotation Grand Total:</span>
+              <span>৳ {{ quotationGrandTotal | number:'1.2-2' }}</span>
+            </div>
+          </div>
         </div>
       </div>
+
+      <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
+        <button type="button" (click)="showQuotationModal.set(false)"
+          class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50">
+          Cancel
+        </button>
+        <button type="button" (click)="submitQuotation()"
+          class="px-4 py-2 rounded-xl bg-blue-600 text-xs font-semibold text-white hover:bg-blue-700 shadow-xs">
+          Save Quotation
+        </button>
+      </div>
     </div>
+  </div>
   }
 
   <!-- Bill Form Settings Modal (Configure - Matching Menu_RBAC openBillCfg) -->
   @if (showConfigModal()) {
-    <div class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-      <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-150 border border-slate-200">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h3 class="text-base font-bold text-slate-900">Bill Form Settings</h3>
-          <button
-            type="button"
-            (click)="showConfigModal.set(false)"
-            class="text-slate-400 hover:text-slate-600 text-lg leading-none"
-          >
-            &times;
-          </button>
-        </div>
+  <div class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div
+      class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-150 border border-slate-200">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-base font-bold text-slate-900">Bill Form Settings</h3>
+        <button type="button" (click)="showConfigModal.set(false)"
+          class="text-slate-400 hover:text-slate-600 text-lg leading-none">
+          &times;
+        </button>
+      </div>
 
-        <div class="space-y-3 text-xs">
-          <label class="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 cursor-pointer border border-slate-100 transition">
-            <input
-              type="checkbox"
-              [(ngModel)]="billConfig.allowNewSales"
-              class="mt-0.5 rounded text-blue-600 focus:ring-blue-500"
-            />
-            <div>
-              <span class="font-bold text-slate-800">Allow creating new Salesperson from the bill form</span>
-              <p class="text-[11px] text-slate-500 mt-0.5">When the typed name is not found, a "Create" option appears in the dropdown.</p>
-            </div>
-          </label>
+      <div class="space-y-3 text-xs">
+        <label
+          class="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 cursor-pointer border border-slate-100 transition">
+          <input type="checkbox" [(ngModel)]="billConfig.allowNewSales"
+            class="mt-0.5 rounded text-blue-600 focus:ring-blue-500" />
+          <div>
+            <span class="font-bold text-slate-800">Allow creating new Salesperson from the bill form</span>
+            <p class="text-[11px] text-slate-500 mt-0.5">When the typed name is not found, a "Create" option appears in
+              the dropdown.</p>
+          </div>
+        </label>
 
-          <label class="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 cursor-pointer border border-slate-100 transition">
-            <input
-              type="checkbox"
-              [(ngModel)]="billConfig.allowNewCust"
-              class="mt-0.5 rounded text-blue-600 focus:ring-blue-500"
-            />
-            <div>
-              <span class="font-bold text-slate-800">Allow creating new Customer from the bill form</span>
-              <p class="text-[11px] text-slate-500 mt-0.5">New customers are saved with their mobile & address when the bill is saved/posted.</p>
-            </div>
-          </label>
+        <label
+          class="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 cursor-pointer border border-slate-100 transition">
+          <input type="checkbox" [(ngModel)]="billConfig.allowNewCust"
+            class="mt-0.5 rounded text-blue-600 focus:ring-blue-500" />
+          <div>
+            <span class="font-bold text-slate-800">Allow creating new Customer from the bill form</span>
+            <p class="text-[11px] text-slate-500 mt-0.5">New customers are saved with their mobile & address when the
+              bill is saved/posted.</p>
+          </div>
+        </label>
 
-          <label class="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 cursor-pointer border border-slate-100 transition">
-            <input
-              type="checkbox"
-              [(ngModel)]="billConfig.allowNewProd"
-              class="mt-0.5 rounded text-blue-600 focus:ring-blue-500"
-            />
-            <div>
-              <span class="font-bold text-slate-800">Allow creating new Products from the bill form</span>
-              <p class="text-[11px] text-slate-500 mt-0.5">When the typed product is not found, a "Create" option appears in the dropdown.</p>
-            </div>
-          </label>
+        <label
+          class="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 cursor-pointer border border-slate-100 transition">
+          <input type="checkbox" [(ngModel)]="billConfig.allowNewProd"
+            class="mt-0.5 rounded text-blue-600 focus:ring-blue-500" />
+          <div>
+            <span class="font-bold text-slate-800">Allow creating new Products from the bill form</span>
+            <p class="text-[11px] text-slate-500 mt-0.5">When the typed product is not found, a "Create" option appears
+              in the dropdown.</p>
+          </div>
+        </label>
 
-          <label class="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 cursor-pointer border border-slate-100 transition">
-            <input
-              type="checkbox"
-              [(ngModel)]="billConfig.includeEmployees"
-              class="mt-0.5 rounded text-blue-600 focus:ring-blue-500"
-            />
-            <div>
-              <span class="font-bold text-slate-800">Also list Sales & Marketing employees</span>
-              <p class="text-[11px] text-slate-500 mt-0.5">Adds employees from HR department to the salesperson dropdown list.</p>
-            </div>
-          </label>
-        </div>
+        <label
+          class="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 cursor-pointer border border-slate-100 transition">
+          <input type="checkbox" [(ngModel)]="billConfig.includeEmployees"
+            class="mt-0.5 rounded text-blue-600 focus:ring-blue-500" />
+          <div>
+            <span class="font-bold text-slate-800">Also list Sales & Marketing employees</span>
+            <p class="text-[11px] text-slate-500 mt-0.5">Adds employees from HR department to the salesperson dropdown
+              list.</p>
+          </div>
+        </label>
+      </div>
 
-        <div class="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
-          <button
-            type="button"
-            (click)="showConfigModal.set(false)"
-            class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            (click)="saveBillConfig()"
-            class="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-xs transition"
-          >
-            Save Settings
-          </button>
-        </div>
+      <div class="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
+        <button type="button" (click)="showConfigModal.set(false)"
+          class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition">
+          Cancel
+        </button>
+        <button type="button" (click)="saveBillConfig()"
+          class="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-xs transition">
+          Save Settings
+        </button>
       </div>
     </div>
+  </div>
   }
 </div>

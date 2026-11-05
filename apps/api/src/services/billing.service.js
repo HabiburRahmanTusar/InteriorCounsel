@@ -122,7 +122,7 @@ exports.listBills = async ({ search, customerId, salespersonId, paymentState, st
   const skip = (Number(page) - 1) * Number(limit);
   const [bills, total] = await Promise.all([
     Bill.find(query)
-      .populate('customerId', 'name companyName phone')
+      .populate('customerId', 'name companyName phone address siteAddress billingAddress')
       .populate('salespersonId', 'name employeeId')
       .sort({ date: -1, createdAt: -1 })
       .skip(skip)
@@ -319,9 +319,12 @@ exports.createBill = async (data) => {
     data.customerId = customer._id;
   }
 
-  if (data.customerId && (data.customerMobile || data.address)) {
+  if (data.customerId) {
     const cust = await Customer.findById(data.customerId);
     if (cust) {
+      if (!data.customerName) data.customerName = cust.name || cust.companyName;
+      if (!data.customerMobile) data.customerMobile = cust.phone;
+      if (!data.customerAddress) data.customerAddress = cust.address || cust.siteAddress || cust.billingAddress;
       let changed = false;
       if (data.customerMobile && cust.phone !== data.customerMobile) {
         cust.phone = data.customerMobile;
@@ -391,7 +394,9 @@ exports.createBill = async (data) => {
   await syncBillSuppliers(saved, totals.items);
   await recalculateBillProfit(saved._id);
   await updateCustomerFinancials(saved.customerId);
-  return Bill.findById(saved._id);
+  return Bill.findById(saved._id)
+    .populate('customerId', 'name companyName phone address siteAddress billingAddress')
+    .populate('salespersonId', 'name email employeeId phone');
 };
 
 exports.updateBill = async (id, data) => {
@@ -439,7 +444,9 @@ exports.updateBill = async (id, data) => {
   await syncBillSuppliers(updated, totals.items);
   await recalculateBillProfit(updated._id);
   await updateCustomerFinancials(updated.customerId);
-  return Bill.findById(updated._id);
+  return Bill.findById(updated._id)
+    .populate('customerId', 'name companyName phone address siteAddress billingAddress')
+    .populate('salespersonId', 'name email employeeId phone');
 };
 
 exports.deleteBill = async (id) => {
