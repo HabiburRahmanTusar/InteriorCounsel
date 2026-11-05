@@ -35,6 +35,7 @@ const billSchema = new mongoose.Schema(
     fittingCharge: { type: Number, default: 0, min: 0 },
     salesCommission: { type: Number, default: 0, min: 0 },
     pattyBoxCharge: { type: Number, default: 0, min: 0 },
+    salesReturn: { type: Number, default: 0, min: 0 },
     directCosts: { type: Number, default: 0, min: 0 },
     vendorTotalPurchase: { type: Number, default: 0, min: 0 },
     billProfit: { type: Number, default: 0 }, // totalAmount - (directCosts + vendorTotalPurchase)

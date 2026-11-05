@@ -143,9 +143,15 @@ exports.recordCashIn = async (data, userId) => {
     }
   }
 
+  const mongoose = require('mongoose');
+  const validReceivedBy = data.receivedBy && mongoose.Types.ObjectId.isValid(data.receivedBy) 
+    ? data.receivedBy 
+    : (userId && mongoose.Types.ObjectId.isValid(userId) ? userId : undefined);
+
   const record = new CashIn({
     ...data,
-    receivedBy: userId || data.receivedBy,
+    receivedBy: validReceivedBy,
+    receivedByName: data.receivedByName || data.receivedBy || 'System Admin',
   });
 
   const saved = await record.save();

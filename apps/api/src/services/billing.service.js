@@ -48,12 +48,13 @@ function calculateBillTotals(data) {
 
   const totalAmount = Number((taxableAmount + vatAmount).toFixed(2));
 
-  // Direct Costs per Bill (from Odoo BillProfitBill)
+  // Direct Costs / Sales Expenses per Bill (from Odoo BillProfitBill)
   const transportCharge = Number(data.transportCharge) || 0;
   const fittingCharge = Number(data.fittingCharge) || 0;
   const salesCommission = Number(data.salesCommission) || 0;
   const pattyBoxCharge = Number(data.pattyBoxCharge) || 0;
-  const directCosts = Number((transportCharge + fittingCharge + salesCommission + pattyBoxCharge).toFixed(2));
+  const salesReturn = Number(data.salesReturn) || 0;
+  const directCosts = Number((transportCharge + fittingCharge + salesCommission + pattyBoxCharge + salesReturn).toFixed(2));
 
   return {
     items,
@@ -68,6 +69,7 @@ function calculateBillTotals(data) {
     fittingCharge,
     salesCommission,
     pattyBoxCharge,
+    salesReturn,
     directCosts,
   };
 }
@@ -409,6 +411,7 @@ exports.updateBill = async (id, data) => {
     fittingCharge: data.fittingCharge !== undefined ? data.fittingCharge : existing.fittingCharge,
     salesCommission: data.salesCommission !== undefined ? data.salesCommission : existing.salesCommission,
     pattyBoxCharge: data.pattyBoxCharge !== undefined ? data.pattyBoxCharge : existing.pattyBoxCharge,
+    salesReturn: data.salesReturn !== undefined ? data.salesReturn : existing.salesReturn,
   });
 
   const customerDue = Number((totals.totalAmount - (existing.totalCashIn || 0)).toFixed(2));

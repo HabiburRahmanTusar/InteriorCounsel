@@ -337,3 +337,322 @@ tbody tr {
   }
 }
 
+/* ==========================================================================
+   INTERIOR COUNSEL ERP — DASHBOARD & COMPONENT STYLES
+   ========================================================================== */
+:root {
+  --bg: #eef1f7;
+  --surface: #ffffff;
+  --surface-2: #f6f8fb;
+  --text: #1b2333;
+  --text-muted: #697386;
+  --border: #e8ecf2;
+  --navy-950: #0a1220;
+  --navy-900: #0e1c33;
+  --navy-800: #17294a;
+  --navy-700: #20365f;
+  --blue: #2e5fe8;
+  --blue-600: #2450cc;
+  --blue-50: #eaf0fe;
+  --gold: #d7a13c;
+  --gold-600: #b9862a;
+  --gold-50: #fbf1de;
+  --green: #189a5a;
+  --green-50: #e6f8ee;
+  --red: #e0394a;
+  --red-50: #fdeced;
+  --amber: #e0932e;
+  --amber-50: #fdf1e0;
+  --slate-500: #8a93a6;
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+  --shadow-md: 0 4px 14px rgba(16, 24, 40, 0.08), 0 1px 3px rgba(16, 24, 40, 0.05);
+  --shadow-lg: 0 16px 36px rgba(16, 24, 40, 0.16), 0 4px 12px rgba(16, 24, 40, 0.07);
+  --radius: 16px;
+}
+
+/* Grids & Cards */
+.grid { display: grid; gap: 16px; }
+.g-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.g-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.g-12-2 { grid-template-columns: 2fr 1fr; }
+.g-kpi { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.g-kpi.kpi-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+@media (max-width: 1100px) {
+  .g-12-2 { grid-template-columns: 1fr; }
+  .g-3 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 900px) {
+  .g-kpi.kpi-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 720px) {
+  .g-2, .g-3 { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px) {
+  .g-kpi.kpi-3, .g-kpi { grid-template-columns: 1fr; }
+}
+
+/* Card primitives */
+.ic-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: all 0.2s var(--ease, ease);
+}
+
+.ic-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.ic-card-head h3 {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+}
+
+.ic-card-body {
+  padding: 18px;
+}
+
+/* KPI Card */
+.kpi {
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.kpi .row1 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.kpi .ic {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.kpi .label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.kpi .value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.kpi .delta {
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.kpi .delta.up { color: var(--green); }
+.kpi .delta.down { color: var(--red); }
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border-radius: 999px;
+  line-height: 1.2;
+}
+
+.badge-blue { background: var(--blue-50); color: var(--blue); }
+.badge-green { background: var(--green-50); color: var(--green); }
+.badge-amber { background: var(--amber-50); color: var(--amber); }
+.badge-red { background: var(--red-50); color: var(--red); }
+.badge-gray { background: #f0f2f5; color: var(--slate-500); }
+
+/* Tabs */
+.tabs-header {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+  background: transparent;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+}
+
+.tab-btn:hover {
+  color: var(--text);
+}
+
+.tab-btn.active {
+  color: var(--blue);
+  border-bottom-color: var(--blue);
+}
+
+/* Tables & Stack */
+.table-wrap {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.table-clean {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table-clean th {
+  text-align: left;
+  padding: 11px 14px;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.table-clean td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+.table-clean td.num, .table-clean th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.table-clean tfoot td {
+  padding: 12px 14px;
+  font-weight: 800;
+  background: var(--surface-2);
+  border-top: 2px solid var(--border);
+}
+
+.acc-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* Bank Account Progress Rows */
+.bank-row {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.bank-row:last-child {
+  border-bottom: none;
+}
+
+.bank-row .top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.progress-bar-wrap {
+  height: 7px;
+  background: var(--surface-2);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progress-bar-wrap > div {
+  height: 100%;
+  background: linear-gradient(90deg, var(--blue-600), var(--blue));
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+/* Chart Canvas Wrapper & Legend */
+.cv {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.cv canvas {
+  display: block;
+  width: 100% !important;
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  padding: 5px 0;
+  color: var(--text);
+}
+
+.legend-row .sw {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.legend-row .n {
+  margin-left: auto;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+

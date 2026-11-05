@@ -4,6 +4,8 @@ const CASH_OUT_TYPES = [
   'purchase',          // Vendor material purchase
   'transport',         // Transport & carriage
   'commission',        // Sales / Designer commission
+  'petty_box',         // HPL Carrying / Petty Box
+  'sales_return',      // Sales Return & Adjustments
   'fitting_charge',    // Carpentry & fitting labor
   'showroom_expense',  // Showroom daily supplies
   'operating_expense', // General operational expense

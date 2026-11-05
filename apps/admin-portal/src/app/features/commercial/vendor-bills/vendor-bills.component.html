@@ -157,22 +157,159 @@
           </div>
 
           <div class="sm:col-span-3 bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100">
-            <label class="block text-xs font-bold text-indigo-950 uppercase tracking-wider mb-1">
-              Link to Master Sales Bill (Product Line Mirroring)
-            </label>
-            <select
-              [(ngModel)]="formBill.mainBillId"
-              (ngModelChange)="onMasterBillSelected($event)"
-              class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-            >
-              <option value="">None (Stock Purpose / General Inventory)</option>
-              @for (b of masterBills(); track b._id) {
-                <option [value]="b._id">{{ b.billNumber }} — {{ b.projectName }} (৳{{ b.totalAmount }})</option>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-bold text-indigo-950 uppercase tracking-wider">
+                Link to Master Sales Bill (Product Line Mirroring)
+              </label>
+              @if (selectedMasterBill()) {
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                    Bill #{{ selectedMasterBill()?.billNumber }} Linked
+                  </span>
+                  <button
+                    type="button"
+                    (click)="clearMasterBill()"
+                    class="text-xs font-semibold text-rose-600 hover:text-rose-800 underline ml-1 cursor-pointer"
+                  >
+                    Clear / Change
+                  </button>
+                </div>
               }
-            </select>
-            <p class="text-xs text-indigo-600 mt-1">
-              Selecting a customer bill copies project products. Select which items this vendor supplies; unselected items will be automatically pruned.
-            </p>
+            </div>
+
+            <!-- Bill Number Input & Match Search -->
+            <div class="relative mb-2">
+              <div class="relative">
+                <input
+                  type="text"
+                  [(ngModel)]="billSearch"
+                  (input)="onBillSearchChange()"
+                  placeholder="Enter bill number (e.g. A748, A747)..."
+                  class="w-full pl-9 pr-9 py-2 text-sm rounded-xl border border-indigo-200 bg-white font-mono font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs"
+                />
+                <!-- Search Icon Left -->
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-indigo-500">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <!-- Clear / Status Icon Right -->
+                @if (billSearch) {
+                  <button
+                    type="button"
+                    (click)="clearMasterBill()"
+                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                }
+              </div>
+
+              <!-- Live Search Match Results Popup -->
+              @if (matchingBills().length > 0) {
+                <div class="absolute z-20 left-0 right-0 mt-1 bg-white border border-indigo-200 rounded-xl shadow-xl overflow-hidden divide-y divide-slate-100 max-h-56 overflow-y-auto">
+                  <div class="px-3 py-1.5 bg-indigo-50 text-[10px] font-bold text-indigo-800 uppercase tracking-wider flex items-center justify-between">
+                    <span>Matching Bills (Click to Link):</span>
+                    <span class="text-indigo-500 font-normal">{{ matchingBills().length }} found</span>
+                  </div>
+                  @for (b of matchingBills(); track b._id) {
+                    <button
+                      type="button"
+                      (click)="selectMasterBill(b)"
+                      class="w-full text-left px-3.5 py-2.5 hover:bg-indigo-50/80 transition flex items-center justify-between text-xs cursor-pointer"
+                    >
+                      <div>
+                        <div class="flex items-center gap-2">
+                          <span class="font-bold text-indigo-700 font-mono text-sm">{{ b.billNumber }}</span>
+                          <span class="text-xs font-semibold text-slate-800">{{ b.projectName }}</span>
+                        </div>
+                        <div class="text-[11px] text-slate-500 mt-0.5">
+                          Customer: {{ getCustomerName(b) }} • Sales: {{ getSalespersonName(b) }}
+                        </div>
+                      </div>
+                      <div class="text-right">
+                        <span class="text-[10px] text-slate-400 block uppercase">Bill Total</span>
+                        <span class="font-extrabold text-emerald-600">৳{{ b.totalAmount | number:'1.0-0' }}</span>
+                      </div>
+                    </button>
+                  }
+                </div>
+              }
+
+              <!-- Direct Select Dropdown Helper -->
+              <div class="flex items-center justify-between mt-1 text-xs text-slate-500">
+                <span>Or select from bill list:</span>
+                <select
+                  [ngModel]="formBill.mainBillId"
+                  (ngModelChange)="onMasterBillSelected($event)"
+                  class="text-xs py-1 px-2 border border-slate-200 rounded-lg bg-white text-slate-700 outline-none max-w-[280px] truncate"
+                >
+                  <option value="">-- None (General Stock) --</option>
+                  @for (b of masterBills(); track b._id) {
+                    <option [value]="b._id">{{ b.billNumber }} — {{ b.projectName }} (৳{{ b.totalAmount | number:'1.0-0' }})</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            <!-- Master Bill Info Card: Sales Person Name, Customer, Project, Total -->
+            @if (selectedMasterBill(); as mb) {
+              <div class="mt-3 pt-3 border-t border-indigo-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                <div class="bg-white rounded-xl p-2.5 border border-indigo-100 shadow-xs">
+                  <div class="text-[10px] uppercase font-bold text-indigo-500 flex items-center gap-1 mb-0.5">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    Sales Person
+                  </div>
+                  <div class="text-xs font-bold text-slate-900 truncate">
+                    {{ getSalespersonName(mb) }}
+                  </div>
+                  <div class="text-[10px] text-slate-400">
+                    {{ mb.salespersonId?.employeeId ? 'ID: ' + mb.salespersonId.employeeId : 'Sales Lead' }}
+                  </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-2.5 border border-indigo-100 shadow-xs">
+                  <div class="text-[10px] uppercase font-bold text-indigo-500 flex items-center gap-1 mb-0.5">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                    Customer
+                  </div>
+                  <div class="text-xs font-bold text-slate-900 truncate">
+                    {{ getCustomerName(mb) }}
+                  </div>
+                  <div class="text-[10px] text-slate-400 truncate">
+                    {{ mb.customerId?.phone || 'Commercial Client' }}
+                  </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-2.5 border border-indigo-100 shadow-xs">
+                  <div class="text-[10px] uppercase font-bold text-indigo-500 flex items-center gap-1 mb-0.5">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                    Project
+                  </div>
+                  <div class="text-xs font-bold text-slate-900 truncate">
+                    {{ mb.projectName }}
+                  </div>
+                  <div class="text-[10px] text-slate-400 truncate">
+                    {{ mb.siteLocation || 'Site' }}
+                  </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-2.5 border border-indigo-100 shadow-xs">
+                  <div class="text-[10px] uppercase font-bold text-indigo-500 flex items-center gap-1 mb-0.5">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Bill Total
+                  </div>
+                  <div class="text-xs font-bold text-emerald-600 truncate">
+                    ৳{{ mb.totalAmount | number:'1.2-2' }}
+                  </div>
+                  <div class="text-[10px] text-slate-400">
+                    Bill #{{ mb.billNumber }}
+                  </div>
+                </div>
+              </div>
+            }
           </div>
         </div>
 
