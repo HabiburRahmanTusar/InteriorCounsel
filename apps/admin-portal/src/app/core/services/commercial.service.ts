@@ -31,6 +31,7 @@ export interface Bill {
   fittingCharge: number;
   salesCommission: number;
   pattyBoxCharge: number;
+  salesReturn?: number;
   directCosts: number;
   vendorTotalPurchase: number;
   billProfit: number;
@@ -69,6 +70,7 @@ export interface CashInRecord {
   amount: number;
   paymentMethod: string;
   receivedBy?: any;
+  receivedByName?: string;
   notes?: string;
 }
 

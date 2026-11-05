@@ -1,13 +1,14 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { CommercialService } from '../../../core/services/commercial.service';
 import { EmployeeService } from '../../../core/services/employee.service';
 
 @Component({
   selector: 'wfm-shareholders',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './shareholders.component.html',
 })
 export class ShareholdersComponent implements OnInit {
@@ -23,11 +24,36 @@ export class ShareholdersComponent implements OnInit {
   // Month selector for profit distribution
   selectedMonth: string = new Date().toISOString().slice(0, 7); // 'YYYY-MM'
 
-  // Modals
+  // Modals & UI Toggles
   readonly showCreateModal = signal(false);
   readonly showEditModal = signal(false);
   readonly showLedgerModal = signal(false);
+  readonly showBreakdownDetails = signal(true);
   readonly activeWallet = signal<any | null>(null);
+
+  getSalesExpensesTotal(p: any): number {
+    if (!p) return 0;
+    if (p.salesExpenses?.totalSalesExpenses !== undefined) {
+      return p.salesExpenses.totalSalesExpenses;
+    }
+    return (p.totalPurchases || 0) + (p.directCosts || 0);
+  }
+
+  getProfitBeforeOffice(p: any): number {
+    if (!p) return 0;
+    if (p.profit !== undefined) {
+      return p.profit;
+    }
+    return (p.totalConfirmedSales || 0) - this.getSalesExpensesTotal(p);
+  }
+
+  getOfficeExpensesTotal(p: any): number {
+    if (!p) return 0;
+    if (p.officeExpenses?.totalOfficeExpenses !== undefined) {
+      return p.officeExpenses.totalOfficeExpenses;
+    }
+    return p.operationalExpenses || 0;
+  }
 
   newMode: 'existing' | 'new' = 'new';
   newForm = {

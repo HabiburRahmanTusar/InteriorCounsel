@@ -247,13 +247,51 @@ export class ProjectsComponent implements OnInit {
         if (res && res.data && res.data.length) {
           this.projects.set(res.data);
         } else {
-          // Restore from localStorage or initial
-          const saved = localStorage.getItem('ic_erp_projects');
-          if (saved) {
-            try {
-              this.projects.set(JSON.parse(saved));
-            } catch {}
-          }
+          // If no direct projects, derive real projects from actual bills
+          this.commercialService.getBills().subscribe({
+            next: (bRes) => {
+              const bills = bRes?.data || [];
+              if (bills.length > 0) {
+                const derivedProjects: Project[] = bills.map((b: any, idx: number) => ({
+                  _id: b._id,
+                  projectId: `IC-P-${String(idx + 1).padStart(3, '0')}`,
+                  name: b.projectName || `Project ${b.billNumber} — ${b.customerId?.name || 'Customer'}`,
+                  customer: b.customerId?.name || 'Valued Client',
+                  customerId: b.customerId?._id || b.customerId,
+                  type: 'Interior Fit-out',
+                  manager: b.salespersonId?.name || 'System Admin',
+                  designer: 'Interior Counsel Design Team',
+                  loc: b.siteLocation || 'Dhaka',
+                  budget: b.totalAmount || 0,
+                  spent: b.vendorTotalPurchase || b.directCosts || 0,
+                  received: b.totalCashIn || 0,
+                  progress: b.paymentState === 'paid' ? 100 : b.paymentState === 'partial' ? 65 : 25,
+                  status: b.status === 'Completed' ? 'Completed' : 'In Progress',
+                  priority: 'High',
+                  start: b.date ? new Date(b.date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
+                  expected: new Date(Date.now() + 60 * 86400000).toISOString().slice(0, 10),
+                  notes: b.notes || '',
+                }));
+                this.projects.set(derivedProjects);
+                this.saveProjectsLocal();
+              } else {
+                const saved = localStorage.getItem('ic_erp_projects');
+                if (saved) {
+                  try {
+                    this.projects.set(JSON.parse(saved));
+                  } catch {}
+                }
+              }
+            },
+            error: () => {
+              const saved = localStorage.getItem('ic_erp_projects');
+              if (saved) {
+                try {
+                  this.projects.set(JSON.parse(saved));
+                } catch {}
+              }
+            }
+          });
         }
       },
       error: () => {

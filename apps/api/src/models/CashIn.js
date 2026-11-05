@@ -20,8 +20,12 @@ const cashInSchema = new mongoose.Schema(
     },
     bankName: { type: String, trim: true },
     chequeNumber: { type: String, trim: true },
+    chequeDate: { type: Date },
+    accountNumber: { type: String, trim: true },
+    mfsProvider: { type: String, trim: true },
     transactionRef: { type: String, trim: true },
-    receivedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    receivedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    receivedByName: { type: String, trim: true },
     notes: { type: String, trim: true },
   },
   { timestamps: true }

@@ -5,16 +5,23 @@
       <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Cash Flow & Disbursements</h1>
       <p class="text-sm text-slate-500">Track client cash-in collections, vendor material payouts, showroom expenses, and owner drawings.</p>
     </div>
-    <div class="flex gap-2">
+    <div class="flex flex-wrap gap-2">
       <button
         (click)="openInModal()"
-        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm shadow-sm transition"
+        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm shadow-sm transition cursor-pointer"
       >
         <span>+ Record Cash In</span>
       </button>
       <button
-        (click)="openOutModal()"
-        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-medium text-sm shadow-sm transition"
+        (click)="openOutModal('operating_expense')"
+        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs sm:text-sm shadow-sm transition cursor-pointer"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+        <span>+ Record Office Expense</span>
+      </button>
+      <button
+        (click)="openOutModal('purchase')"
+        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs sm:text-sm shadow-sm transition cursor-pointer"
       >
         <span>- Record Cash Out</span>
       </button>
@@ -95,6 +102,7 @@
               <th class="px-5 py-3.5">Client / Source</th>
               <th class="px-5 py-3.5">Linked Project Bill</th>
               <th class="px-5 py-3.5">Method</th>
+              <th class="px-5 py-3.5">Received By</th>
               <th class="px-5 py-3.5 text-right">Amount</th>
             </tr>
           </thead>
@@ -104,9 +112,18 @@
                 <td class="px-5 py-4 font-semibold text-emerald-600">{{ item.receiptNumber }}</td>
                 <td class="px-5 py-4">{{ item.date | date:'dd MMM yyyy' }}</td>
                 <td class="px-5 py-4 capitalize font-medium">{{ item.type.replace('_', ' ') }}</td>
-                <td class="px-5 py-4">{{ item.customerId?.name || '—' }}</td>
-                <td class="px-5 py-4">{{ item.billId?.billNumber || 'General Payment' }}</td>
-                <td class="px-5 py-4 uppercase text-xs">{{ item.paymentMethod }}</td>
+                <td class="px-5 py-4 font-semibold text-slate-800">{{ item.customerId?.name || '—' }}</td>
+                <td class="px-5 py-4">
+                  @if (item.billId?.billNumber) {
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                      {{ item.billId?.billNumber }}
+                    </span>
+                  } @else {
+                    <span class="text-slate-400 text-xs">General Payment</span>
+                  }
+                </td>
+                <td class="px-5 py-4 uppercase text-xs font-semibold text-slate-700">{{ item.paymentMethod }}</td>
+                <td class="px-5 py-4 text-xs font-medium text-slate-600">{{ item.receivedByName || item.receivedBy?.name || 'System Admin' }}</td>
                 <td class="px-5 py-4 text-right font-bold text-emerald-600">৳{{ item.amount | number:'1.2-2' }}</td>
               </tr>
             }
@@ -157,64 +174,326 @@
   <!-- Cash In Modal -->
   @if (showInModal()) {
     <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-      <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
-        <h2 class="text-lg font-bold text-slate-900">Record Cash In (Receipt)</h2>
-        <div class="space-y-3 text-sm">
+      <div class="bg-white rounded-3xl max-w-xl w-full p-6 space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Receipt Type</label>
-            <select [(ngModel)]="formIn.type" class="w-full p-2.5 rounded-xl border border-slate-200">
-              <option value="customer_payment">Customer Payment / Advance</option>
-              <option value="investment">Owner Investment</option>
-              <option value="patty_return">Petty Cash Return</option>
-              <option value="others">Other Inflow</option>
-            </select>
+            <h2 class="text-lg font-bold text-slate-900">Record Cash In (Receipt)</h2>
+            <p class="text-xs text-slate-500">Record customer payment, link bill, and track payment breakdown</p>
           </div>
-          @if (formIn.type === 'customer_payment') {
-            <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Client</label>
-              @if (clients().length > 0) {
-                <select [(ngModel)]="formIn.customerId" class="w-full p-2.5 rounded-xl border border-slate-200">
-                  @for (c of clients(); track c._id) {
-                    <option [value]="c._id">{{ c.name }} (Due: ৳{{ c.dueBalance }})</option>
-                  }
-                </select>
-              } @else {
-                <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800">
-                  No clients registered yet. Please add a client in Clients Directory.
-                </div>
+          <button (click)="showInModal.set(false)" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition">✕</button>
+        </div>
+
+        <div class="space-y-4 text-sm">
+          <!-- 1. DATE SELECT -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+              Receipt Date <span class="text-rose-500">*</span>
+            </label>
+            <input
+              type="date"
+              [(ngModel)]="formIn.date"
+              class="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 text-sm outline-none transition"
+              required
+            />
+          </div>
+
+          <!-- 2. BILL NUMBER ENTRY & SELECTION -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                Bill Number Entry <span class="text-rose-500">*</span>
+              </label>
+              @if (selectedBill()) {
+                <button
+                  type="button"
+                  (click)="clearBillSelection()"
+                  class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold"
+                >
+                  Change / Clear Bill
+                </button>
               }
             </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Project Bill</label>
-              <select [(ngModel)]="formIn.billId" class="w-full p-2.5 rounded-xl border border-slate-200">
-                <option value="">General Payment</option>
-                @for (b of bills(); track b._id) {
-                  <option [value]="b._id">{{ b.billNumber }} — {{ b.projectName }} (Due: ৳{{ b.customerDue }})</option>
+
+            @if (!selectedBill()) {
+              <div class="space-y-2">
+                <div class="relative">
+                  <input
+                    type="text"
+                    [(ngModel)]="formIn.billSearch"
+                    (input)="onBillSearchChange()"
+                    placeholder="Enter bill number (e.g. A748, A747)..."
+                    class="w-full p-2.5 pr-10 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 text-sm font-mono outline-none transition"
+                  />
+                  <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                </div>
+
+                <!-- Live search results list -->
+                @if (matchingBills().length > 0) {
+                  <div class="bg-white border border-indigo-200 rounded-xl shadow-lg overflow-hidden divide-y divide-slate-100 max-h-48 overflow-y-auto">
+                    <div class="px-3 py-1.5 bg-indigo-50 text-[11px] font-bold text-indigo-800 uppercase tracking-wider">
+                      Matching Bills (Click to select):
+                    </div>
+                    @for (b of matchingBills(); track b._id) {
+                      <button
+                        type="button"
+                        (click)="selectBill(b)"
+                        class="w-full text-left px-3.5 py-2.5 hover:bg-indigo-50/60 transition flex items-center justify-between text-xs"
+                      >
+                        <div>
+                          <span class="font-bold text-indigo-700 font-mono text-sm">{{ b.billNumber }}</span>
+                          <span class="text-slate-600 ml-2 font-medium">{{ b.projectName }} ({{ getCustomerName(b) }})</span>
+                        </div>
+                        <div class="text-right">
+                          <span class="text-[10px] text-slate-400 block uppercase">Due Balance</span>
+                          <span class="font-extrabold text-rose-600">৳{{ getBillDue(b) | number }}</span>
+                        </div>
+                      </button>
+                    }
+                  </div>
                 }
-              </select>
+
+                <!-- Quick direct selector from existing bills -->
+                <div class="flex items-center justify-between pt-1">
+                  <span class="text-xs text-slate-500">Or pick from bill directory:</span>
+                  <select
+                    (change)="onBillDropdownSelect($event)"
+                    class="text-xs p-1.5 border border-slate-200 rounded-lg bg-white text-slate-700 outline-none max-w-[270px] truncate"
+                  >
+                    <option value="">-- Select Bill --</option>
+                    @for (b of bills(); track b._id) {
+                      <option [value]="b._id">
+                        {{ b.billNumber }} — {{ getCustomerName(b) }} (Due: ৳{{ getBillDue(b) | number }})
+                      </option>
+                    }
+                  </select>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- 3. SHOW BILL-WISE CUSTOMER NAME, TOTAL AMOUNT, TOTAL PAYMENT, TOTAL DUE -->
+          @if (selectedBill(); as b) {
+            <div class="bg-indigo-50/60 border border-indigo-100 rounded-2xl p-4 space-y-3">
+              <div class="flex items-center justify-between pb-2.5 border-b border-indigo-100">
+                <div>
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Customer Name</span>
+                  <span class="text-base font-extrabold text-slate-900">{{ getCustomerName(b) }}</span>
+                </div>
+                <div class="text-right">
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Bill Ref</span>
+                  <span class="badge badge-blue font-mono font-bold">{{ b.billNumber }}</span>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-3 gap-2.5 text-center">
+                <div class="bg-white p-2.5 rounded-xl border border-indigo-100 shadow-xs">
+                  <span class="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 block">Total Amount</span>
+                  <span class="text-sm font-extrabold text-slate-900 mt-0.5 block">৳{{ b.totalAmount | number }}</span>
+                </div>
+                <div class="bg-white p-2.5 rounded-xl border border-indigo-100 shadow-xs">
+                  <span class="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 block">Total Payment</span>
+                  <span class="text-sm font-extrabold text-emerald-600 mt-0.5 block">৳{{ (b.totalCashIn || 0) | number }}</span>
+                </div>
+                <div class="bg-white p-2.5 rounded-xl border border-indigo-100 shadow-xs">
+                  <span class="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 block">Total Due</span>
+                  <span class="text-sm font-extrabold text-rose-600 mt-0.5 block">৳{{ getBillDue(b) | number }}</span>
+                </div>
+              </div>
             </div>
           }
+
+          <!-- 4. AMOUNT TO RECEIVE -->
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Amount (৳) *</label>
-            <input type="number" [(ngModel)]="formIn.amount" class="w-full p-2.5 rounded-xl border border-slate-200 font-bold" />
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                Payment Amount (৳) <span class="text-rose-500">*</span>
+              </label>
+              @if (selectedBill() && getBillDue(selectedBill()) > 0) {
+                <button
+                  type="button"
+                  (click)="formIn.amount = getBillDue(selectedBill())"
+                  class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition"
+                >
+                  Pay Full Due (৳{{ getBillDue(selectedBill()) | number }})
+                </button>
+              }
+            </div>
+            <input
+              type="number"
+              [(ngModel)]="formIn.amount"
+              placeholder="0.00"
+              class="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 text-base font-extrabold text-slate-900 outline-none transition"
+              required
+            />
           </div>
+
+          <!-- 5. PAYMENT METHOD -->
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Payment Method</label>
-            <select [(ngModel)]="formIn.paymentMethod" class="w-full p-2.5 rounded-xl border border-slate-200">
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+              Payment Method <span class="text-rose-500">*</span>
+            </label>
+            <select
+              [(ngModel)]="formIn.paymentMethod"
+              class="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 text-sm outline-none transition cursor-pointer"
+            >
               <option value="cash">Cash</option>
               <option value="bank_transfer">Bank Transfer</option>
               <option value="cheque">Cheque</option>
-              <option value="mfs">bKash / Nagad (MFS)</option>
+              <option value="mfs">bKash / Nagad / Rocket (MFS)</option>
             </select>
           </div>
+
+          <!-- 6. METHOD-WISE DATA -->
+          @if (formIn.paymentMethod === 'bank_transfer') {
+            <div class="p-3.5 bg-blue-50/50 border border-blue-100 rounded-xl space-y-2.5">
+              <div class="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label class="block text-[11px] font-bold text-blue-900 uppercase tracking-wider mb-1">Bank Name <span class="text-rose-500">*</span></label>
+                  <input
+                    type="text"
+                    [(ngModel)]="formIn.bankName"
+                    placeholder="City Bank, BRAC Bank, etc."
+                    class="w-full p-2 rounded-lg border border-blue-200 bg-white text-xs outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-blue-900 uppercase tracking-wider mb-1">Account / Branch</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="formIn.accountNumber"
+                    placeholder="A/C No. or Branch Name"
+                    class="w-full p-2 rounded-lg border border-blue-200 bg-white text-xs outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-blue-900 uppercase tracking-wider mb-1">Transaction Ref / Deposit Slip No. <span class="text-rose-500">*</span></label>
+                <input
+                  type="text"
+                  [(ngModel)]="formIn.transactionRef"
+                  placeholder="e.g. TXN-8492019 or Slip #401"
+                  class="w-full p-2 rounded-lg border border-blue-200 bg-white text-xs font-mono outline-none focus:border-blue-500"
+                />
+              </div>
+            </div>
+          }
+
+          @if (formIn.paymentMethod === 'cheque') {
+            <div class="p-3.5 bg-amber-50/50 border border-amber-100 rounded-xl space-y-2.5">
+              <div class="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label class="block text-[11px] font-bold text-amber-900 uppercase tracking-wider mb-1">Cheque Number <span class="text-rose-500">*</span></label>
+                  <input
+                    type="text"
+                    [(ngModel)]="formIn.chequeNumber"
+                    placeholder="e.g. CHQ-849201"
+                    class="w-full p-2 rounded-lg border border-amber-200 bg-white text-xs font-mono outline-none focus:border-amber-500"
+                  />
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-amber-900 uppercase tracking-wider mb-1">Issuing Bank</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="formIn.bankName"
+                    placeholder="e.g. Eastern Bank Ltd"
+                    class="w-full p-2 rounded-lg border border-amber-200 bg-white text-xs outline-none focus:border-amber-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-amber-900 uppercase tracking-wider mb-1">Cheque Clearing Date</label>
+                <input
+                  type="date"
+                  [(ngModel)]="formIn.chequeDate"
+                  class="w-full p-2 rounded-lg border border-amber-200 bg-white text-xs outline-none focus:border-amber-500"
+                />
+              </div>
+            </div>
+          }
+
+          @if (formIn.paymentMethod === 'mfs') {
+            <div class="p-3.5 bg-purple-50/50 border border-purple-100 rounded-xl space-y-2.5">
+              <div class="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label class="block text-[11px] font-bold text-purple-900 uppercase tracking-wider mb-1">MFS Provider <span class="text-rose-500">*</span></label>
+                  <select [(ngModel)]="formIn.mfsProvider" class="w-full p-2 rounded-lg border border-purple-200 bg-white text-xs outline-none focus:border-purple-500 cursor-pointer">
+                    <option value="bKash">bKash</option>
+                    <option value="Nagad">Nagad</option>
+                    <option value="Rocket">Rocket</option>
+                    <option value="Upay">Upay</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-purple-900 uppercase tracking-wider mb-1">Mobile / Account No. <span class="text-rose-500">*</span></label>
+                  <input
+                    type="text"
+                    [(ngModel)]="formIn.mobileNumber"
+                    placeholder="017xxxxxxxx"
+                    class="w-full p-2 rounded-lg border border-purple-200 bg-white text-xs font-mono outline-none focus:border-purple-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-purple-900 uppercase tracking-wider mb-1">TrxID (Transaction ID) <span class="text-rose-500">*</span></label>
+                <input
+                  type="text"
+                  [(ngModel)]="formIn.transactionRef"
+                  placeholder="e.g. BL92KJ89X"
+                  class="w-full p-2 rounded-lg border border-purple-200 bg-white text-xs font-mono outline-none focus:border-purple-500"
+                />
+              </div>
+            </div>
+          }
+
+          <!-- 7. NOTES OR REMARKS -->
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Notes / Remarks</label>
-            <input type="text" [(ngModel)]="formIn.notes" placeholder="e.g. Advance payment, Cheque #, etc." class="w-full p-2.5 rounded-xl border border-slate-200" />
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+              Notes / Remarks
+            </label>
+            <textarea
+              rows="2"
+              [(ngModel)]="formIn.notes"
+              placeholder="e.g. Advance payment against bill, client verified on phone..."
+              class="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 text-sm outline-none transition"
+            ></textarea>
+          </div>
+
+          <!-- 8. PAYMENT RECEIVED BY -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+              Payment Received By <span class="text-rose-500">*</span>
+            </label>
+            <div class="relative">
+              <input
+                type="text"
+                [(ngModel)]="formIn.receivedByName"
+                list="employeeReceiverList"
+                placeholder="Receiver staff name (e.g. System Admin, Ryan)..."
+                class="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 text-sm font-semibold text-slate-900 outline-none transition"
+                required
+              />
+              <datalist id="employeeReceiverList">
+                @for (emp of employees(); track emp.id) {
+                  <option [value]="emp.name">{{ emp.name }} ({{ emp.designation || emp.role }})</option>
+                }
+              </datalist>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1">Select from registered staff or enter employee name.</p>
           </div>
         </div>
-        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
-          <button (click)="showInModal.set(false)" class="px-4 py-2 border rounded-xl text-slate-600 text-sm">Cancel</button>
-          <button (click)="submitCashIn()" class="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold">Save Receipt</button>
+
+        <!-- Modal Footer Actions -->
+        <div class="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
+          <button (click)="showInModal.set(false)" class="px-4 py-2 border border-slate-200 rounded-xl text-slate-600 text-sm font-semibold hover:bg-slate-50 transition">
+            Cancel
+          </button>
+          <button (click)="submitCashIn()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold shadow-sm transition">
+            Save Receipt
+          </button>
         </div>
       </div>
     </div>
@@ -228,19 +507,32 @@
         <div class="space-y-3 text-sm">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Expense / Payment Type</label>
-            <select [(ngModel)]="formOut.type" class="w-full p-2.5 rounded-xl border border-slate-200 capitalize">
-              <option value="purchase">Vendor / Material Payment</option>
-              <option value="fitting_charge">Carpentry & Fitting Charge</option>
-              <option value="transport">Transport / Logistics</option>
-              <option value="showroom_expense">Daily Showroom Supplies</option>
-              <option value="operating_expense">Operating Overhead</option>
-              <option value="showroom_rent">Showroom / Workshop Rent</option>
-              <option value="electricity_bill">Electricity Utility</option>
-              <option value="wasa_bill">WASA (Water)</option>
-              <option value="mobile_bill">Internet & Phone</option>
-              <option value="petty_cash">Petty Cash Top-up</option>
-              <option value="withdraw_profit">Shareholder Profit Withdrawal</option>
-              <option value="others">Other Expenses</option>
+            <select [(ngModel)]="formOut.type" class="w-full p-2.5 rounded-xl border border-slate-200">
+              <optgroup label="Sales Expenses (Deducted from Product Sales)">
+                <option value="purchase">Purchase Payment (Vendor Bills)</option>
+                <option value="petty_box">HPL Carrying / Petty Box</option>
+                <option value="transport">Transportation / Load-Unload Charge</option>
+                <option value="commission">Sales Commission</option>
+                <option value="sales_return">Sales Return & Adjustments</option>
+                <option value="fitting_charge">Fitting and Installation</option>
+              </optgroup>
+              <optgroup label="Office Expenses (Deducted from Profit)">
+                <option value="showroom_rent">Office / Showroom Rent</option>
+                <option value="salary">Staff Salary</option>
+                <option value="electricity_bill">Electricity Expenses</option>
+                <option value="wasa_bill">WASA & Water Expenses</option>
+                <option value="mobile_bill">Mobile / Phone & Internet</option>
+                <option value="conveyance">Conveyance & Travel</option>
+                <option value="entertainment">Guest Hospitality & Entertainment</option>
+                <option value="operating_expense">Office and Administration Expenses</option>
+                <option value="showroom_expense">Showroom Supplies</option>
+                <option value="vat">VAT & Taxes</option>
+                <option value="petty_cash">Petty Cash Top-up</option>
+                <option value="others">Other Expenses</option>
+              </optgroup>
+              <optgroup label="Equity / Capital">
+                <option value="withdraw_profit">Shareholder Profit Withdrawal</option>
+              </optgroup>
             </select>
           </div>
 

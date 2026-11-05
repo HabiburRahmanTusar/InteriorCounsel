@@ -89,6 +89,60 @@ describe('Odoo Enterprise Suite Business Logic in Attendly', () => {
   });
 
   describe('4. Two-Tier Profit Sharing & Shareholder Wallets', () => {
+    it('should calculate Profit = Product Sales - Sales Expenses, Net Profit = Profit - Office Expenses, and share on shareholders', () => {
+      // 1. Product Calculation (Gross Product Revenue)
+      const productCalculation = 1500000;
+
+      // 2. Sales Expenses (from user spec: HPL Carrying/Petty Box, Purchase Payment, Sales Commission, Sales Return, Transportation)
+      const salesExpenses = {
+        purchasePayment: 650000,
+        hplCarryingPettyBox: 25000,
+        transportationCharge: 35000,
+        salesCommission: 40000,
+        salesReturn: 10000,
+        fittingLabor: 40000,
+      };
+      const totalSalesExpenses = Object.values(salesExpenses).reduce((s, v) => s + v, 0); // 800,000
+
+      // 3. Profit = Product Calculation - Sales Expenses
+      const profit = productCalculation - totalSalesExpenses; // 1,500,000 - 800,000 = 700,000
+      expect(profit).toBe(700000);
+
+      // 4. Office Expenses (Rent, Salaries, Utilities, etc.)
+      const officeExpenses = {
+        rent: 80000,
+        salaries: 120000,
+        electricity: 15000,
+        wasa: 5000,
+        internet: 4000,
+        conveyance: 12000,
+        entertainment: 8000,
+        admin: 6000,
+      };
+      const totalOfficeExpenses = Object.values(officeExpenses).reduce((s, v) => s + v, 0); // 250,000
+
+      // 5. Net Profit = Profit - Office Expenses
+      const netProfit = profit - totalOfficeExpenses; // 700,000 - 250,000 = 450,000
+      expect(netProfit).toBe(450000);
+
+      // 6. Net Profit shared on Shareholders by equity %
+      const shareholders = [
+        { name: 'Partner A', sharePercentage: 50, walletBalance: 0 },
+        { name: 'Partner B', sharePercentage: 30, walletBalance: 0 },
+        { name: 'Partner C', sharePercentage: 20, walletBalance: 0 },
+      ];
+
+      for (const sh of shareholders) {
+        const shareAmount = (netProfit * sh.sharePercentage) / 100;
+        sh.walletBalance += shareAmount;
+      }
+
+      expect(shareholders[0].walletBalance).toBe(225000); // 50% of 450,000
+      expect(shareholders[1].walletBalance).toBe(135000); // 30% of 450,000
+      expect(shareholders[2].walletBalance).toBe(90000);  // 20% of 450,000
+      expect(shareholders.reduce((s, sh) => s + sh.walletBalance, 0)).toBe(netProfit);
+    });
+
     it('should aggregate company net profit and distribute to shareholder wallets by ownership %', () => {
       const totalConfirmedSales = 1200000;
       const totalPurchases = 600000;

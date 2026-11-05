@@ -715,7 +715,8 @@ export class BillingComponent implements OnInit {
       transportCharge: this.formBill.otherCharges.find((c: any) => /transport/i.test(c.name))?.amount || 0,
       fittingCharge: this.formBill.otherCharges.find((c: any) => /fitting|labor/i.test(c.name))?.amount || 0,
       salesCommission: this.formBill.otherCharges.find((c: any) => /commission/i.test(c.name))?.amount || 0,
-      pattyBoxCharge: this.formBill.otherCharges.find((c: any) => /patty/i.test(c.name))?.amount || 0,
+      pattyBoxCharge: this.formBill.otherCharges.find((c: any) => /patty|hpl/i.test(c.name))?.amount || 0,
+      salesReturn: this.formBill.otherCharges.find((c: any) => /return/i.test(c.name))?.amount || 0,
       discountType: this.formBill.discountAmount > 0 ? 'fixed' : 'none',
       discountValue: this.formBill.discountAmount || 0,
       discountAmount: this.formBill.discountAmount || 0,
@@ -876,9 +877,21 @@ export class BillingComponent implements OnInit {
 
   // --- Official Invoice Paper View & Print ---
   viewInvoice(b: any) {
+    if (!b) return;
     this.activeInvoice.set(b);
     this.mode.set('view');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (b._id) {
+      this.commercialService.getBill(b._id).subscribe({
+        next: (res) => {
+          const fullBill = res.data?.bill || res.data || res;
+          if (fullBill) {
+            this.activeInvoice.set({ ...b, ...fullBill });
+          }
+        },
+      });
+    }
   }
 
   editBill(b: any) {
@@ -1028,5 +1041,84 @@ export class BillingComponent implements OnInit {
 
   getSupplierTotalNet(invoice: any): number {
     return Math.max(0, this.getSupplierTotalPurchase(invoice) - this.getSupplierTotalDiscount(invoice));
+  }
+
+  // --- Resilient Customer & Metadata Resolvers for Invoice Pad & List ---
+  getInvoiceCustomerName(inv: any): string {
+    if (!inv) return '';
+    if (inv.customerName && typeof inv.customerName === 'string' && inv.customerName.trim()) {
+      return inv.customerName.trim();
+    }
+    if (inv.customerId && typeof inv.customerId === 'object') {
+      const name = inv.customerId.name || inv.customerId.companyName;
+      if (name && name.trim()) return name.trim();
+    }
+    const custId = typeof inv.customerId === 'string' ? inv.customerId : inv.customerId?._id;
+    if (custId) {
+      const c = this.clients().find((cli) => cli._id === custId);
+      if (c && (c.name || c.companyName)) return (c.name || c.companyName).trim();
+    }
+    if (inv.projectName) {
+      if (inv.projectName.includes('—')) {
+        const parts = inv.projectName.split('—');
+        if (parts.length > 1 && parts[1].trim()) return parts[1].trim();
+      }
+      if (inv.projectName.includes(' - ')) {
+        const parts = inv.projectName.split(' - ');
+        if (parts.length > 1 && parts[1].trim()) return parts[1].trim();
+      }
+    }
+    return '';
+  }
+
+  getInvoiceCustomerMobile(inv: any): string {
+    if (!inv) return '';
+    if (inv.customerMobile && typeof inv.customerMobile === 'string' && inv.customerMobile.trim()) {
+      return inv.customerMobile.trim();
+    }
+    if (inv.customerId && typeof inv.customerId === 'object' && inv.customerId.phone) {
+      return inv.customerId.phone.trim();
+    }
+    const custId = typeof inv.customerId === 'string' ? inv.customerId : inv.customerId?._id;
+    if (custId) {
+      const c = this.clients().find((cli) => cli._id === custId);
+      if (c?.phone) return c.phone.trim();
+    }
+    return '';
+  }
+
+  getInvoiceCustomerAddress(inv: any): string {
+    if (!inv) return '';
+    if (inv.siteLocation && typeof inv.siteLocation === 'string' && inv.siteLocation.trim()) {
+      return inv.siteLocation.trim();
+    }
+    if (inv.address && typeof inv.address === 'string' && inv.address.trim()) {
+      return inv.address.trim();
+    }
+    if (inv.customerAddress && typeof inv.customerAddress === 'string' && inv.customerAddress.trim()) {
+      return inv.customerAddress.trim();
+    }
+    if (inv.customerId && typeof inv.customerId === 'object') {
+      const addr = inv.customerId.address || inv.customerId.siteAddress || inv.customerId.billingAddress;
+      if (addr && addr.trim()) return addr.trim();
+    }
+    const custId = typeof inv.customerId === 'string' ? inv.customerId : inv.customerId?._id;
+    if (custId) {
+      const c = this.clients().find((cli) => cli._id === custId);
+      const addr = c?.address || c?.siteAddress || c?.billingAddress;
+      if (addr && addr.trim()) return addr.trim();
+    }
+    return '';
+  }
+
+  getInvoiceSalesperson(inv: any): string {
+    if (!inv) return '';
+    if (inv.salesperson && typeof inv.salesperson === 'string' && inv.salesperson.trim()) {
+      return inv.salesperson.trim();
+    }
+    if (inv.salespersonId && typeof inv.salespersonId === 'object' && inv.salespersonId.name) {
+      return inv.salespersonId.name.trim();
+    }
+    return 'In-House';
   }
 }

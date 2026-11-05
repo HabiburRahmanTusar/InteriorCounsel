@@ -19,6 +19,9 @@ const billSchema = new mongoose.Schema(
     billNumber: { type: String, required: true, unique: true, uppercase: true, trim: true },
     date: { type: Date, default: Date.now },
     customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer', required: true },
+    customerName: { type: String, trim: true },
+    customerMobile: { type: String, trim: true },
+    customerAddress: { type: String, trim: true },
     salespersonId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     projectName: { type: String, required: true, trim: true },
     siteLocation: { type: String, trim: true },
@@ -35,6 +38,7 @@ const billSchema = new mongoose.Schema(
     fittingCharge: { type: Number, default: 0, min: 0 },
     salesCommission: { type: Number, default: 0, min: 0 },
     pattyBoxCharge: { type: Number, default: 0, min: 0 },
+    salesReturn: { type: Number, default: 0, min: 0 },
     directCosts: { type: Number, default: 0, min: 0 },
     vendorTotalPurchase: { type: Number, default: 0, min: 0 },
     billProfit: { type: Number, default: 0 }, // totalAmount - (directCosts + vendorTotalPurchase)

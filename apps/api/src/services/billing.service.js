@@ -48,12 +48,13 @@ function calculateBillTotals(data) {
 
   const totalAmount = Number((taxableAmount + vatAmount).toFixed(2));
 
-  // Direct Costs per Bill (from Odoo BillProfitBill)
+  // Direct Costs / Sales Expenses per Bill (from Odoo BillProfitBill)
   const transportCharge = Number(data.transportCharge) || 0;
   const fittingCharge = Number(data.fittingCharge) || 0;
   const salesCommission = Number(data.salesCommission) || 0;
   const pattyBoxCharge = Number(data.pattyBoxCharge) || 0;
-  const directCosts = Number((transportCharge + fittingCharge + salesCommission + pattyBoxCharge).toFixed(2));
+  const salesReturn = Number(data.salesReturn) || 0;
+  const directCosts = Number((transportCharge + fittingCharge + salesCommission + pattyBoxCharge + salesReturn).toFixed(2));
 
   return {
     items,
@@ -68,6 +69,7 @@ function calculateBillTotals(data) {
     fittingCharge,
     salesCommission,
     pattyBoxCharge,
+    salesReturn,
     directCosts,
   };
 }
@@ -120,7 +122,7 @@ exports.listBills = async ({ search, customerId, salespersonId, paymentState, st
   const skip = (Number(page) - 1) * Number(limit);
   const [bills, total] = await Promise.all([
     Bill.find(query)
-      .populate('customerId', 'name companyName phone')
+      .populate('customerId', 'name companyName phone address siteAddress billingAddress')
       .populate('salespersonId', 'name employeeId')
       .sort({ date: -1, createdAt: -1 })
       .skip(skip)
@@ -317,9 +319,12 @@ exports.createBill = async (data) => {
     data.customerId = customer._id;
   }
 
-  if (data.customerId && (data.customerMobile || data.address)) {
+  if (data.customerId) {
     const cust = await Customer.findById(data.customerId);
     if (cust) {
+      if (!data.customerName) data.customerName = cust.name || cust.companyName;
+      if (!data.customerMobile) data.customerMobile = cust.phone;
+      if (!data.customerAddress) data.customerAddress = cust.address || cust.siteAddress || cust.billingAddress;
       let changed = false;
       if (data.customerMobile && cust.phone !== data.customerMobile) {
         cust.phone = data.customerMobile;
@@ -389,7 +394,9 @@ exports.createBill = async (data) => {
   await syncBillSuppliers(saved, totals.items);
   await recalculateBillProfit(saved._id);
   await updateCustomerFinancials(saved.customerId);
-  return Bill.findById(saved._id);
+  return Bill.findById(saved._id)
+    .populate('customerId', 'name companyName phone address siteAddress billingAddress')
+    .populate('salespersonId', 'name email employeeId phone');
 };
 
 exports.updateBill = async (id, data) => {
@@ -409,6 +416,7 @@ exports.updateBill = async (id, data) => {
     fittingCharge: data.fittingCharge !== undefined ? data.fittingCharge : existing.fittingCharge,
     salesCommission: data.salesCommission !== undefined ? data.salesCommission : existing.salesCommission,
     pattyBoxCharge: data.pattyBoxCharge !== undefined ? data.pattyBoxCharge : existing.pattyBoxCharge,
+    salesReturn: data.salesReturn !== undefined ? data.salesReturn : existing.salesReturn,
   });
 
   const customerDue = Number((totals.totalAmount - (existing.totalCashIn || 0)).toFixed(2));
@@ -436,7 +444,9 @@ exports.updateBill = async (id, data) => {
   await syncBillSuppliers(updated, totals.items);
   await recalculateBillProfit(updated._id);
   await updateCustomerFinancials(updated.customerId);
-  return Bill.findById(updated._id);
+  return Bill.findById(updated._id)
+    .populate('customerId', 'name companyName phone address siteAddress billingAddress')
+    .populate('salespersonId', 'name email employeeId phone');
 };
 
 exports.deleteBill = async (id) => {

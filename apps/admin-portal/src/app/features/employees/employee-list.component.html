@@ -132,9 +132,15 @@
             @for (employee of employees(); track employee.id) {
               <tr class="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
                 <td class="px-6 py-4 text-sm font-medium text-slate-900">
-                  {{ employee.employeeId }}
+                  <a [routerLink]="['/employees', employee.id, 'profile']" class="hover:text-indigo-600 transition-colors">
+                    {{ employee.employeeId }}
+                  </a>
                 </td>
-                <td class="px-6 py-4 text-sm text-slate-700">{{ employee.name }}</td>
+                <td class="px-6 py-4 text-sm font-semibold text-slate-900">
+                  <a [routerLink]="['/employees', employee.id, 'profile']" class="text-indigo-600 hover:text-indigo-900 transition-colors hover:underline">
+                    {{ employee.name }}
+                  </a>
+                </td>
                 <td class="px-6 py-4 text-sm text-slate-700">{{ employee.email }}</td>
                 <td class="px-6 py-4 text-sm text-slate-700">
                   {{ employee.designation || '—' }}
@@ -168,12 +174,12 @@
                   </span>
                 </td>
                 <td class="px-6 py-4 text-right text-sm space-x-3">
-                  <button
-                    (click)="viewEmployee(employee)"
+                  <a
+                    [routerLink]="['/employees', employee.id, 'profile']"
                     class="btn-link-outline btn-link-outline-indigo"
                   >
-                    View
-                  </button>
+                    View Profile
+                  </a>
                   @if (isAdminOrHr()) {
                     <a
                       [routerLink]="['/employees', employee.id]"

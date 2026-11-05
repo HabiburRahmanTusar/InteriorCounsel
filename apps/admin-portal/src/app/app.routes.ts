@@ -90,6 +90,15 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'employees/:id/profile',
+        title: 'Employee Profile',
+        canActivate: [roleGuard('admin', 'hr', 'manager')],
+        loadComponent: () =>
+          import('./features/employees/employee-profile/employee-profile.component').then(
+            (m) => m.EmployeeProfileComponent,
+          ),
+      },
+      {
         path: 'employees/:id',
         title: 'Edit employee',
         canActivate: [roleGuard('admin', 'hr')],

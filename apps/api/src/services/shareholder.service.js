@@ -125,53 +125,120 @@ exports.calculateMonthlyProfit = async (monthStr) => {
     CashOut.find(dateFilter),
   ]);
 
-  // 1. Total Confirmed Sales
-  const totalConfirmedSales = bills.reduce((acc, b) => acc + (b.totalAmount || 0), 0);
+  // 1. Product Calculation (Total Confirmed Sales Revenue)
+  const totalConfirmedSales = Number(bills.reduce((acc, b) => acc + (b.totalAmount || 0), 0).toFixed(2));
 
-  // 2. Total Purchases
-  const totalPurchases = vendorBills.reduce((acc, vb) => acc + (vb.totalAmount || 0), 0);
+  // 2. Sales Expenses (Deducted from Product Calculation to get Profit)
+  // -------------------------------------------------------------
+  // a) Purchase Payment (Vendor Procurement Bills / Purchase Vouchers)
+  const vendorBillPurchases = vendorBills.reduce((acc, vb) => acc + (vb.totalAmount || 0), 0);
+  const purchaseCashOut = cashOut.filter((c) => c.type === 'purchase').reduce((acc, c) => acc + c.amount, 0);
+  const purchasePayment = Number((vendorBillPurchases > 0 ? vendorBillPurchases : purchaseCashOut).toFixed(2));
 
-  // 3. Direct Costs on Bills + Direct Cash Outs (transport, fitting, commission)
-  const directCostsFromBills = bills.reduce((acc, b) => acc + (b.directCosts || 0), 0);
-  const directCostsFromCashOut = cashOut
-    .filter((c) => ['transport', 'fitting_charge', 'commission'].includes(c.type))
-    .reduce((acc, c) => acc + c.amount, 0);
-  const directCosts = Number((directCostsFromBills + directCostsFromCashOut).toFixed(2));
+  // b) HPL Carrying / Petty Box
+  const hplFromBills = bills.reduce((acc, b) => acc + (b.pattyBoxCharge || 0), 0);
+  const hplFromCashOut = cashOut.filter((c) => ['petty_box', 'petty_cash'].includes(c.type)).reduce((acc, c) => acc + c.amount, 0);
+  const hplCarryingPettyBox = Number((hplFromBills + hplFromCashOut).toFixed(2));
 
-  // 4. Capital Investments
-  const investments = cashIn
-    .filter((c) => c.type === 'investment')
-    .reduce((acc, c) => acc + c.amount, 0);
+  // c) Transportation / Load-Unload Charge
+  const transportFromBills = bills.reduce((acc, b) => acc + (b.transportCharge || 0), 0);
+  const transportFromCashOut = cashOut.filter((c) => c.type === 'transport').reduce((acc, c) => acc + c.amount, 0);
+  const transportationCharge = Number((transportFromBills + transportFromCashOut).toFixed(2));
 
-  // 5. Operating Expenses
-  const operationalExpenses = cashOut
-    .filter((c) => !['purchase', 'transport', 'fitting_charge', 'commission', 'withdraw_profit'].includes(c.type))
-    .reduce((acc, c) => acc + c.amount, 0);
+  // d) Sales Commission
+  const commissionFromBills = bills.reduce((acc, b) => acc + (b.salesCommission || 0), 0);
+  const commissionFromCashOut = cashOut.filter((c) => c.type === 'commission').reduce((acc, c) => acc + c.amount, 0);
+  const salesCommission = Number((commissionFromBills + commissionFromCashOut).toFixed(2));
 
-  // Net Profit formula: (Sales - Purchases - Direct Costs + Investments) - Operating Expenses
-  const netProfit = Number(
-    ((totalConfirmedSales - totalPurchases - directCosts + investments) - operationalExpenses).toFixed(2)
+  // e) Sales Return & Adjustments
+  const salesReturnFromBills = bills.reduce((acc, b) => acc + (b.salesReturn || 0), 0);
+  const salesReturnFromCashOut = cashOut.filter((c) => ['sales_return', 'return'].includes(c.type)).reduce((acc, c) => acc + c.amount, 0);
+  const salesReturn = Number((salesReturnFromBills + salesReturnFromCashOut).toFixed(2));
+
+  // f) Fitting and Architectural Installation
+  const fittingFromBills = bills.reduce((acc, b) => acc + (b.fittingCharge || 0), 0);
+  const fittingFromCashOut = cashOut.filter((c) => c.type === 'fitting_charge').reduce((acc, c) => acc + c.amount, 0);
+  const fittingLabor = Number((fittingFromBills + fittingFromCashOut).toFixed(2));
+
+  const totalSalesExpenses = Number(
+    (purchasePayment + hplCarryingPettyBox + transportationCharge + salesCommission + salesReturn + fittingLabor).toFixed(2)
   );
+
+  // 3. Profit = Product Calculation - Sales Expenses
+  const profit = Number((totalConfirmedSales - totalSalesExpenses).toFixed(2));
+
+  // 4. Office Expenses (Deducted from Profit to get Net Profit)
+  // -------------------------------------------------------------
+  const rent = Number(cashOut.filter((c) => ['showroom_rent', 'office_rent'].includes(c.type)).reduce((acc, c) => acc + c.amount, 0).toFixed(2));
+  const salaries = Number(cashOut.filter((c) => c.type === 'salary').reduce((acc, c) => acc + c.amount, 0).toFixed(2));
+  const electricity = Number(cashOut.filter((c) => c.type === 'electricity_bill').reduce((acc, c) => acc + c.amount, 0).toFixed(2));
+  const wasa = Number(cashOut.filter((c) => c.type === 'wasa_bill').reduce((acc, c) => acc + c.amount, 0).toFixed(2));
+  const internet = Number(cashOut.filter((c) => c.type === 'mobile_bill').reduce((acc, c) => acc + c.amount, 0).toFixed(2));
+  const conveyance = Number(cashOut.filter((c) => c.type === 'conveyance').reduce((acc, c) => acc + c.amount, 0).toFixed(2));
+  const entertainment = Number(cashOut.filter((c) => ['entertainment', 'snacks'].includes(c.type)).reduce((acc, c) => acc + c.amount, 0).toFixed(2));
+  const admin = Number(cashOut.filter((c) => ['operating_expense', 'showroom_expense'].includes(c.type)).reduce((acc, c) => acc + c.amount, 0).toFixed(2));
+  const vat = Number(cashOut.filter((c) => c.type === 'vat').reduce((acc, c) => acc + c.amount, 0).toFixed(2));
+  const other = Number(cashOut.filter((c) => ['other', 'others', 'general'].includes(c.type)).reduce((acc, c) => acc + c.amount, 0).toFixed(2));
+
+  const totalOfficeExpenses = Number(
+    (rent + salaries + electricity + wasa + internet + conveyance + entertainment + admin + vat + other).toFixed(2)
+  );
+
+  // Capital Investments / Injections (if any)
+  const investments = Number(cashIn.filter((c) => c.type === 'investment').reduce((acc, c) => acc + c.amount, 0).toFixed(2));
+
+  // 5. Net Profit = Profit - Office Expenses (+ investments)
+  const netProfit = Number(((profit - totalOfficeExpenses) + investments).toFixed(2));
+
+  const salesExpensesObj = {
+    purchasePayment,
+    hplCarryingPettyBox,
+    transportationCharge,
+    salesCommission,
+    salesReturn,
+    fittingLabor,
+    totalSalesExpenses,
+  };
+
+  const officeExpensesObj = {
+    rent,
+    salaries,
+    electricity,
+    wasa,
+    internet,
+    conveyance,
+    entertainment,
+    admin,
+    vat,
+    other,
+    totalOfficeExpenses,
+  };
 
   let summary = await MonthlyProfitSummary.findOne({ month: targetMonth });
   if (!summary) {
     summary = new MonthlyProfitSummary({
       month: targetMonth,
       totalConfirmedSales,
-      totalPurchases,
-      directCosts,
+      salesExpenses: salesExpensesObj,
+      profit,
+      officeExpenses: officeExpensesObj,
+      totalPurchases: purchasePayment,
+      directCosts: Number((totalSalesExpenses - purchasePayment).toFixed(2)),
       investments,
-      operationalExpenses,
+      operationalExpenses: totalOfficeExpenses,
       netProfit,
       isDistributed: false,
       status: 'draft',
     });
   } else if (!summary.isDistributed) {
     summary.totalConfirmedSales = totalConfirmedSales;
-    summary.totalPurchases = totalPurchases;
-    summary.directCosts = directCosts;
+    summary.salesExpenses = salesExpensesObj;
+    summary.profit = profit;
+    summary.officeExpenses = officeExpensesObj;
+    summary.totalPurchases = purchasePayment;
+    summary.directCosts = Number((totalSalesExpenses - purchasePayment).toFixed(2));
     summary.investments = investments;
-    summary.operationalExpenses = operationalExpenses;
+    summary.operationalExpenses = totalOfficeExpenses;
     summary.netProfit = netProfit;
   }
 

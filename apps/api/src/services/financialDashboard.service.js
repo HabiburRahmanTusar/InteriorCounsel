@@ -68,20 +68,24 @@ exports.getDashboardSummary = async ({ period = 'this_month' }) => {
   const totalCustomerReceivables = allCustomers.reduce((acc, c) => acc + (c.dueBalance > 0 ? c.dueBalance : 0), 0);
   const totalVendorPayables = allVendors.reduce((acc, v) => acc + (v.dueBalance > 0 ? v.dueBalance : 0), 0);
 
-  // Cost of Goods Sold (Direct Costs)
+  // Cost of Goods Sold (Direct Costs / Sales Expenses)
   const materialPurchases = periodVendorBills.reduce((acc, vb) => acc + (vb.totalAmount || 0), 0);
-  const fittingCharges = periodCashOut.filter((c) => c.type === 'fitting_charge').reduce((acc, c) => acc + c.amount, 0);
-  const transportCharges = periodCashOut.filter((c) => c.type === 'transport').reduce((acc, c) => acc + c.amount, 0);
-  const totalDirectCosts = Number((materialPurchases + fittingCharges + transportCharges).toFixed(2));
+  const fittingCharges = periodCashOut.filter((c) => c.type === 'fitting_charge').reduce((acc, c) => acc + c.amount, 0) + periodBills.reduce((acc, b) => acc + (b.fittingCharge || 0), 0);
+  const transportCharges = periodCashOut.filter((c) => c.type === 'transport').reduce((acc, c) => acc + c.amount, 0) + periodBills.reduce((acc, b) => acc + (b.transportCharge || 0), 0);
+  const pattyBoxCharges = periodCashOut.filter((c) => ['petty_box', 'petty_cash'].includes(c.type)).reduce((acc, c) => acc + c.amount, 0) + periodBills.reduce((acc, b) => acc + (b.pattyBoxCharge || 0), 0);
+  const salesCommissions = periodCashOut.filter((c) => c.type === 'commission').reduce((acc, c) => acc + c.amount, 0) + periodBills.reduce((acc, b) => acc + (b.salesCommission || 0), 0);
+  const salesReturns = periodCashOut.filter((c) => ['sales_return', 'return'].includes(c.type)).reduce((acc, c) => acc + c.amount, 0) + periodBills.reduce((acc, b) => acc + (b.salesReturn || 0), 0);
 
-  // Gross Profit
-  const grossProfit = Number((totalBilledSales - totalDirectCosts).toFixed(2));
+  const totalSalesExpenses = Number((materialPurchases + transportCharges + pattyBoxCharges + salesCommissions + salesReturns + fittingCharges).toFixed(2));
+
+  // Gross Profit = Product Calculation (Sales) - Sales Expenses
+  const grossProfit = Number((totalBilledSales - totalSalesExpenses).toFixed(2));
   const grossMarginPercent = totalBilledSales > 0 ? Number(((grossProfit / totalBilledSales) * 100).toFixed(1)) : 0;
 
-  // Operating Expenses Breakdown
+  // Operating Expenses Breakdown (Office Expenses deducted from Profit)
   const expenseByCategory = {};
   for (const exp of periodCashOut) {
-    if (['purchase', 'fitting_charge', 'transport', 'withdraw_profit'].includes(exp.type)) continue;
+    if (['purchase', 'fitting_charge', 'transport', 'commission', 'petty_box', 'sales_return', 'withdraw_profit'].includes(exp.type)) continue;
     expenseByCategory[exp.type] = (expenseByCategory[exp.type] || 0) + exp.amount;
   }
 
@@ -93,7 +97,7 @@ exports.getDashboardSummary = async ({ period = 'this_month' }) => {
 
   const totalOperatingExpenses = Object.values(expenseByCategory).reduce((acc, val) => acc + val, 0);
 
-  // Net Profit
+  // Net Profit = Gross Profit - Office Expenses
   const netProfit = Number((grossProfit - totalOperatingExpenses).toFixed(2));
   const netMarginPercent = totalBilledSales > 0 ? Number(((netProfit / totalBilledSales) * 100).toFixed(1)) : 0;
 
