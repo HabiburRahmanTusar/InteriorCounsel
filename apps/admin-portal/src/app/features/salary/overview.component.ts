@@ -10,6 +10,7 @@ import { Subject, of } from 'rxjs';
 import { catchError, finalize, tap, takeUntil } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { SalaryService, SalaryOverviewRecord } from '../../core/services/salary.service';
+import { ExportService } from '../../core/services/export.service';
 
 @Component({
   selector: 'wfm-salary-overview',
@@ -21,6 +22,7 @@ import { SalaryService, SalaryOverviewRecord } from '../../core/services/salary.
 export class SalaryOverviewComponent implements OnDestroy {
   private salaryService = inject(SalaryService);
   private toastr = inject(ToastrService);
+  private exportService = inject(ExportService);
   private destroy$ = new Subject<void>();
 
   readonly selectedMonth = signal<string>(this.getCurrentMonthStr());
@@ -127,4 +129,54 @@ export class SalaryOverviewComponent implements OnDestroy {
         .subscribe();
     }
   }
+
+  exportExcel() {
+    const list = this.salaryRecords();
+    if (!list || list.length === 0) {
+      this.toastr.warning('No salary records to export', 'Export Warning');
+      return;
+    }
+    const rows = list.map((r) => [
+      r.employeeId?.employeeId || '—',
+      r.employeeId?.name || '—',
+      r.employeeId?.salary || 0,
+      r.deductionAmount || 0,
+      r.finalPayableSalary || 0,
+      r.status || 'Pending',
+    ]);
+    this.exportService.exportToExcel({
+      filename: 'InteriorCounsel_Payroll_' + this.selectedMonth(),
+      title: 'Staff Salary Disbursement Sheet — ' + this.selectedMonth(),
+      subtitle: 'Total Payout: Tk ' + this.totalPayout().toLocaleString() + ' | Disbursed: ' + this.paidCount() + '/' + list.length,
+      headers: ['Emp ID', 'Employee Name', 'Base Salary (BDT)', 'Deductions (BDT)', 'Net Payable (BDT)', 'Payment Status'],
+      rows,
+    });
+    this.toastr.success('Salary sheet exported to Excel', 'Export Complete');
+  }
+
+  exportPdf() {
+    const list = this.salaryRecords();
+    if (!list || list.length === 0) {
+      this.toastr.warning('No salary records to export', 'Export Warning');
+      return;
+    }
+    const rows = list.map((r) => [
+      r.employeeId?.employeeId || '—',
+      r.employeeId?.name || '—',
+      (r.employeeId?.salary || 0).toLocaleString(),
+      (r.deductionAmount || 0).toLocaleString(),
+      (r.finalPayableSalary || 0).toLocaleString(),
+      r.status || 'Pending',
+    ]);
+    this.exportService.exportToPdf({
+      filename: 'InteriorCounsel_Payroll_' + this.selectedMonth(),
+      title: 'Workforce Payroll Register — ' + this.selectedMonth(),
+      subtitle: 'Total Payroll: Tk ' + this.totalPayout().toLocaleString() + ' | Interior Counsel HR & Finance',
+      headers: ['Emp ID', 'Staff Name', 'Base (Tk)', 'Deductions (Tk)', 'Net Payable (Tk)', 'Status'],
+      rows,
+      orientation: 'landscape',
+    });
+    this.toastr.success('Salary sheet exported to PDF', 'Export Complete');
+  }
+
 }

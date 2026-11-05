@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AttendanceService } from '../../../core/services/attendance.service';
 import { EmployeeService } from '../../../core/services/employee.service';
+import { ExportService } from '../../../core/services/export.service';
 
 export interface ManualEntry {
   id?: string;
@@ -29,6 +30,7 @@ const LOCAL_STORAGE_KEY = 'ic_erp_manual_attendance';
 export class ManualAttendanceComponent implements OnInit {
   private attendanceService = inject(AttendanceService);
   private employeeService = inject(EmployeeService);
+  private exportService = inject(ExportService);
 
   readonly employees = signal<any[]>([]);
   readonly manualEntries = signal<ManualEntry[]>([]);
@@ -323,5 +325,58 @@ export class ManualAttendanceComponent implements OnInit {
         m.name.toLowerCase().includes(filter.toLowerCase())
     );
   });
+
+  exportExcel() {
+    const list = this.filteredEntries();
+    if (!list || list.length === 0) {
+      this.showToast('No manual attendance entries to export');
+      return;
+    }
+    const rows = list.map((e) => [
+      e.date,
+      e.name,
+      e.empId,
+      e.checkIn || '—',
+      e.checkOut || '—',
+      e.hours ? e.hours + ' hrs' : '—',
+      e.status,
+      e.note || '—',
+    ]);
+    this.exportService.exportToExcel({
+      filename: `InteriorCounsel_Manual_Attendance_${this.selectedDate}`,
+      title: 'Manual Attendance Log',
+      subtitle: `Total Entries: ${rows.length}`,
+      headers: ['Date', 'Employee Name', 'Emp ID', 'Check In', 'Check Out', 'Hours', 'Status', 'Note'],
+      rows,
+    });
+    this.showToast('Manual attendance exported to Excel');
+  }
+
+  exportPdf() {
+    const list = this.filteredEntries();
+    if (!list || list.length === 0) {
+      this.showToast('No manual attendance entries to export');
+      return;
+    }
+    const rows = list.map((e) => [
+      e.date,
+      e.name,
+      e.empId,
+      e.checkIn || '—',
+      e.checkOut || '—',
+      e.hours ? e.hours + ' hrs' : '—',
+      e.status,
+      e.note || '—',
+    ]);
+    this.exportService.exportToPdf({
+      filename: `InteriorCounsel_Manual_Attendance_${this.selectedDate}`,
+      title: 'Manual Attendance Audit Sheet',
+      subtitle: `Total Entries: ${rows.length}`,
+      headers: ['Date', 'Name', 'Emp ID', 'In', 'Out', 'Hours', 'Status', 'Note'],
+      rows,
+      orientation: 'landscape',
+    });
+    this.showToast('Manual attendance exported to PDF');
+  }
 }
 

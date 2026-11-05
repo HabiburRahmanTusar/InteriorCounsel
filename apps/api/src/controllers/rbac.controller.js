@@ -72,6 +72,12 @@ const DEFAULT_ROLES = [
     menus: ['dashboard', 'reports'],
     isSystem: true,
   },
+  {
+    name: 'Shareholder',
+    all: false,
+    menus: ['shareholder-portal'],
+    isSystem: true,
+  },
 ];
 
 async function ensureDefaultRoles() {

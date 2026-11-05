@@ -49,7 +49,7 @@ export class SidebarComponent {
   );
 
   readonly hasFinanceGroup = computed(
-    () => this.hasMenu('cash-flow') || this.hasMenu('transfers') || this.hasMenu('shareholders')
+    () => this.hasMenu('cash-flow') || this.hasMenu('transfers') || this.hasMenu('shareholders') || this.hasMenu('shareholder-portal')
   );
 
   readonly hasSystemGroup = computed(

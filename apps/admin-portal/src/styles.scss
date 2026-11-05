@@ -10,7 +10,9 @@ body {
   height: 100%;
   margin: 0;
   font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
-  background-color: #f4f6fb;
+  background-color: var(--bg);
+  color: var(--text);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 * {
@@ -54,20 +56,23 @@ body {
 
 .btn-primary {
   @extend .btn;
-  background-color: #4f46e5;
+  background-color: #d97706;
   color: #fff;
   box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.05),
-    0 0 0 1px rgba(79, 70, 229, 0.1);
+    0 1px 2px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(217, 119, 6, 0.2);
 
   &:hover:not(:disabled) {
-    background-color: #4338ca;
+    background-color: #b45309;
   }
 
   &:disabled {
-    background-color: #a5b4fc;
+    background-color: #fcd34d;
+    color: #92400e;
   }
 }
+
+
 
 .btn-primary-sm {
   @extend .btn-primary;
@@ -99,10 +104,10 @@ body {
 
 .btn-link-indigo {
   @extend .btn-link;
-  color: #4f46e5;
+  color: #d97706;
 
   &:hover:not(:disabled) {
-    color: #4338ca;
+    color: #b45309;
   }
 }
 
@@ -147,15 +152,17 @@ body {
   }
 }
 
+.btn-link-outline-slate,
 .btn-link-outline-indigo {
   @extend .btn-link-outline;
-  color: #4f46e5;
-  border-color: rgba(79, 70, 229, 0.25);
-  background-color: rgba(79, 70, 229, 0.04);
+  color: #334155;
+  border-color: #cbd5e1;
+  background-color: #f8fafc;
 
   &:hover:not(:disabled) {
-    background-color: rgba(79, 70, 229, 0.1);
-    border-color: #4f46e5;
+    background-color: #f1f5f9;
+    border-color: #94a3b8;
+    color: #0f172a;
   }
 }
 
@@ -282,8 +289,8 @@ wfm-sidebar a {
   border-left: 0px solid transparent;
 }
 
-wfm-sidebar a.bg-indigo-50 {
-  border-left: 4px solid #4f46e5;
+wfm-sidebar a.bg-indigo-50, wfm-sidebar a.bg-blue-50, wfm-sidebar a.bg-amber-50 {
+  border-left: 4px solid #d97706;
   border-top-left-radius: 0px !important;
   border-bottom-left-radius: 0px !important;
   padding-left: calc(1rem - 4px) !important;
@@ -293,8 +300,7 @@ wfm-sidebar a.bg-indigo-50 {
 input, select, textarea {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   &:focus {
-    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12) !important;
-    border-color: #4f46e5 !important;
+    box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.18) !important; border-color: #d97706 !important;
   }
 }
 
@@ -338,7 +344,7 @@ tbody tr {
 }
 
 /* ==========================================================================
-   INTERIOR COUNSEL ERP — DASHBOARD & COMPONENT STYLES
+   INTERIOR COUNSEL ERP â€” DASHBOARD & COMPONENT STYLES
    ========================================================================== */
 :root {
   --bg: #eef1f7;
@@ -351,9 +357,9 @@ tbody tr {
   --navy-900: #0e1c33;
   --navy-800: #17294a;
   --navy-700: #20365f;
-  --blue: #2e5fe8;
-  --blue-600: #2450cc;
-  --blue-50: #eaf0fe;
+  --blue: #d7a13c;
+  --blue-600: #b9862a;
+  --blue-50: #fbf1de;
   --gold: #d7a13c;
   --gold-600: #b9862a;
   --gold-50: #fbf1de;
@@ -368,6 +374,437 @@ tbody tr {
   --shadow-md: 0 4px 14px rgba(16, 24, 40, 0.08), 0 1px 3px rgba(16, 24, 40, 0.05);
   --shadow-lg: 0 16px 36px rgba(16, 24, 40, 0.16), 0 4px 12px rgba(16, 24, 40, 0.07);
   --radius: 16px;
+}
+
+.dark {
+  --bg: #0b0f19;
+  --surface: #111827;
+  --surface-2: #1e293b;
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+  --border: #1e293b;
+  --navy-950: #030712;
+  --navy-900: #0b0f19;
+  --navy-800: #111827;
+  --navy-700: #1f2937;
+  --blue: #f59e0b;
+  --blue-600: #d97706;
+  --blue-50: rgba(245, 158, 11, 0.15);
+  --gold: #f59e0b;
+  --gold-600: #d97706;
+  --gold-50: rgba(245, 158, 11, 0.15);
+  --green: #10b981;
+  --green-50: rgba(16, 185, 129, 0.15);
+  --red: #f43f5e;
+  --red-50: rgba(244, 63, 94, 0.15);
+  --amber: #f59e0b;
+  --amber-50: rgba(245, 158, 11, 0.15);
+  --slate-500: #94a3b8;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 16px 36px rgba(0, 0, 0, 0.7), 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+html.dark,
+html.dark body {
+  background-color: #0b0f19 !important;
+  color: #f8fafc !important;
+}
+
+html.dark,
+.dark {
+  /* Headings & Page Titles (Fixes all titles across app) */
+  h1, h2, h3, h4, h5, h6,
+  .h1, .h2, .h3, .h4,
+  .page-title,
+  .card-title,
+  .section-title {
+    color: #f8fafc !important;
+  }
+
+  /* Direct dark text overrides for titles & labels */
+  .text-slate-900,
+  .text-slate-800,
+  .text-gray-900,
+  .text-gray-800,
+  .text-zinc-900,
+  .text-zinc-800,
+  .text-neutral-900,
+  .text-neutral-800,
+  .text-\[\#1b2333\],
+  .text-\[\#0f172a\],
+  .text-\[\#111827\],
+  .text-\[\#0a1220\],
+  .text-\[\#0e1c33\] {
+    color: #f8fafc !important;
+  }
+
+  /* Secondary text & labels */
+  .text-slate-700,
+  .text-gray-700,
+  .text-zinc-700 {
+    color: #e2e8f0 !important;
+  }
+
+  /* Subtitles & Muted text */
+  .text-muted,
+  .text-slate-600,
+  .text-slate-500,
+  .text-gray-600,
+  .text-gray-500,
+  .text-zinc-500,
+  .text-\[\#697386\],
+  .text-\[\#8a93a6\] {
+    color: #94a3b8 !important;
+  }
+
+  /* Card titles & KPI metrics */
+  .ic-card-head h3,
+  .kpi .value {
+    color: #f8fafc !important;
+  }
+  .kpi .label {
+    color: #94a3b8 !important;
+  }
+
+  /* Card surfaces & white panels (Fixes white cards in dark mode) */
+  div.bg-white,
+  section.bg-white,
+  article.bg-white,
+  .bg-white:not(button.bg-amber-500):not(.btn-primary):not(img):not(.status-dot),
+  .ic-card,
+  .kpi {
+    background-color: #111827 !important;
+    border-color: #1e293b !important;
+  }
+
+  .ic-card-head {
+    border-bottom-color: #1e293b !important;
+  }
+
+  /* Light container / header backgrounds */
+  .bg-slate-50,
+  .bg-gray-50,
+  .bg-\[\#f6f8fb\],
+  .bg-\[\#eef1f7\] {
+    background-color: #182235 !important;
+    border-color: #1e293b !important;
+  }
+
+  /* Buttons with white backgrounds */
+  button.bg-white,
+  a.bg-white,
+  .btn-secondary {
+    background-color: #1a2236 !important;
+    color: #f1f5f9 !important;
+    border-color: #2e3c54 !important;
+
+    &:hover:not(:disabled) {
+      background-color: #24324a !important;
+      border-color: #3b4d6b !important;
+    }
+  }
+
+  /* Borders */
+  .border-\[\#e8ecf2\],
+  .border-slate-100,
+  .border-slate-200,
+  .border-gray-100,
+  .border-gray-200 {
+    border-color: #1e293b !important;
+  }
+
+  /* Inputs, selects, and textareas */
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    background-color: #1a2236 !important;
+    color: #f8fafc !important;
+    border-color: #2e3c54 !important;
+
+    &:focus {
+      background-color: #1e293b !important;
+      border-color: #6366f1 !important;
+    }
+
+    &::placeholder {
+      color: #64748b !important;
+    }
+  }
+
+  /* ==========================================================================
+     UNIVERSAL TABLE STYLES IN DARK MODE (Fixes all tables across entire app)
+     ========================================================================== */
+  table {
+    border-color: #1e293b !important;
+  }
+
+  /* Table Head & Headers */
+  table thead,
+  table thead tr,
+  table thead th,
+  thead,
+  thead tr,
+  thead th,
+  th {
+    background-color: #1e293b !important;
+    color: #f1f5f9 !important;
+    border-color: #334155 !important;
+    font-weight: 700 !important;
+  }
+
+  /* Force override any nested span or Tailwind text classes inside table headers */
+  thead th,
+  thead th *,
+  th.text-slate-500,
+  th.text-slate-400,
+  th.text-gray-500,
+  th.text-gray-400,
+  th.text-muted {
+    color: #f1f5f9 !important;
+  }
+
+  /* Eliminate any light-gray background on table header rows */
+  thead tr[class*="bg-slate-"],
+  thead tr[class*="bg-gray-"],
+  tr[class*="bg-slate-50"],
+  tr[class*="bg-gray-50"],
+  thead[class*="bg-slate-"],
+  thead[class*="bg-gray-"] {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+  }
+
+  /* Universal fix for any category header rows like Expenses Breakdown */
+  .bg-\[\#eaf0fe\],
+  tr.bg-\[\#eaf0fe\],
+  tr[class*="bg-[#eaf0fe]"] {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f59e0b !important;
+    td {
+      color: #f59e0b !important;
+    }
+  }
+
+  /* Table Body Rows */
+  table tbody tr {
+    background-color: transparent !important;
+    border-color: #1e293b !important;
+
+    &:hover {
+      background-color: rgba(30, 41, 59, 0.7) !important;
+    }
+  }
+
+  table tbody td {
+    color: #f8fafc !important;
+    border-color: #1e293b !important;
+  }
+
+  .table-clean th {
+    background: #1e293b !important;
+    color: #f1f5f9 !important;
+    border-bottom-color: #334155 !important;
+  }
+
+  .table-clean td {
+    border-bottom-color: #1e293b !important;
+    color: #f1f5f9 !important;
+  }
+
+  .table-clean tfoot td {
+    background: #1e293b !important;
+    border-top-color: #334155 !important;
+    color: #f8fafc !important;
+  }
+
+  /* Table Footers & Pagination Bar */
+  .table-card > div:last-child,
+  div[class*="bg-slate-50/50"],
+  div[class*="bg-slate-50/70"],
+  div[class*="bg-slate-50/80"] {
+    background-color: #111827 !important;
+    border-color: #1e293b !important;
+  }
+
+  div[class*="border-t"] span.text-slate-500,
+  div[class*="border-t"] span.text-slate-400,
+  div[class*="border-t"] span[class*="text-slate-"] {
+    color: #cbd5e1 !important;
+    font-weight: 500;
+  }
+
+  div[class*="border-t"] button {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f1f5f9 !important;
+
+    &:hover:not(:disabled) {
+      background-color: #273549 !important;
+      border-color: #475569 !important;
+    }
+    &:disabled {
+      opacity: 0.35 !important;
+    }
+  }
+
+  /* Outline link buttons in dark mode (no blue!) */
+  .btn-link-outline-slate,
+  .btn-link-outline-indigo {
+    color: #e2e8f0 !important;
+    border-color: #334155 !important;
+    background-color: #1e293b !important;
+
+    &:hover:not(:disabled) {
+      background-color: #2e3d55 !important;
+      border-color: #475569 !important;
+      color: #ffffff !important;
+    }
+  }
+
+  .btn-link-indigo {
+    color: #f59e0b !important;
+    &:hover:not(:disabled) {
+      color: #fbbf24 !important;
+    }
+  }
+
+  .badge-gray {
+    background: #1e293b !important;
+    color: #94a3b8 !important;
+  }
+
+  /* Active tabs in dark mode (amber instead of blue) */
+  .tab-btn {
+    color: #94a3b8 !important;
+    &:hover {
+      color: #f8fafc !important;
+    }
+    &.active {
+      color: #f59e0b !important;
+      border-bottom-color: #f59e0b !important;
+    }
+  }
+
+  /* Global anti-blue overrides in dark mode (User directive: "don't use blue color") */
+  .text-blue-600,
+  .text-blue-500,
+  .text-blue-400,
+  .text-blue-700,
+  .text-indigo-600,
+  .text-indigo-500,
+  .text-indigo-400,
+  .text-indigo-700 {
+    color: #f59e0b !important;
+  }
+
+  .bg-blue-600,
+  .bg-indigo-600,
+  .bg-blue-700,
+  .bg-indigo-700 {
+    background-color: #d97706 !important;
+    color: #ffffff !important;
+  }
+
+  .bg-blue-50,
+  .bg-indigo-50,
+  .bg-blue-100,
+  .bg-indigo-100,
+  .dark\:bg-blue-950\/60,
+  .dark\:bg-indigo-950\/60,
+  .dark\:bg-blue-900\/60,
+  .dark\:bg-indigo-900\/60 {
+    background-color: rgba(245, 158, 11, 0.15) !important;
+    border-color: rgba(245, 158, 11, 0.3) !important;
+    color: #fbbf24 !important;
+  }
+}
+
+/* Light Mode Global Table & Anti-Blue Rules */
+html:not(.dark) {
+  thead th,
+  thead tr,
+  th {
+    color: #334155 !important;
+    font-weight: 700;
+  }
+
+  .text-blue-600,
+  .text-blue-500,
+  .text-indigo-600,
+  .text-indigo-500 {
+    color: #d97706 !important;
+  }
+
+  .bg-blue-600,
+  .bg-indigo-600 {
+    background-color: #d97706 !important;
+    color: #ffffff !important;
+  }
+
+  .bg-blue-50,
+  .bg-indigo-50,
+  .bg-blue-100,
+  .bg-indigo-100 {
+    background-color: #fef3c7 !important;
+    border-color: #fde68a !important;
+    color: #92400e !important;
+  }
+}
+
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+.dark * {
+  scrollbar-color: #334155 transparent;
+}
+
+/* Client Presentation Mode blur for confidential financial/salary data */
+.presentation-mode {
+  .confidential-figure,
+  .supplier-confidential-section,
+  [data-confidential] {
+    filter: blur(8px) grayscale(0.5);
+    user-select: none;
+    opacity: 0.4;
+    transition: filter 0.25s ease, opacity 0.25s ease;
+    position: relative;
+    pointer-events: none;
+
+    &::after {
+      content: 'ðŸ”’ Hidden in Client Mode';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(15, 23, 42, 0.85);
+      color: #f8fafc;
+      padding: 6px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 999px;
+      pointer-events: none;
+      white-space: nowrap;
+      filter: blur(0);
+      z-index: 20;
+    }
+  }
+
+  /* Protect sensitive internal navigation links */
+  wfm-sidebar a[href*="salary"],
+  wfm-sidebar a[href*="shareholders"],
+  wfm-sidebar a[href*="access-control"],
+  wfm-sidebar a[href*="vendor-bills"] {
+    opacity: 0.35;
+    filter: grayscale(1);
+    pointer-events: none;
+    cursor: not-allowed;
+  }
 }
 
 /* Grids & Cards */

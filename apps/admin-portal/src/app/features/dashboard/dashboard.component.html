@@ -1,18 +1,18 @@
-<div class="space-y-5">
+﻿<div class="space-y-5">
   <!-- Top Breadcrumb & Page Head -->
-  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-[#e8ecf2]">
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-[#e8ecf2] dark:border-slate-800">
     <div>
-      <div class="flex items-center gap-2 text-xs font-semibold text-[#8a93a6] uppercase tracking-wider mb-1">
+      <div class="flex items-center gap-2 text-xs font-semibold text-[#8a93a6] dark:text-slate-400 uppercase tracking-wider mb-1">
         <span>Interior Counsel</span>
         <span>/</span>
-        <span class="text-[#2e5fe8]">Dashboard</span>
+        <span class="text-amber-500">Dashboard</span>
         <span class="inline-flex items-center gap-1.5 ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
           Live Database Connected
         </span>
       </div>
-      <h1 class="text-2xl font-black text-[#1b2333] tracking-tight">Executive Dashboard</h1>
-      <p class="text-xs text-[#697386] mt-0.5">{{ subtitle() }}</p>
+      <h1 class="text-2xl font-black text-[#1b2333] dark:text-white tracking-tight">Executive Dashboard</h1>
+      <p class="text-xs text-[#697386] dark:text-slate-400 mt-0.5">{{ subtitle() }}</p>
     </div>
 
     <!-- Actions -->
@@ -21,7 +21,7 @@
         type="button"
         (click)="loadAllRealData()"
         [disabled]="isLoading()"
-        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#1b2333] bg-white border border-[#e8ecf2] rounded-xl hover:bg-[#f6f8fb] shadow-xs transition-colors"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#1b2333] dark:text-slate-100 bg-white dark:bg-slate-800 border border-[#e8ecf2] dark:border-slate-700 rounded-xl hover:bg-[#f6f8fb] dark:hover:bg-slate-700 shadow-xs transition-colors"
         title="Refresh live data from database"
       >
         <svg class="w-3.5 h-3.5" [class.animate-spin]="isLoading()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -35,7 +35,7 @@
       <button
         type="button"
         (click)="exportSummary()"
-        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#1b2333] bg-white border border-[#e8ecf2] rounded-xl hover:bg-[#f6f8fb] shadow-xs transition-colors"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#1b2333] dark:text-slate-100 bg-white dark:bg-slate-800 border border-[#e8ecf2] dark:border-slate-700 rounded-xl hover:bg-[#f6f8fb] dark:hover:bg-slate-700 shadow-xs transition-colors"
       >
         <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
@@ -46,7 +46,7 @@
       <button
         type="button"
         (click)="printSummary()"
-        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#2e5fe8] rounded-xl hover:bg-[#2450cc] shadow-xs transition-colors"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-950 bg-amber-500 rounded-xl hover:bg-amber-600 text-slate-950 font-bold shadow-xs transition-colors"
       >
         <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="6 9 6 2 18 2 18 9"></polyline>
@@ -112,16 +112,16 @@
       <div class="ic-card">
         <div class="p-3.5 flex items-center justify-between flex-wrap gap-3">
           <div class="flex items-center gap-2.5">
-            <svg class="w-4 h-4 text-[#2e5fe8]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
               <line x1="16" y1="2" x2="16" y2="6"></line>
               <line x1="8" y1="2" x2="8" y2="6"></line>
               <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
-            <label class="text-xs font-bold text-[#1b2333] whitespace-nowrap">Filter by Period</label>
+            <label class="text-xs font-bold text-[#1b2333] dark:text-slate-200 whitespace-nowrap">Filter by Period</label>
             <select
               (change)="onMonthChange($event)"
-              class="border border-[#e8ecf2] rounded-xl px-3 py-1.5 text-xs font-semibold text-[#1b2333] bg-[#f6f8fb] focus:bg-white outline-none"
+              class="border border-[#e8ecf2] dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-semibold text-[#1b2333] dark:text-slate-100 bg-[#f6f8fb] dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-700 outline-none"
             >
               <option value="cur" [selected]="selectedMonth() === 'cur'">Current Month ({{ months[currentMonthIdx] }} 2026)</option>
               @for (m of months; track $index) {
@@ -276,7 +276,7 @@
             </div>
           </div>
           <div class="label">Net Liquid Balance</div>
-          <div class="value text-[#2e5fe8]">৳ {{ acc.totalBalance | number }}</div>
+          <div class="value text-amber-500">৳ {{ acc.totalBalance | number }}</div>
           <div class="delta up">total cash in − total disbursements</div>
         </div>
       </div>
@@ -309,8 +309,8 @@
                 @for (grp of acc.expGroups; track grp.name) {
                   <!-- Category Header -->
                   <tr class="bg-[#eaf0fe] font-bold">
-                    <td class="text-[#2e5fe8]">{{ grp.name }}</td>
-                    <td class="num text-[#2e5fe8]">৳ {{ grp.totalCur | number }}</td>
+                    <td class="text-amber-500">{{ grp.name }}</td>
+                    <td class="num text-amber-500">৳ {{ grp.totalCur | number }}</td>
                   </tr>
 
                   <!-- Category Rows -->
@@ -338,7 +338,7 @@
               </tbody>
               <tfoot>
                 <tr>
-                  <td class="font-extrabold text-[#1b2333]">Total Recorded Expenses</td>
+                  <td class="font-extrabold text-[#1b2333] dark:text-slate-100">Total Recorded Expenses</td>
                   <td class="num font-extrabold text-[#e0394a]">৳ {{ acc.totalExpCur | number }}</td>
                 </tr>
               </tfoot>
@@ -370,7 +370,7 @@
                   @for (sp of acc.salesPeriod; track sp.period) {
                     <tr>
                       <td class="font-bold">{{ sp.period }}</td>
-                      <td class="num font-semibold text-[#1b2333]">৳ {{ sp.amount | number }}</td>
+                      <td class="num font-semibold text-[#1b2333] dark:text-slate-100">৳ {{ sp.amount | number }}</td>
                     </tr>
                   }
                 </tbody>
@@ -413,7 +413,7 @@
           <div class="ic-card">
             <div class="ic-card-head">
               <h3>
-                <svg class="w-4 h-4 text-[#2e5fe8]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="2" y="4" width="20" height="16" rx="2"></rect>
                   <line x1="6" y1="8" x2="6" y2="8"></line>
                 </svg>
@@ -433,9 +433,9 @@
                   </div>
                 </div>
               }
-              <div class="flex items-center justify-between pt-2 border-t border-[#e8ecf2] font-extrabold text-sm text-[#1b2333]">
+              <div class="flex items-center justify-between pt-2 border-t border-[#e8ecf2] dark:border-slate-800 font-extrabold text-sm text-[#1b2333] dark:text-slate-100">
                 <span>Total Liquid Balance</span>
-                <span class="text-[#2e5fe8]">৳ {{ acc.totalBalance | number }}</span>
+                <span class="text-amber-500">৳ {{ acc.totalBalance | number }}</span>
               </div>
             </div>
           </div>
@@ -446,9 +446,9 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         @for (grp of acc.expGroups; track grp.name; let idx = $index) {
           <div class="ic-card">
-            <div class="text-center pt-4 pb-2 border-b border-[#e8ecf2]">
-              <div class="text-base font-extrabold text-[#1b2333]">{{ grp.name }}</div>
-              <div class="text-xs text-[#697386] mt-0.5">{{ effectiveMonthName() }} 2026 &bull; ৳ {{ grp.totalCur | number }}</div>
+            <div class="text-center pt-4 pb-2 border-b border-[#e8ecf2] dark:border-slate-800">
+              <div class="text-base font-extrabold text-[#1b2333] dark:text-slate-100">{{ grp.name }}</div>
+              <div class="text-xs text-[#697386] dark:text-slate-400 mt-0.5">{{ effectiveMonthName() }} 2026 &bull; ৳ {{ grp.totalCur | number }}</div>
             </div>
             <div class="ic-card-body">
               <div class="cv h-[220px]">
@@ -475,7 +475,7 @@
         <div class="ic-card">
           <div class="ic-card-head">
             <h3>
-              <svg class="w-4 h-4 text-[#2e5fe8]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
               </svg>
               <span>Sales Overview — 2026</span>
@@ -537,8 +537,8 @@
               <tbody>
                 @for (inv of acc.recentSales; track inv.no) {
                   <tr>
-                    <td class="font-bold text-[#2e5fe8]">{{ inv.no }}</td>
-                    <td class="font-medium text-[#1b2333]">{{ inv.customer }}</td>
+                    <td class="font-bold text-amber-500">{{ inv.no }}</td>
+                    <td class="font-medium text-[#1b2333] dark:text-slate-100">{{ inv.customer }}</td>
                     <td class="text-slate-500 text-xs">{{ inv.date }}</td>
                     <td class="num font-bold">৳ {{ inv.amount | number }}</td>
                     <td>
@@ -590,7 +590,7 @@
                 @for (po of acc.recentPurchases; track po.no) {
                   <tr>
                     <td class="font-bold text-[#d7a13c]">{{ po.no }}</td>
-                    <td class="font-medium text-[#1b2333]">{{ po.supplier }}</td>
+                    <td class="font-medium text-[#1b2333] dark:text-slate-100">{{ po.supplier }}</td>
                     <td class="text-slate-500 text-xs">{{ po.date }}</td>
                     <td class="num font-bold">৳ {{ po.amount | number }}</td>
                     <td>
@@ -708,7 +708,7 @@
         <div class="ic-card">
           <div class="ic-card-head">
             <h3>
-              <svg class="w-4 h-4 text-[#2e5fe8]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                 <circle cx="9" cy="7" r="4"></circle>
               </svg>
@@ -796,7 +796,7 @@
                 @for (l of hr.pendingLeaves; track l.employee) {
                   <tr>
                     <td>
-                      <div class="font-bold text-[#1b2333]">{{ l.employee }}</div>
+                      <div class="font-bold text-[#1b2333] dark:text-slate-100">{{ l.employee }}</div>
                       <div class="text-[11px] text-slate-500">{{ l.dept }}</div>
                     </td>
                     <td class="text-xs font-medium">{{ l.type }}</td>
@@ -817,7 +817,7 @@
         <div class="ic-card">
           <div class="ic-card-head">
             <h3>
-              <svg class="w-4 h-4 text-[#2e5fe8]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                 <circle cx="8.5" cy="7" r="4"></circle>
                 <polyline points="17 11 19 13 23 9"></polyline>
@@ -843,7 +843,7 @@
                       <a [routerLink]="['/employees', e.id, 'profile']" class="flex items-center gap-2.5 group">
                         <div class="avatar-badge group-hover:scale-105 transition-transform">{{ e.photo }}</div>
                         <div>
-                          <div class="font-bold text-[#1b2333] group-hover:text-indigo-600 transition-colors">{{ e.name }}</div>
+                          <div class="font-bold text-[#1b2333] dark:text-slate-100 group-hover:text-indigo-600 transition-colors">{{ e.name }}</div>
                           <div class="text-[11px] text-slate-500">{{ e.desig }}</div>
                         </div>
                       </a>
@@ -965,8 +965,8 @@
               <tbody>
                 @for (p of ops.lowStockItems; track p.sku) {
                   <tr>
-                    <td class="font-mono text-xs text-[#2e5fe8]">{{ p.sku }}</td>
-                    <td class="font-medium text-[#1b2333]">{{ p.name }}</td>
+                    <td class="font-mono text-xs text-amber-500">{{ p.sku }}</td>
+                    <td class="font-medium text-[#1b2333] dark:text-slate-100">{{ p.name }}</td>
                     <td class="num font-bold text-[#e0394a]">{{ p.stock }}</td>
                     <td class="num text-slate-500">{{ p.min }}</td>
                     <td>
@@ -990,7 +990,7 @@
         <div class="ic-card">
           <div class="ic-card-head">
             <h3>
-              <svg class="w-4 h-4 text-[#2e5fe8]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
                 <polyline points="2 17 12 22 22 17"></polyline>
                 <polyline points="2 12 12 17 22 12"></polyline>
@@ -1020,7 +1020,7 @@
       <div class="ic-card">
         <div class="ic-card-head">
           <h3>
-            <svg class="w-4 h-4 text-[#2e5fe8]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="10"></circle>
               <polyline points="12 6 12 12 14 14"></polyline>
             </svg>
@@ -1033,8 +1033,8 @@
             <div class="flex items-start gap-3 py-2.5">
               <div class="timeline-dot"></div>
               <div class="flex-1">
-                <p class="text-xs font-medium text-[#1b2333]">{{ act.text }}</p>
-                <span class="text-[11px] text-[#8a93a6]">{{ act.time }}</span>
+                <p class="text-xs font-medium text-[#1b2333] dark:text-slate-100">{{ act.text }}</p>
+                <span class="text-[11px] text-[#8a93a6] dark:text-slate-400">{{ act.time }}</span>
               </div>
             </div>
           }

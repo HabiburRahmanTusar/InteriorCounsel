@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { CommercialService } from '../../../core/services/commercial.service';
+import { ExportService } from '../../../core/services/export.service';
 
 @Component({
   selector: 'wfm-vendors',
@@ -12,6 +13,7 @@ import { CommercialService } from '../../../core/services/commercial.service';
 })
 export class VendorsComponent implements OnInit {
   private commercialService = inject(CommercialService);
+  private exportService = inject(ExportService);
   private toastr = inject(ToastrService);
 
   readonly vendors = signal<any[]>([]);
@@ -416,4 +418,58 @@ export class VendorsComponent implements OnInit {
       },
     });
   }
+
+  exportExcel() {
+    const list = this.vendors();
+    if (!list || list.length === 0) {
+      this.toastr.warning('No vendors to export');
+      return;
+    }
+    const rows = list.map((v) => [
+      v.name || '—',
+      v.category || 'General',
+      v.phone || '—',
+      v.email || '—',
+      v.bankAccountName || '—',
+      v.bankAccountNumber || '—',
+      v.bankName || '—',
+      v.totalPurchased || 0,
+      v.totalPaid || 0,
+      v.outstandingDue || 0,
+    ]);
+    this.exportService.exportToExcel({
+      filename: 'InteriorCounsel_Suppliers_Directory',
+      title: 'Suppliers & Vendors Directory',
+      subtitle: 'Total Suppliers: ' + rows.length,
+      headers: ['Supplier Name', 'Trade Category', 'Phone', 'Email', 'Account Name', 'Account No', 'Bank Name', 'Total Purchases (BDT)', 'Total Paid (BDT)', 'Outstanding Due (BDT)'],
+      rows,
+    });
+    this.toastr.success('Suppliers directory exported to Excel');
+  }
+
+  exportPdf() {
+    const list = this.vendors();
+    if (!list || list.length === 0) {
+      this.toastr.warning('No vendors to export');
+      return;
+    }
+    const rows = list.map((v) => [
+      v.name || '—',
+      v.category || 'General',
+      v.phone || '—',
+      (v.totalPurchased || 0).toLocaleString(),
+      (v.totalPaid || 0).toLocaleString(),
+      (v.outstandingDue || 0).toLocaleString(),
+    ]);
+    this.exportService.exportToPdf({
+      filename: 'InteriorCounsel_Suppliers_Directory',
+      title: 'Suppliers & Trade Vendors Directory',
+      subtitle: 'Total Registered Suppliers: ' + rows.length,
+      headers: ['Supplier Name', 'Category', 'Contact Phone', 'Purchased (Tk)', 'Paid (Tk)', 'Due (Tk)'],
+      rows,
+      orientation: 'landscape',
+    });
+    this.toastr.success('Suppliers directory exported to PDF');
+  }
+
 }

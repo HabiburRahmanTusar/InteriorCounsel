@@ -14,6 +14,7 @@ import { ToastrService } from 'ngx-toastr';
 import { LeaveService, LeaveRequest } from '../../core/services/leave.service';
 import { EmployeeService } from '../../core/services/employee.service';
 import { AuthService } from '../../core/services/auth.service';
+import { ExportService } from '../../core/services/export.service';
 
 @Component({
   selector: 'wfm-leave-requests',
@@ -27,6 +28,7 @@ export class LeaveRequestsComponent implements OnInit, OnDestroy {
   private employeeService = inject(EmployeeService);
   private authService = inject(AuthService);
   private toastr = inject(ToastrService);
+  private exportService = inject(ExportService);
   private destroy$ = new Subject<void>();
 
   loading = signal(true);
@@ -176,4 +178,57 @@ export class LeaveRequestsComponent implements OnInit, OnDestroy {
 
     return role === activeStage.role?.toLowerCase();
   }
+
+  exportExcel() {
+    const list = this.requests();
+    if (!list || list.length === 0) {
+      this.toastr.warning('No leave requests to export', 'Export Warning');
+      return;
+    }
+    const rows = list.map((r: any) => [
+      r.employeeId?.employeeId || '—',
+      r.employeeId?.name || 'Employee',
+      r.leaveType || 'Annual',
+      r.startDate ? new Date(r.startDate).toISOString().slice(0, 10) : '—',
+      r.endDate ? new Date(r.endDate).toISOString().slice(0, 10) : '—',
+      r.requestedDays || 1,
+      r.status || 'Pending',
+      r.reason || '—',
+    ]);
+    this.exportService.exportToExcel({
+      filename: 'InteriorCounsel_Leave_Requests',
+      title: 'Employee Leave Applications & Requests',
+      subtitle: 'Total Requests: ' + rows.length,
+      headers: ['Emp ID', 'Staff Name', 'Leave Type', 'Start Date', 'End Date', 'Days', 'Status', 'Reason'],
+      rows,
+    });
+    this.toastr.success('Leave requests exported to Excel', 'Export Complete');
+  }
+
+  exportPdf() {
+    const list = this.requests();
+    if (!list || list.length === 0) {
+      this.toastr.warning('No leave requests to export', 'Export Warning');
+      return;
+    }
+    const rows = list.map((r: any) => [
+      r.employeeId?.employeeId || '—',
+      r.employeeId?.name || 'Employee',
+      r.leaveType || 'Annual',
+      r.startDate ? new Date(r.startDate).toISOString().slice(0, 10) : '—',
+      r.endDate ? new Date(r.endDate).toISOString().slice(0, 10) : '—',
+      (r.requestedDays || 1) + 'd',
+      r.status || 'Pending',
+    ]);
+    this.exportService.exportToPdf({
+      filename: 'InteriorCounsel_Leave_Requests',
+      title: 'Employee Leave Requests Register',
+      subtitle: 'Total Applications: ' + rows.length,
+      headers: ['Emp ID', 'Name', 'Type', 'Start', 'End', 'Days', 'Status'],
+      rows,
+      orientation: 'landscape',
+    });
+    this.toastr.success('Leave requests exported to PDF', 'Export Complete');
+  }
+
 }

@@ -1,0 +1,848 @@
+<div class="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
+
+  <!-- =========================================================================
+       EXECUTIVE PARTNER HEADER & ADMIN SWITCHER
+       ========================================================================= -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
+    <div class="space-y-1">
+      <div class="flex items-center gap-3">
+        <span class="inline-flex items-center justify-center p-2 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        </span>
+        <div>
+          <h1 class="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
+            Shareholder &amp; Investor Portal
+            <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+              Partner Desk
+            </span>
+          </h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400">
+            Real-time equity returns, dividend ledger, company financial performance, and capital drawings.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions & Switcher -->
+    <div class="flex flex-wrap items-center gap-2.5">
+      <!-- Admin Partner Switcher -->
+      @if (isAdmin() && shareholdersList().length > 0) {
+        <div class="flex items-center gap-2 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <span class="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase">View Partner:</span>
+          <select
+            [ngModel]="selectedShareholderId"
+            (ngModelChange)="onShareholderSwitch($event)"
+            class="text-xs font-semibold bg-transparent text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
+          >
+            @for (p of shareholdersList(); track p.shareholderId) {
+              <option [value]="p.shareholderId" class="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+                {{ p.name }} ({{ p.sharePercentage }}% Equity)
+              </option>
+            }
+          </select>
+        </div>
+      }
+
+      <!-- Request Drawing Button -->
+      <button
+        type="button"
+        (click)="openWithdrawalModal()"
+        [disabled]="loading() || (wallet()?.currentBalance || 0) <= 0"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-slate-900 bg-amber-500 hover:bg-amber-400 active:scale-95 shadow-sm shadow-amber-500/20 transition disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+        <span>Request Profit Drawing</span>
+      </button>
+
+      <!-- Sync Button -->
+      <button
+        type="button"
+        (click)="loadPortalData(selectedShareholderId)"
+        [disabled]="loading()"
+        class="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition"
+        title="Refresh Data"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" [class.animate-spin]="loading()" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State Indicator -->
+  @if (loading()) {
+    <div class="flex items-center justify-center py-16">
+      <div class="flex flex-col items-center gap-3">
+        <div class="w-9 h-9 border-3 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">Loading equity ledger and financial audits...</p>
+      </div>
+    </div>
+  } @else {
+
+    <!-- =========================================================================
+         INVESTOR WELCOME BADGE & PROFILE STRIP
+         ========================================================================= -->
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-slate-700/80 p-5 text-white shadow-md">
+      <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 font-black text-xl flex items-center justify-center shrink-0 shadow-inner">
+            {{ (shareholder()?.name || 'P').slice(0, 1).toUpperCase() }}
+          </div>
+          <div class="space-y-0.5">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 class="text-lg font-black tracking-tight text-white">{{ shareholder()?.name || 'Valued Partner' }}</h2>
+              <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                {{ wallet()?.sharePercentage || 0 }}% Equity Partner
+              </span>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                Active Member
+              </span>
+            </div>
+            <div class="flex items-center gap-4 text-xs text-slate-300 flex-wrap">
+              <span class="font-mono text-slate-400">ID: {{ shareholder()?.employeeId || 'N/A' }}</span>
+              <span>•</span>
+              <span>{{ shareholder()?.designation || 'Equity Partner' }}</span>
+              <span>•</span>
+              <span class="text-slate-400">{{ shareholder()?.email || 'N/A' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-6 border-t md:border-t-0 md:border-l border-slate-700/80 pt-3 md:pt-0 md:pl-6 shrink-0">
+          <div>
+            <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Company Sales Base</div>
+            <div class="text-base font-extrabold text-white">৳{{ (companyMetrics()?.totalConfirmedSales || 0) | number:'1.2-2' }}</div>
+          </div>
+          <div>
+            <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Profit Distributed</div>
+            <div class="text-base font-extrabold text-amber-400">৳{{ (companyMetrics()?.totalDistributedProfit || 0) | number:'1.2-2' }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================================
+         6 EXECUTIVE METRIC CARDS
+         ========================================================================= -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+
+      <!-- Card 1: Available Wallet Balance -->
+      <div class="p-4 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden group">
+        <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider">Wallet Balance</span>
+          <span class="p-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </span>
+        </div>
+        <div class="text-xl font-black text-slate-900 dark:text-slate-100">
+          ৳{{ (wallet()?.currentBalance || 0) | number:'1.2-2' }}
+        </div>
+        <div class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1">
+          <span>●</span> Ready for withdrawal
+        </div>
+      </div>
+
+      <!-- Card 2: Equity Share % -->
+      <div class="p-4 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden group">
+        <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider">Equity Share</span>
+          <span class="p-1.5 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+            </svg>
+          </span>
+        </div>
+        <div class="text-xl font-black text-amber-600 dark:text-amber-400">
+          {{ wallet()?.sharePercentage || 0 }}%
+        </div>
+        <div class="text-[10px] font-semibold text-slate-400 dark:text-slate-500 mt-1">
+          Of net monthly profit pool
+        </div>
+      </div>
+
+      <!-- Card 3: Total Profit Distributed -->
+      <div class="p-4 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden group">
+        <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider">Total Received</span>
+          <span class="p-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+          </span>
+        </div>
+        <div class="text-xl font-black text-emerald-600 dark:text-emerald-400">
+          ৳{{ (wallet()?.totalDistributed || 0) | number:'1.2-2' }}
+        </div>
+        <div class="text-[10px] font-semibold text-slate-400 dark:text-slate-500 mt-1">
+          Cumulative dividends earned
+        </div>
+      </div>
+
+      <!-- Card 4: Total Withdrawn / Drawings -->
+      <div class="p-4 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden group">
+        <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider">Total Drawings</span>
+          <span class="p-1.5 rounded-lg bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+            </svg>
+          </span>
+        </div>
+        <div class="text-xl font-black text-rose-600 dark:text-rose-400">
+          ৳{{ (wallet()?.totalWithdrawn || 0) | number:'1.2-2' }}
+        </div>
+        <div class="text-[10px] font-semibold text-slate-400 dark:text-slate-500 mt-1">
+          Paid out via Bank/Cash
+        </div>
+      </div>
+
+      <!-- Card 5: Firm Sales Base (YTD) -->
+      <div class="p-4 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden group">
+        <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider">Firm Revenue</span>
+          <span class="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </span>
+        </div>
+        <div class="text-xl font-black text-slate-900 dark:text-slate-100">
+          ৳{{ (companyMetrics()?.totalConfirmedSales || 0) | number:'1.2-2' }}
+        </div>
+        <div class="text-[10px] font-semibold text-slate-400 dark:text-slate-500 mt-1">
+          All confirmed client bills
+        </div>
+      </div>
+
+      <!-- Card 6: Total Distributed Pool -->
+      <div class="p-4 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden group">
+        <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider">Total Pool</span>
+          <span class="p-1.5 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </span>
+        </div>
+        <div class="text-xl font-black text-amber-600 dark:text-amber-400">
+          ৳{{ (companyMetrics()?.totalDistributedProfit || 0) | number:'1.2-2' }}
+        </div>
+        <div class="text-[10px] font-semibold text-slate-400 dark:text-slate-500 mt-1">
+          {{ companyMetrics()?.totalShareholders || 0 }} Active partners
+        </div>
+      </div>
+
+    </div>
+
+    <!-- =========================================================================
+         NAVIGATION TABS
+         ========================================================================= -->
+    <div class="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 text-xs font-bold">
+      <button
+        type="button"
+        (click)="activeTab.set('ledger')"
+        class="pb-3 px-3 transition border-b-2 flex items-center gap-2 cursor-pointer"
+        [class.border-amber-500]="activeTab() === 'ledger'"
+        [class.text-amber-600]="activeTab() === 'ledger'"
+        [class.dark:text-amber-400]="activeTab() === 'ledger'"
+        [class.border-transparent]="activeTab() !== 'ledger'"
+        [class.text-slate-500]="activeTab() !== 'ledger'"
+        [class.dark:text-slate-400]="activeTab() !== 'ledger'"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+        <span>My Dividend &amp; Wallet Ledger</span>
+        <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+          {{ filteredTransactions().length }}
+        </span>
+      </button>
+
+      <button
+        type="button"
+        (click)="activeTab.set('pnl')"
+        class="pb-3 px-3 transition border-b-2 flex items-center gap-2 cursor-pointer"
+        [class.border-amber-500]="activeTab() === 'pnl'"
+        [class.text-amber-600]="activeTab() === 'pnl'"
+        [class.dark:text-amber-400]="activeTab() === 'pnl'"
+        [class.border-transparent]="activeTab() !== 'pnl'"
+        [class.text-slate-500]="activeTab() !== 'pnl'"
+        [class.dark:text-slate-400]="activeTab() !== 'pnl'"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <span>Company Financial P&amp;L Performance</span>
+        <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+          {{ monthlySummaries().length }}
+        </span>
+      </button>
+
+      <button
+        type="button"
+        (click)="activeTab.set('capTable')"
+        class="pb-3 px-3 transition border-b-2 flex items-center gap-2 cursor-pointer"
+        [class.border-amber-500]="activeTab() === 'capTable'"
+        [class.text-amber-600]="activeTab() === 'capTable'"
+        [class.dark:text-amber-400]="activeTab() === 'capTable'"
+        [class.border-transparent]="activeTab() !== 'capTable'"
+        [class.text-slate-500]="activeTab() !== 'capTable'"
+        [class.dark:text-slate-400]="activeTab() !== 'capTable'"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        <span>Partnership Cap Table (Ownership)</span>
+        <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+          {{ capTable().length }}
+        </span>
+      </button>
+    </div>
+
+    <!-- =========================================================================
+         TAB 1: MY EQUITY & WALLET LEDGER
+         ========================================================================= -->
+    @if (activeTab() === 'ledger') {
+      <div class="space-y-4">
+        <!-- Controls & Universal Exports -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-800/90 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <!-- Filters -->
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="inline-flex rounded-xl bg-slate-100 dark:bg-slate-900 p-1 text-xs font-semibold">
+              <button
+                type="button"
+                (click)="ledgerFilter.set('all')"
+                class="px-3 py-1 rounded-lg transition"
+                [class.bg-white]="ledgerFilter() === 'all'"
+                [class.dark:bg-slate-800]="ledgerFilter() === 'all'"
+                [class.text-slate-900]="ledgerFilter() === 'all'"
+                [class.dark:text-slate-100]="ledgerFilter() === 'all'"
+                [class.shadow-sm]="ledgerFilter() === 'all'"
+                [class.text-slate-500]="ledgerFilter() !== 'all'"
+              >
+                All
+              </button>
+              <button
+                type="button"
+                (click)="ledgerFilter.set('distribution')"
+                class="px-3 py-1 rounded-lg transition"
+                [class.bg-white]="ledgerFilter() === 'distribution'"
+                [class.dark:bg-slate-800]="ledgerFilter() === 'distribution'"
+                [class.text-emerald-600]="ledgerFilter() === 'distribution'"
+                [class.dark:text-emerald-400]="ledgerFilter() === 'distribution'"
+                [class.shadow-sm]="ledgerFilter() === 'distribution'"
+                [class.text-slate-500]="ledgerFilter() !== 'distribution'"
+              >
+                Distributions (+In)
+              </button>
+              <button
+                type="button"
+                (click)="ledgerFilter.set('withdrawal')"
+                class="px-3 py-1 rounded-lg transition"
+                [class.bg-white]="ledgerFilter() === 'withdrawal'"
+                [class.dark:bg-slate-800]="ledgerFilter() === 'withdrawal'"
+                [class.text-rose-600]="ledgerFilter() === 'withdrawal'"
+                [class.dark:text-rose-400]="ledgerFilter() === 'withdrawal'"
+                [class.shadow-sm]="ledgerFilter() === 'withdrawal'"
+                [class.text-slate-500]="ledgerFilter() !== 'withdrawal'"
+              >
+                Drawings (-Out)
+              </button>
+            </div>
+
+            <!-- Search input -->
+            <div class="relative">
+              <input
+                type="text"
+                [ngModel]="ledgerSearch()"
+                (ngModelChange)="ledgerSearch.set($event)"
+                placeholder="Search voucher or notes..."
+                class="text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 pl-8 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-amber-500 w-44 sm:w-56"
+              />
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
+
+          <!-- UNIVERSAL EXPORT BUTTONS (NO BLUE COLOR) -->
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              (click)="exportLedgerExcel()"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-100 transition cursor-pointer"
+              title="Download Excel Spreadsheet"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span>Excel (.xlsx)</span>
+            </button>
+
+            <button
+              type="button"
+              (click)="exportLedgerPdf()"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800/60 hover:bg-rose-100 transition cursor-pointer"
+              title="Download PDF Document"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              <span>PDF Report</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Ledger Table with High-Contrast Dark Mode & Zero Blue -->
+        <div class="bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-100 dark:bg-slate-900/90 text-slate-800 dark:text-slate-100 font-extrabold border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[10px]">
+                <tr>
+                  <th class="px-4 py-3">Date</th>
+                  <th class="px-4 py-3">Type</th>
+                  <th class="px-4 py-3">Voucher / Ref</th>
+                  <th class="px-4 py-3">Period</th>
+                  <th class="px-4 py-3">Description / Notes</th>
+                  <th class="px-4 py-3 text-right">Inflow (+৳)</th>
+                  <th class="px-4 py-3 text-right">Drawing (-৳)</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
+                @for (t of filteredTransactions(); track $index) {
+                  <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                    <td class="px-4 py-3 font-mono text-[11px] text-slate-600 dark:text-slate-400">
+                      {{ t.date | date:'mediumDate' }}
+                    </td>
+                    <td class="px-4 py-3">
+                      @if (t.type === 'distribution') {
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
+                          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Profit Distribution
+                        </span>
+                      } @else {
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60">
+                          <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Profit Drawing
+                        </span>
+                      }
+                    </td>
+                    <td class="px-4 py-3 font-mono font-bold text-slate-900 dark:text-slate-100">
+                      {{ t.reference || '—' }}
+                    </td>
+                    <td class="px-4 py-3 font-semibold text-slate-600 dark:text-slate-400">
+                      {{ t.month || '—' }}
+                    </td>
+                    <td class="px-4 py-3 text-slate-600 dark:text-slate-400 max-w-xs truncate" [title]="t.notes">
+                      {{ t.notes || '—' }}
+                    </td>
+                    <td class="px-4 py-3 text-right font-black font-mono text-emerald-600 dark:text-emerald-400">
+                      {{ t.type === 'distribution' ? ('+৳' + (t.amount | number:'1.2-2')) : '—' }}
+                    </td>
+                    <td class="px-4 py-3 text-right font-black font-mono text-rose-600 dark:text-rose-400">
+                      {{ t.type === 'withdrawal' ? ('-৳' + (t.amount | number:'1.2-2')) : '—' }}
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="7" class="px-4 py-12 text-center text-slate-400 dark:text-slate-500">
+                      <div class="flex flex-col items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-300 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span class="text-xs font-semibold">No transactions recorded for this criteria yet.</span>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- =========================================================================
+         TAB 2: COMPANY FINANCIAL P&L PERFORMANCE
+         ========================================================================= -->
+    @if (activeTab() === 'pnl') {
+      <div class="space-y-4">
+        <!-- Header & Universal Exports -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-800/90 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div>
+            <h3 class="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-slate-100">Monthly Distributable Profit &amp; Loss Performance</h3>
+            <p class="text-[11px] text-slate-400 dark:text-slate-500">Official firm accounts audited and certified for shareholder distributions.</p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              (click)="exportPnlExcel()"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-100 transition cursor-pointer"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span>Excel (.xlsx)</span>
+            </button>
+
+            <button
+              type="button"
+              (click)="exportPnlPdf()"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800/60 hover:bg-rose-100 transition cursor-pointer"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              <span>PDF Report</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- P&L Table -->
+        <div class="bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-100 dark:bg-slate-900/90 text-slate-800 dark:text-slate-100 font-extrabold border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[10px]">
+                <tr>
+                  <th class="px-4 py-3">Month</th>
+                  <th class="px-4 py-3 text-right">Confirmed Sales</th>
+                  <th class="px-4 py-3 text-right">Procurement &amp; Direct Costs</th>
+                  <th class="px-4 py-3 text-right">Gross Profit</th>
+                  <th class="px-4 py-3 text-right">Office / Admin Exp</th>
+                  <th class="px-4 py-3 text-right font-black text-amber-600 dark:text-amber-400">Net Distributable</th>
+                  <th class="px-4 py-3 text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
+                @for (s of monthlySummaries(); track s.month) {
+                  <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                    <td class="px-4 py-3 font-mono font-bold text-slate-900 dark:text-slate-100">
+                      {{ s.month }}
+                    </td>
+                    <td class="px-4 py-3 text-right font-mono font-semibold">
+                      ৳{{ (s.totalConfirmedSales || 0) | number:'1.2-2' }}
+                    </td>
+                    <td class="px-4 py-3 text-right font-mono text-slate-500 dark:text-slate-400">
+                      ৳{{ ((s.salesExpenses?.totalSalesExpenses || s.totalPurchases || 0)) | number:'1.2-2' }}
+                    </td>
+                    <td class="px-4 py-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                      ৳{{ (s.profit || 0) | number:'1.2-2' }}
+                    </td>
+                    <td class="px-4 py-3 text-right font-mono text-slate-500 dark:text-slate-400">
+                      ৳{{ ((s.officeExpenses?.totalOfficeExpenses || s.operationalExpenses || 0)) | number:'1.2-2' }}
+                    </td>
+                    <td class="px-4 py-3 text-right font-mono font-black text-amber-600 dark:text-amber-400">
+                      ৳{{ (s.netProfit || 0) | number:'1.2-2' }}
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                      @if (s.isDistributed) {
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
+                          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Distributed
+                        </span>
+                      } @else {
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60">
+                          <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Draft / Pending
+                        </span>
+                      }
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="7" class="px-4 py-12 text-center text-slate-400 dark:text-slate-500">
+                      No monthly financial summaries recorded yet.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- =========================================================================
+         TAB 3: PARTNERSHIP CAP TABLE (OWNERSHIP)
+         ========================================================================= -->
+    @if (activeTab() === 'capTable') {
+      <div class="space-y-4">
+        <!-- Header & Universal Exports -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-800/90 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div>
+            <h3 class="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-slate-100">Partnership Equity &amp; Ownership Distribution</h3>
+            <p class="text-[11px] text-slate-400 dark:text-slate-500">Verified cap table of all active equity shareholders in Interior Counsel.</p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              (click)="exportCapTableExcel()"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-100 transition cursor-pointer"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span>Excel (.xlsx)</span>
+            </button>
+
+            <button
+              type="button"
+              (click)="exportCapTablePdf()"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800/60 hover:bg-rose-100 transition cursor-pointer"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              <span>PDF Report</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Cap Table -->
+        <div class="bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-100 dark:bg-slate-900/90 text-slate-800 dark:text-slate-100 font-extrabold border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[10px]">
+                <tr>
+                  <th class="px-4 py-3">Partner Name</th>
+                  <th class="px-4 py-3">Designation</th>
+                  <th class="px-4 py-3">Investor ID</th>
+                  <th class="px-4 py-3">Equity Ownership</th>
+                  <th class="px-4 py-3 text-right">Total Distributed</th>
+                  <th class="px-4 py-3 text-right">Total Drawings</th>
+                  <th class="px-4 py-3 text-right">Wallet Balance</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
+                @for (c of capTable(); track c.shareholderId) {
+                  <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                    <td class="px-4 py-3">
+                      <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 font-black text-[10px] flex items-center justify-center shrink-0">
+                          {{ (c.name || 'P').slice(0, 1).toUpperCase() }}
+                        </div>
+                        <span class="font-bold text-slate-900 dark:text-slate-100">{{ c.name }}</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 text-slate-600 dark:text-slate-400">
+                      {{ c.designation || 'Partner' }}
+                    </td>
+                    <td class="px-4 py-3 font-mono text-[11px] text-slate-500">
+                      {{ c.employeeId || '—' }}
+                    </td>
+                    <td class="px-4 py-3">
+                      <div class="flex items-center gap-2">
+                        <div class="flex-1 bg-slate-200 dark:bg-slate-700 rounded-full h-2 w-20 overflow-hidden">
+                          <div class="bg-amber-500 h-2 rounded-full" [style.width.%]="c.sharePercentage"></div>
+                        </div>
+                        <span class="font-extrabold text-amber-600 dark:text-amber-400 font-mono">{{ c.sharePercentage }}%</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 text-right font-mono font-semibold text-emerald-600 dark:text-emerald-400">
+                      ৳{{ (c.totalDistributed || 0) | number:'1.2-2' }}
+                    </td>
+                    <td class="px-4 py-3 text-right font-mono font-semibold text-rose-600 dark:text-rose-400">
+                      ৳{{ (c.totalWithdrawn || 0) | number:'1.2-2' }}
+                    </td>
+                    <td class="px-4 py-3 text-right font-mono font-black text-slate-900 dark:text-slate-100">
+                      ৳{{ (c.currentBalance || 0) | number:'1.2-2' }}
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="7" class="px-4 py-12 text-center text-slate-400 dark:text-slate-500">
+                      No cap table shareholders found.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+
+  }
+
+  <!-- =========================================================================
+       PROFIT DRAWING / WITHDRAWAL MODAL (ZERO BLUE - AMBER/SLATE)
+       ========================================================================= -->
+  @if (showWithdrawalModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+      <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-lg overflow-hidden">
+
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
+          <div class="flex items-center gap-3">
+            <span class="p-2 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </span>
+            <div>
+              <h3 class="text-sm font-black text-slate-900 dark:text-slate-100">Submit Profit Drawing Request</h3>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400">Withdraw available profit dividends to bank or cash.</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            (click)="showWithdrawalModal.set(false)"
+            class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg transition"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6 space-y-4 text-xs">
+          <!-- Balance banner -->
+          <div class="flex items-center justify-between p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60">
+            <div>
+              <div class="text-[10px] font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider">Available Profit Balance</div>
+              <div class="text-lg font-black text-amber-700 dark:text-amber-300">
+                ৳{{ (wallet()?.currentBalance || 0) | number:'1.2-2' }}
+              </div>
+            </div>
+            <span class="text-xs font-bold text-slate-500 dark:text-slate-400">
+              Equity: {{ wallet()?.sharePercentage || 0 }}%
+            </span>
+          </div>
+
+          <!-- Error Alert -->
+          @if (withdrawalError()) {
+            <div class="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 font-semibold text-xs">
+              {{ withdrawalError() }}
+            </div>
+          }
+
+          <!-- Withdrawal Amount -->
+          <div class="space-y-1.5">
+            <label class="block font-bold text-slate-700 dark:text-slate-300">Withdrawal Amount (BDT ৳) *</label>
+            <input
+              type="number"
+              [(ngModel)]="withdrawalForm.amount"
+              min="1"
+              [max]="wallet()?.currentBalance || 0"
+              class="w-full text-base font-black px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+              placeholder="0.00"
+            />
+            <!-- Quick Chips -->
+            <div class="flex items-center gap-2 pt-1">
+              <span class="text-[10px] font-bold text-slate-400">Quick:</span>
+              <button
+                type="button"
+                (click)="setQuickAmount(25)"
+                class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:bg-amber-100 dark:hover:bg-amber-950/60 transition"
+              >
+                25%
+              </button>
+              <button
+                type="button"
+                (click)="setQuickAmount(50)"
+                class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:bg-amber-100 dark:hover:bg-amber-950/60 transition"
+              >
+                50%
+              </button>
+              <button
+                type="button"
+                (click)="setQuickAmount(75)"
+                class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:bg-amber-100 dark:hover:bg-amber-950/60 transition"
+              >
+                75%
+              </button>
+              <button
+                type="button"
+                (click)="setQuickAmount(100)"
+                class="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/60 text-[10px] font-black text-amber-800 dark:text-amber-300 hover:bg-amber-200 transition"
+              >
+                All (100%)
+              </button>
+            </div>
+          </div>
+
+          <!-- Payment Method -->
+          <div class="grid grid-cols-2 gap-3">
+            <div class="space-y-1">
+              <label class="block font-bold text-slate-700 dark:text-slate-300">Payment Method *</label>
+              <select
+                [(ngModel)]="withdrawalForm.paymentMethod"
+                class="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+              >
+                <option value="bank">Bank Transfer</option>
+                <option value="cheque">Cheque</option>
+                <option value="cash">Cash Counter</option>
+                <option value="mfs">MFS (bKash/Nagad)</option>
+              </select>
+            </div>
+
+            <div class="space-y-1">
+              <label class="block font-bold text-slate-700 dark:text-slate-300">Bank / Channel Name</label>
+              <input
+                type="text"
+                [(ngModel)]="withdrawalForm.bankName"
+                placeholder="e.g. City Bank, BRAC Bank"
+                class="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <!-- Cheque / Ref -->
+          <div class="space-y-1">
+            <label class="block font-bold text-slate-700 dark:text-slate-300">Cheque / Account / Ref No.</label>
+            <input
+              type="text"
+              [(ngModel)]="withdrawalForm.chequeNumber"
+              placeholder="e.g. A/C 2050123456 or Cheque #89201"
+              class="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+            />
+          </div>
+
+          <!-- Purpose / Notes -->
+          <div class="space-y-1">
+            <label class="block font-bold text-slate-700 dark:text-slate-300">Drawing Note / Purpose</label>
+            <input
+              type="text"
+              [(ngModel)]="withdrawalForm.notes"
+              placeholder="e.g. Personal drawing or monthly dividend payout"
+              class="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+            />
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="flex items-center justify-end gap-2 p-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
+          <button
+            type="button"
+            (click)="showWithdrawalModal.set(false)"
+            class="px-4 py-2 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            (click)="submitWithdrawal()"
+            [disabled]="submittingWithdrawal() || (withdrawalForm.amount || 0) <= 0"
+            class="px-5 py-2 rounded-xl font-black text-slate-900 bg-amber-500 hover:bg-amber-400 active:scale-95 shadow-sm shadow-amber-500/20 transition disabled:opacity-50 disabled:pointer-events-none cursor-pointer flex items-center gap-2"
+          >
+            @if (submittingWithdrawal()) {
+              <div class="w-3.5 h-3.5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
+              <span>Processing...</span>
+            } @else {
+              <span>Confirm Drawing</span>
+            }
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+</div>
+

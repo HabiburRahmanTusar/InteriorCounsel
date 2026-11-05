@@ -5,7 +5,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-const ROLES = ['admin', 'hr', 'manager', 'employee'];
+const ROLES = ['admin', 'hr', 'manager', 'employee', 'shareholder'];
 const USER_STATUSES = ['active', 'inactive'];
 
 const userSchema = new mongoose.Schema(

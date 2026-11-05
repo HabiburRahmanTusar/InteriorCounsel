@@ -1,89 +1,144 @@
 <div class="space-y-6">
-  <div class="space-y-1">
-    <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
-      Employee Wise Attendance Report
-    </h1>
-    <p class="text-sm text-slate-500">
-      Generate, view, and export detailed attendance records for individual employees
-    </p>
+  <!-- Page Header & Global Export Buttons -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div class="space-y-1">
+      <div class="flex items-center gap-2">
+        <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+          Attendance Reports & Audits
+        </h1>
+        <span class="px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 uppercase tracking-wider">
+          Interior Counsel ERP
+        </span>
+      </div>
+      <p class="text-sm text-slate-500 dark:text-slate-400">
+        Generate, view, and export high-precision attendance records & workforce metrics
+      </p>
+    </div>
+
+    <!-- Export Actions -->
+    <div class="flex items-center gap-2.5">
+      <button
+        (click)="exportExcel()"
+        [disabled]="loading() || (reportMode() === 'employee' && !reportData()) || (reportMode() === 'company' && companySummary().length === 0)"
+        type="button"
+        title="Download Excel Spreadsheet (.xlsx)"
+        class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl border border-emerald-600/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed transition shadow-sm"
+      >
+        <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <span>Download Excel</span>
+      </button>
+
+      <button
+        (click)="exportPdf()"
+        [disabled]="loading() || (reportMode() === 'employee' && !reportData()) || (reportMode() === 'company' && companySummary().length === 0)"
+        type="button"
+        title="Download Official Branded PDF (.pdf)"
+        class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl border border-rose-600/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 disabled:opacity-40 disabled:cursor-not-allowed transition shadow-sm"
+      >
+        <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+        <span>Download PDF</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Report Type Tabs -->
+  <div class="flex items-center border-b border-slate-200 dark:border-slate-800 gap-4">
+    <button
+      (click)="setMode('employee')"
+      type="button"
+      [class]="reportMode() === 'employee' 
+        ? 'pb-3 text-sm font-bold text-amber-600 dark:text-amber-400 border-b-2 border-amber-500 flex items-center gap-2 transition' 
+        : 'pb-3 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-2 transition'"
+    >
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+      </svg>
+      <span>Individual Employee Audit Log</span>
+    </button>
+
+    <button
+      (click)="setMode('company')"
+      type="button"
+      [class]="reportMode() === 'company' 
+        ? 'pb-3 text-sm font-bold text-amber-600 dark:text-amber-400 border-b-2 border-amber-500 flex items-center gap-2 transition' 
+        : 'pb-3 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-2 transition'"
+    >
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+      </svg>
+      <span>Company Master Attendance Summary</span>
+    </button>
   </div>
 
   <!-- Filters Card -->
-  <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">
+  <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-6">
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-      <div>
-        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5"
-          >Select Employee</label
-        >
-        <div class="relative">
-          <select
-            [value]="selectedEmployeeId()"
-            (change)="setEmployee($event)"
-            class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all appearance-none cursor-pointer pr-10"
-          >
-            <option value="">Choose an employee...</option>
-            @for (emp of employees(); track emp.id) {
-              <option [value]="emp.id">{{ emp.name }} ({{ emp.employeeId }})</option>
-            }
-          </select>
-          <div
-            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+      @if (reportMode() === 'employee') {
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+            Select Employee *
+          </label>
+          <div class="relative">
+            <select
+              [value]="selectedEmployeeId()"
+              (change)="setEmployee($event)"
+              class="w-full border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all appearance-none cursor-pointer pr-10"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+              <option value="">Choose an employee...</option>
+              @for (emp of employees(); track emp.id) {
+                <option [value]="emp.id">{{ emp.name }} ({{ emp.employeeId }})</option>
+              }
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 dark:text-slate-500">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
           </div>
         </div>
-      </div>
+      }
 
       <div>
-        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5"
-          >From Date</label
-        >
+        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+          From Date
+        </label>
         <input
           type="date"
           [value]="from()"
           (input)="setFrom($event)"
-          class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all cursor-pointer"
+          class="w-full border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all cursor-pointer"
         />
       </div>
 
       <div>
-        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5"
-          >To Date</label
-        >
+        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+          To Date
+        </label>
         <input
           type="date"
           [value]="to()"
           (input)="setTo($event)"
-          class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all cursor-pointer"
+          class="w-full border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all cursor-pointer"
         />
       </div>
     </div>
 
-    <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+    <div class="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
       <button
         (click)="reset()"
         [disabled]="loading() || exporting()"
-        class="border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-50 text-slate-600 rounded-xl px-4 py-2 text-sm font-semibold transition-colors"
+        class="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 text-slate-600 dark:text-slate-300 rounded-xl px-4 py-2 text-sm font-semibold transition"
       >
         Reset Filters
       </button>
       <button
         (click)="search()"
-        [disabled]="loading() || !selectedEmployeeId()"
-        class="btn btn-primary"
+        [disabled]="loading() || (reportMode() === 'employee' && !selectedEmployeeId())"
+        class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-sm shadow-md transition disabled:opacity-50 flex items-center gap-2"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -94,524 +149,228 @@
           [class.animate-spin]="loading()"
         >
           @if (loading()) {
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3 3L22 4"
-            />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3 3L22 4" />
           } @else {
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           }
         </svg>
-        <span>{{ loading() ? 'Generating...' : 'Search' }}</span>
+        <span>{{ loading() ? 'Generating Report...' : 'Generate Report' }}</span>
       </button>
     </div>
   </div>
 
-  <!-- Report Data Container -->
-  @if (reportData()) {
-    <!-- Summary Section -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
-      <!-- Present Days -->
-      <div
-        class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm flex items-center gap-4"
-      >
-        <div
-          class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        </div>
-        <div>
-          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-0.5">
-            Present Days
-          </p>
-          <span class="text-xl font-bold text-slate-900">{{
-            reportData().summary.totalPresentDays
-          }}</span>
-        </div>
+  <!-- ==========================================
+       VIEW: COMPANY MASTER SUMMARY
+       ========================================== -->
+  @if (reportMode() === 'company') {
+    <div class="space-y-5">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-slate-900 dark:text-white">
+          Workforce Attendance Summary ({{ from().slice(0, 7) }})
+        </h3>
+        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">
+          Showing {{ companySummary().length }} active personnel
+        </span>
       </div>
 
-      <!-- Absent Days -->
-      <div
-        class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm flex items-center gap-4"
-      >
-        <div
-          class="w-10 h-10 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 shrink-0"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        </div>
-        <div>
-          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-0.5">
-            Absent Days
-          </p>
-          <span class="text-xl font-bold text-slate-900">{{
-            reportData().summary.totalAbsentDays
-          }}</span>
-        </div>
-      </div>
-
-      <!-- Late Days -->
-      <div
-        class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm flex items-center gap-4"
-      >
-        <div
-          class="w-10 h-10 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 shrink-0"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        </div>
-        <div>
-          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-0.5">
-            Late Days
-          </p>
-          <span class="text-xl font-bold text-slate-900">{{
-            reportData().summary.totalLateDays
-          }}</span>
-        </div>
-      </div>
-
-      <!-- Working Hours -->
-      <div
-        class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm flex items-center gap-4"
-      >
-        <div
-          class="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shrink-0"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 8c-1.657 0-3 .8-3 1.8 0 .9 1.343 1.2 3 1.5s3 .6 3 1.5c0 .9-1.343 1.8-3 1.8m0-5.4v-1.8m0 5.4v1.8M3 12a9 9 0 1118 0 9 9 0 01-18 0z"
-            />
-          </svg>
-        </div>
-        <div>
-          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-0.5">
-            Working Hours
-          </p>
-          <span class="text-xl font-bold text-slate-900">{{
-            reportData().summary.totalWorkingHours
-          }}</span>
+      <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead class="bg-slate-100/90 dark:bg-slate-800/95 border-b border-slate-200 dark:border-slate-700">
+              <tr>
+                <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4">Emp ID</th>
+                <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4">Employee Name</th>
+                <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4 text-center">Present</th>
+                <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4 text-center">Late</th>
+                <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4 text-center">Early Leave</th>
+                <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4 text-center">Absent</th>
+                <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4 text-right">Attendance Rate</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+              @for (row of companySummary(); track row.employeeCode || row.employeeId) {
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                  <td class="px-6 py-4 text-xs font-mono font-bold text-slate-900 dark:text-slate-100">
+                    {{ row.employeeCode || row.employeeId }}
+                  </td>
+                  <td class="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-white">
+                    {{ row.employeeName }}
+                  </td>
+                  <td class="px-6 py-4 text-sm text-center font-bold text-emerald-600 dark:text-emerald-400">
+                    {{ row.present || 0 }}
+                  </td>
+                  <td class="px-6 py-4 text-sm text-center font-bold text-amber-600 dark:text-amber-400">
+                    {{ row.late || 0 }}
+                  </td>
+                  <td class="px-6 py-4 text-sm text-center font-bold text-orange-600 dark:text-orange-400">
+                    {{ row.earlyLeave || 0 }}
+                  </td>
+                  <td class="px-6 py-4 text-sm text-center font-bold text-rose-600 dark:text-rose-400">
+                    {{ row.absent || 0 }}
+                  </td>
+                  <td class="px-6 py-4 text-sm text-right font-mono font-bold text-slate-900 dark:text-white">
+                    @let total = (row.present || 0) + (row.absent || 0);
+                    @let rate = total > 0 ? (row.present / total) * 100 : 0;
+                    <span [class]="rate >= 80 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'">
+                      {{ rate | number:'1.0-0' }}%
+                    </span>
+                  </td>
+                </tr>
+              }
+              @if (companySummary().length === 0) {
+                <tr>
+                  <td colspan="7" class="px-6 py-12 text-center text-slate-400 dark:text-slate-500">
+                    <p class="text-sm font-medium">No company attendance records found for this period.</p>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
+  }
 
-    <!-- Export Panel -->
-    <div
-      class="flex justify-between items-center bg-slate-50 border border-slate-200/60 px-6 py-3.5 rounded-2xl"
-    >
-      <span class="text-xs text-slate-500 font-medium"
-        >Download reports in multiple document formats:</span
-      >
-      <div class="flex gap-2">
-        <button
-          (click)="exportReport('excel')"
-          [disabled]="exporting()"
-          class="border border-emerald-200 bg-white hover:bg-emerald-50/50 disabled:opacity-50 text-emerald-700 rounded-xl px-3.5 py-2 text-xs font-semibold transition-colors flex items-center gap-1.5"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-3.5 w-3.5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
-          Excel
-        </button>
-        <button
-          (click)="exportReport('csv')"
-          [disabled]="exporting()"
-          class="border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-50 text-slate-700 rounded-xl px-3.5 py-2 text-xs font-semibold transition-colors flex items-center gap-1.5"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-3.5 w-3.5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
-          CSV
-        </button>
-        <button
-          (click)="exportReport('pdf')"
-          [disabled]="exporting()"
-          class="border border-rose-200 bg-white hover:bg-rose-50/50 disabled:opacity-50 text-rose-700 rounded-xl px-3.5 py-2 text-xs font-semibold transition-colors flex items-center gap-1.5"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-3.5 w-3.5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-            />
-          </svg>
-          PDF
-        </button>
+  <!-- ==========================================
+       VIEW: INDIVIDUAL EMPLOYEE DETAILED LOG
+       ========================================== -->
+  @if (reportMode() === 'employee' && reportData()) {
+    <div class="space-y-6">
+      <!-- Summary Metric Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+          <p class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Present Days</p>
+          <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+            {{ reportData().summary?.presentDays || reportData().presentDays || 0 }}
+          </p>
+        </div>
+        <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+          <p class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Late Arrivals</p>
+          <p class="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">
+            {{ reportData().summary?.lateDays || reportData().lateDays || 0 }}
+          </p>
+        </div>
+        <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+          <p class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Absent Days</p>
+          <p class="text-2xl font-bold text-rose-600 dark:text-rose-400 mt-1">
+            {{ reportData().summary?.absentDays || reportData().absentDays || 0 }}
+          </p>
+        </div>
+        <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+          <p class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Total Work Hours</p>
+          <p class="text-2xl font-bold text-amber-500 mt-1">
+            {{ reportData().summary?.totalWorkingHours || '0' }}
+          </p>
+        </div>
       </div>
-    </div>
 
-    <!-- Employee & Shift Details Card -->
-    @if (selectedEmployee()) {
-      <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+      <!-- Employee Information Header -->
+      @if (selectedEmployee()) {
+        <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div class="flex items-center gap-3">
-            <div
-              class="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-lg"
-            >
+            <div class="w-11 h-11 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 font-bold text-lg flex items-center justify-center">
               {{ selectedEmployee()?.name?.charAt(0) || 'E' }}
             </div>
             <div>
-              <h3 class="text-base font-bold text-slate-900">Employee & Work Shift Profile</h3>
-              <p class="text-xs text-slate-500">Important details and assigned shift parameters</p>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white">
+                {{ selectedEmployee()?.name }}
+              </h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400">
+                ID: {{ selectedEmployee()?.employeeId }} &bull; {{ selectedEmployee()?.designation || 'Staff' }} &bull; {{ selectedEmployee()?.email }}
+              </p>
             </div>
           </div>
-          <span
-            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border"
-            [class]="
-              selectedEmployee()?.status === 'active'
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
-                : 'bg-rose-50 text-rose-700 border-rose-100'
-            "
-          >
-            {{ selectedEmployee()?.status | titlecase }}
-          </span>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Employee Details Column -->
-          <div class="space-y-4">
-            <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Employee Information
-            </h4>
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <span class="block text-xs font-medium text-slate-400">Employee ID</span>
-                <span class="text-sm font-semibold text-slate-800">{{
-                  selectedEmployee()?.employeeId
-                }}</span>
-              </div>
-              <div>
-                <span class="block text-xs font-medium text-slate-400">Full Name</span>
-                <span class="text-sm font-semibold text-slate-800">{{
-                  selectedEmployee()?.name
-                }}</span>
-              </div>
-              <div>
-                <span class="block text-xs font-medium text-slate-400">Designation</span>
-                <span class="text-sm font-semibold text-slate-800">{{
-                  selectedEmployee()?.designation || 'N/A'
-                }}</span>
-              </div>
-              <div>
-                <span class="block text-xs font-medium text-slate-400">Email Address</span>
-                <span
-                  class="text-sm font-semibold text-slate-800 truncate block"
-                  [title]="selectedEmployee()?.email"
-                  >{{ selectedEmployee()?.email }}</span
-                >
-              </div>
-              <div>
-                <span class="block text-xs font-medium text-slate-400">Phone Number</span>
-                <span class="text-sm font-semibold text-slate-800">{{
-                  selectedEmployee()?.phone || 'N/A'
-                }}</span>
-              </div>
-              <div>
-                <span class="block text-xs font-medium text-slate-400">Joining Date</span>
-                <span class="text-sm font-semibold text-slate-800 font-mono">
-                  {{
-                    selectedEmployee()?.joiningDate
-                      ? (selectedEmployee()?.joiningDate | date: 'mediumDate')
-                      : 'N/A'
-                  }}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Shift & Important Info Column -->
-          <div
-            class="space-y-4 border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6"
-          >
-            <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Work Shift Configuration
-            </h4>
-            @if (selectedEmployeeShift()) {
-              <div class="space-y-4">
-                <div
-                  class="flex items-center gap-3 bg-slate-50/80 border border-slate-100 rounded-xl p-3.5"
-                >
-                  <div
-                    class="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shrink-0"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-4.5 w-4.5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <span class="block text-xs font-medium text-slate-400">Shift Name</span>
-                    <span class="text-sm font-bold text-slate-800">{{
-                      selectedEmployeeShift().name
-                    }}</span>
-                  </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                  <div>
-                    <span class="block text-xs font-medium text-slate-400">Start Time</span>
-                    <span class="text-sm font-semibold text-slate-800">{{
-                      formatTime(selectedEmployeeShift().startTime)
-                    }}</span>
-                  </div>
-                  <div>
-                    <span class="block text-xs font-medium text-slate-400">End Time</span>
-                    <span class="text-sm font-semibold text-slate-800">{{
-                      formatTime(selectedEmployeeShift().endTime)
-                    }}</span>
-                  </div>
-                  <div>
-                    <span class="block text-xs font-medium text-slate-400">Grace Period</span>
-                    <span class="text-sm font-semibold text-slate-800"
-                      >{{ selectedEmployeeShift().gracePeriod || 0 }} Minutes</span
-                    >
-                  </div>
-                  <div>
-                    <span class="block text-xs font-medium text-slate-400">Employment Role</span>
-                    <span class="text-sm font-semibold text-slate-800 uppercase">{{
-                      selectedEmployee()?.role
-                    }}</span>
-                  </div>
-                </div>
-              </div>
-            } @else {
-              <div
-                class="flex flex-col items-center justify-center py-6 text-center text-slate-400"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-8 w-8 text-slate-300 mb-2"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                  />
-                </svg>
-                <p class="text-sm font-semibold text-slate-900">No Shift Assigned</p>
-                <p class="text-xs text-slate-500">
-                  This employee does not have a designated shift assigned.
-                </p>
-              </div>
-            }
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+              Shift: {{ selectedEmployeeShift()?.name || 'Standard 10:00 - 19:00' }}
+            </span>
           </div>
         </div>
-      </div>
-    }
+      }
 
-    <!-- Table Card -->
-    <div class="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-sm">
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-          <thead>
-            <tr class="border-b border-slate-100 bg-slate-50/70">
-              <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
-                Employee ID
-              </th>
-              <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
-                Employee Name
-              </th>
-              <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
-                Date
-              </th>
-              <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
-                Check In
-              </th>
-              <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
-                Check Out
-              </th>
-              <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
-                Working Hours
-              </th>
-              <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
-                Overtime Hours
-              </th>
-              <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
-                Status
-              </th>
-              <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
-                Remarks
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of reportData().items; track row.date) {
-              <tr class="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
-                <td class="px-6 py-4 text-sm font-medium text-slate-900">{{ row.employeeId }}</td>
-                <td class="px-6 py-4 text-sm text-slate-700">{{ row.employeeName }}</td>
-                <td class="px-6 py-4 text-sm text-slate-700 font-medium">{{ row.date }}</td>
-                <td class="px-6 py-4 text-sm text-slate-600">{{ row.checkInTime }}</td>
-                <td class="px-6 py-4 text-sm text-slate-600">{{ row.checkOutTime }}</td>
-                <td class="px-6 py-4 text-sm text-slate-700 font-medium">{{ row.workingHours }}</td>
-                <td class="px-6 py-4 text-sm text-slate-700 font-medium">
-                  {{ row.overtimeHours }}
-                </td>
-                <td class="px-6 py-4 text-sm">
-                  <span
-                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border"
-                    [class]="
-                      row.status === 'Present'
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
-                        : row.status === 'Late'
-                          ? 'bg-amber-50 text-amber-700 border-amber-100'
-                          : row.status === 'Half-Day'
-                            ? 'bg-orange-50 text-orange-700 border-orange-100'
-                            : row.status === 'Absent'
-                              ? 'bg-rose-50 text-rose-700 border-rose-100'
-                              : row.status === 'Leave'
-                                ? 'bg-sky-50 text-sky-700 border-sky-100'
-                                : row.status === 'Weekend'
-                                  ? 'bg-slate-50 text-slate-600 border-slate-200'
-                                  : row.status === 'Holiday'
-                                    ? 'bg-indigo-50 text-indigo-700 border-indigo-100'
-                                    : 'bg-slate-50 text-slate-600 border-slate-200/60'
-                    "
-                  >
-                    {{ row.status }}
-                  </span>
-                </td>
-                <td
-                  class="px-6 py-4 text-sm text-slate-500 italic max-w-xs truncate"
-                  [title]="row.remarks"
-                >
-                  {{ row.remarks }}
-                </td>
-              </tr>
-            } @empty {
+      <!-- Detailed Logs Table -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead class="bg-slate-100/90 dark:bg-slate-800/95 border-b border-slate-200 dark:border-slate-700">
               <tr>
-                <td colspan="9" class="px-6 py-12 text-center text-slate-400">
-                  <span class="text-sm font-medium">No records found for the selected range</span>
-                </td>
+                <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4">Date</th>
+                <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4">Shift In</th>
+                <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4">Shift Out</th>
+                <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4">Check In</th>
+                <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4">In Status</th>
+                <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4">Check Out</th>
+                <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4">Work Duration</th>
+                <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4 text-center">Status</th>
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+              @for (row of reportData()?.items || reportData()?.logs || []; track row.date) {
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                  <td class="px-6 py-4 text-xs font-mono font-medium text-slate-900 dark:text-slate-100">
+                    {{ row.date ? (row.date | date:'yyyy-MM-dd') : '—' }}
+                  </td>
+                  <td class="px-6 py-4 text-xs text-slate-500 dark:text-slate-400">
+                    {{ row.shiftIn || selectedEmployeeShift()?.startTime || '10:00' }}
+                  </td>
+                  <td class="px-6 py-4 text-xs text-slate-500 dark:text-slate-400">
+                    {{ row.shiftOut || selectedEmployeeShift()?.endTime || '19:00' }}
+                  </td>
+                  <td class="px-6 py-4 text-xs font-semibold text-slate-800 dark:text-slate-200">
+                    {{ row.checkInTime || (row.checkIn?.time ? (row.checkIn.time | date:'shortTime') : '—') }}
+                  </td>
+                  <td class="px-6 py-4 text-xs">
+                    <span [class]="(row.checkIn?.status === 'Late' || row.checkInStatus === 'Late') ? 'text-amber-600 dark:text-amber-400 font-bold' : 'text-emerald-600 dark:text-emerald-400 font-medium'">
+                      {{ row.checkInStatus || row.checkIn?.status || (row.checkInTime ? 'On Time' : 'Absent') }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-xs font-semibold text-slate-800 dark:text-slate-200">
+                    {{ row.checkOutTime || (row.checkOut?.time ? (row.checkOut.time | date:'shortTime') : '—') }}
+                  </td>
+                  <td class="px-6 py-4 text-xs font-semibold text-slate-800 dark:text-slate-200">
+                    {{ row.workingHours || (row.workingMinutes ? (row.workingMinutes / 60 | number:'1.1-1') + ' hrs' : '0 hrs') }}
+                  </td>
+                  <td class="px-6 py-4 text-center">
+                    <span
+                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border"
+                      [class]="
+                        (row.status === 'Present' || (!row.status && row.checkInTime))
+                          ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
+                          : row.status === 'Late'
+                            ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800'
+                            : 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800'
+                      "
+                    >
+                      {{ row.status || (row.checkInTime ? 'Present' : 'Absent') }}
+                    </span>
+                  </td>
+                </tr>
+              }
+              @if (!(reportData()?.items?.length) && !(reportData()?.logs?.length)) {
+                <tr>
+                  <td colspan="8" class="px-6 py-12 text-center text-slate-400 dark:text-slate-500">
+                    <p class="text-sm font-medium">No attendance records found for this employee in the selected date range.</p>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
-  } @else {
+  } @else if (reportMode() === 'employee' && !reportData()) {
     <!-- Empty State -->
-    <div
-      class="bg-white border border-slate-200/80 rounded-2xl p-12 text-center text-slate-400 shadow-sm"
-    >
+    <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-12 text-center text-slate-400 dark:text-slate-500 shadow-sm">
       <div class="flex flex-col items-center gap-3">
-        <div
-          class="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 shrink-0"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
+        <div class="w-12 h-12 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 flex items-center justify-center text-slate-400 dark:text-slate-500 shrink-0">
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
         </div>
         <div class="space-y-1">
-          <h4 class="text-sm font-semibold text-slate-900">No Report Generated</h4>
-          <p class="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
-            Please choose an employee and select a date range, then click "Search" to view the
-            detailed attendance report.
+          <h4 class="text-sm font-semibold text-slate-900 dark:text-white">No Report Generated Yet</h4>
+          <p class="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
+            Please choose an employee and click "Generate Report" to view and export the detailed attendance sheet.
           </p>
         </div>
       </div>

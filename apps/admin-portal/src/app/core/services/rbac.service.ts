@@ -77,6 +77,7 @@ export const SYSTEM_MENU_GROUPS: MenuGroup[] = [
       { id: 'cash-flow', label: 'Cash Flow Ledger', route: '/commercial/cash-flow' },
       { id: 'transfers', label: 'Bank/Cash Transfer', route: '/commercial/transfers' },
       { id: 'shareholders', label: 'Shareholder Wallets', route: '/commercial/shareholders' },
+      { id: 'shareholder-portal', label: 'Shareholder Portal', route: '/shareholder/portal' },
     ],
   },
   {
@@ -137,6 +138,11 @@ export const DEFAULT_ROLES: RbacRole[] = [
   {
     name: 'Viewer',
     menus: ['dashboard', 'reports'],
+    isSystem: true,
+  },
+  {
+    name: 'Shareholder',
+    menus: ['shareholder-portal'],
     isSystem: true,
   },
 ];

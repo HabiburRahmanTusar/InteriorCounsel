@@ -20,6 +20,9 @@ export function roleGuard(...allowedRoles: string[]): CanActivateFn {
     if (role === 'employee') {
       return router.createUrlTree(['/attendance']);
     }
+    if (role === 'shareholder') {
+      return router.createUrlTree(['/shareholder/portal']);
+    }
     return router.createUrlTree(['/dashboard']);
   };
 }

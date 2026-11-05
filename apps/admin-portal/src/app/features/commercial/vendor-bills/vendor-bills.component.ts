@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommercialService, VendorBill, BillItem } from '../../../core/services/commercial.service';
+import { ExportService } from '../../../core/services/export.service';
 
 @Component({
   selector: 'wfm-vendor-bills',
@@ -11,6 +12,7 @@ import { CommercialService, VendorBill, BillItem } from '../../../core/services/
 })
 export class VendorBillsComponent implements OnInit {
   private commercialService = inject(CommercialService);
+  private exportService = inject(ExportService);
 
   readonly vendorBills = signal<VendorBill[]>([]);
   readonly vendors = signal<any[]>([]);
@@ -205,4 +207,56 @@ export class VendorBillsComponent implements OnInit {
       });
     }
   }
+
+  exportExcel() {
+    const list = this.vendorBills();
+    if (!list || list.length === 0) {
+      alert('No vendor purchase bills to export');
+      return;
+    }
+    const rows = list.map((vb: any) => [
+      vb.billNumber || vb.billRef || '—',
+      vb.date ? new Date(vb.date).toISOString().slice(0, 10) : '—',
+      vb.vendorId?.name || vb.vendorName || 'Supplier',
+      vb.category || 'General',
+      vb.totalAmount || 0,
+      vb.paidAmount || 0,
+      vb.dueAmount || ((vb.totalAmount || 0) - (vb.paidAmount || 0)) || 0,
+      vb.paymentStatus || 'Pending',
+    ]);
+    this.exportService.exportToExcel({
+      filename: 'InteriorCounsel_Vendor_Purchase_Bills',
+      title: 'Supplier Purchase & Vendor Bills Register',
+      subtitle: 'Total Bills: ' + rows.length,
+      headers: ['Bill Number', 'Date', 'Supplier / Vendor', 'Category', 'Total Billed (BDT)', 'Paid (BDT)', 'Due (BDT)', 'Status'],
+      rows,
+    });
+  }
+
+  exportPdf() {
+    const list = this.vendorBills();
+    if (!list || list.length === 0) {
+      alert('No vendor purchase bills to export');
+      return;
+    }
+    const rows = list.map((vb: any) => [
+      vb.billNumber || vb.billRef || '—',
+      vb.date ? new Date(vb.date).toISOString().slice(0, 10) : '—',
+      vb.vendorId?.name || vb.vendorName || 'Supplier',
+      vb.category || 'General',
+      (vb.totalAmount || 0).toLocaleString(),
+      (vb.paidAmount || 0).toLocaleString(),
+      (((vb.totalAmount || 0) - (vb.paidAmount || 0))).toLocaleString(),
+      vb.paymentStatus || 'Pending',
+    ]);
+    this.exportService.exportToPdf({
+      filename: 'InteriorCounsel_Vendor_Purchase_Bills',
+      title: 'Supplier Purchase & Vendor Bills Register',
+      subtitle: 'Total Purchase Invoices: ' + rows.length,
+      headers: ['Bill No', 'Date', 'Supplier', 'Category', 'Total (Tk)', 'Paid (Tk)', 'Due (Tk)', 'Status'],
+      rows,
+      orientation: 'landscape',
+    });
+  }
+
 }

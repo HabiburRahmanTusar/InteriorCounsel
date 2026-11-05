@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CommercialService } from '../../../core/services/commercial.service';
 import { EmployeeService } from '../../../core/services/employee.service';
+import { ExportService } from '../../../core/services/export.service';
 
 @Component({
   selector: 'wfm-shareholders',
@@ -14,6 +15,7 @@ import { EmployeeService } from '../../../core/services/employee.service';
 export class ShareholdersComponent implements OnInit {
   private commercialService = inject(CommercialService);
   private employeeService = inject(EmployeeService);
+  private exportService = inject(ExportService);
 
   readonly wallets = signal<any[]>([]);
   readonly employees = signal<any[]>([]);
@@ -247,5 +249,46 @@ export class ShareholdersComponent implements OnInit {
 
   get totalWalletLiabilities(): number {
     return this.wallets().reduce((acc, w) => acc + (w.currentBalance || 0), 0);
+  }
+
+  exportWalletsExcel(): void {
+    const rows = this.wallets().map((w: any, idx: number) => [
+      idx + 1,
+      w.shareholderId?.name || 'Unnamed',
+      w.shareholderId?.designation || 'Partner',
+      w.shareholderId?.email || '',
+      `${w.sharePercentage}%`,
+      w.totalDistributed || 0,
+      w.totalWithdrawn || 0,
+      w.currentBalance || 0,
+    ]);
+
+    this.exportService.exportToExcel({
+      filename: 'Shareholder_Equity_Wallets',
+      title: 'Interior Counsel — Shareholder Equity & Wallets',
+      subtitle: `Period: ${this.selectedMonth} | Active Shareholders: ${this.wallets().length}`,
+      headers: ['#', 'Partner Name', 'Designation', 'Email', 'Equity %', 'Total Distributed (BDT)', 'Total Withdrawn (BDT)', 'Current Balance (BDT)'],
+      rows,
+    });
+  }
+
+  exportWalletsPdf(): void {
+    const rows = this.wallets().map((w: any, idx: number) => [
+      idx + 1,
+      w.shareholderId?.name || 'Unnamed',
+      w.shareholderId?.designation || 'Partner',
+      `${w.sharePercentage}%`,
+      `৳${Number(w.totalDistributed || 0).toLocaleString()}`,
+      `৳${Number(w.totalWithdrawn || 0).toLocaleString()}`,
+      `৳${Number(w.currentBalance || 0).toLocaleString()}`,
+    ]);
+
+    this.exportService.exportToPdf({
+      filename: 'Shareholder_Equity_Wallets',
+      title: 'Interior Counsel — Shareholder Equity & Wallets',
+      subtitle: `Period: ${this.selectedMonth}`,
+      headers: ['#', 'Partner Name', 'Designation', 'Equity %', 'Total Distributed', 'Withdrawn', 'Balance'],
+      rows,
+    });
   }
 }

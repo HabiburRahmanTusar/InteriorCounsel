@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommercialService } from '../../../core/services/commercial.service';
+import { ExportService } from '../../../core/services/export.service';
 import { EmployeeService } from '../../../core/services/employee.service';
 import { takaInWords } from '../billing/billing.component';
 
@@ -155,6 +156,7 @@ const INITIAL_PROJECTS: Project[] = [
 })
 export class ProjectsComponent implements OnInit {
   private commercialService = inject(CommercialService);
+  private exportService = inject(ExportService);
   private employeeService = inject(EmployeeService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -672,5 +674,61 @@ export class ProjectsComponent implements OnInit {
       this.showToast(`Quotation ${q.quotationNumber} deleted`);
     }
   }
-}
 
+  exportExcel() {
+    const list = this.filteredProjects ? this.filteredProjects() : this.projects();
+    if (!list || list.length === 0) {
+      this.toastMessage.set('No projects to export');
+      return;
+    }
+    const rows = list.map((p) => [
+      p.projectId || '—',
+      p.name || '—',
+      p.customer || '—',
+      p.type || 'Residential',
+      p.loc || 'Dhaka',
+      p.manager || '—',
+      p.budget || 0,
+      p.received || 0,
+      p.spent || 0,
+      (p.progress || 0) + '%',
+      p.status || 'In Progress',
+    ]);
+    this.exportService.exportToExcel({
+      filename: 'InteriorCounsel_Projects_Portfolio',
+      title: 'Interior Counsel — Projects & Sites Portfolio',
+      subtitle: 'Total Projects: ' + rows.length,
+      headers: ['Project Code', 'Project Name', 'Client / Customer', 'Type', 'Location', 'Project Manager', 'Budget (BDT)', 'Received (BDT)', 'Spent (BDT)', 'Progress', 'Status'],
+      rows,
+    });
+    this.toastMessage.set('Projects exported to Excel');
+  }
+
+  exportPdf() {
+    const list = this.filteredProjects ? this.filteredProjects() : this.projects();
+    if (!list || list.length === 0) {
+      this.toastMessage.set('No projects to export');
+      return;
+    }
+    const rows = list.map((p) => [
+      p.projectId || '—',
+      p.name || '—',
+      p.customer || '—',
+      p.loc || '—',
+      (p.budget || 0).toLocaleString(),
+      (p.received || 0).toLocaleString(),
+      (p.progress || 0) + '%',
+      p.status || 'In Progress',
+    ]);
+    this.exportService.exportToPdf({
+      filename: 'InteriorCounsel_Projects_Portfolio',
+      title: 'Interior Counsel — Projects Portfolio',
+      subtitle: 'Total Active Projects: ' + rows.length,
+      headers: ['Code', 'Project Name', 'Client', 'Location', 'Budget (Tk)', 'Received (Tk)', 'Progress', 'Status'],
+      rows,
+      orientation: 'landscape',
+    });
+    this.toastMessage.set('Projects exported to PDF');
+  }
+
+}

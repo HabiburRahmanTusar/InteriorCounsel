@@ -5,17 +5,43 @@
       <div class="flex items-center gap-2 text-xs font-semibold text-slate-400 mb-1">
         <span>Interior Operations</span>
         <span>/</span>
-        <span class="text-indigo-600 font-bold">Suppliers</span>
+        <span class="text-amber-600 dark:text-amber-400 font-bold">Suppliers</span>
       </div>
-      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Suppliers & Vendor Procurement</h1>
+      <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Suppliers & Vendor Procurement</h1>
       <p class="text-sm text-slate-500 mt-1">
         Material suppliers, fitting contractors, bank details, and supplier discount adjustments.
       </p>
     </div>
     <div>
+      
+    <div class="flex items-center gap-2">
       <button
-        (click)="openCreateModal()"
-        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 shadow-sm transition"
+        (click)="exportExcel()"
+        type="button"
+        title="Download Excel Spreadsheet (.xlsx)"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-emerald-600/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-bold text-xs transition shadow-sm"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <span>Excel</span>
+      </button>
+
+      <button
+        (click)="exportPdf()"
+        type="button"
+        title="Download Official PDF (.pdf)"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-rose-600/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 font-bold text-xs transition shadow-sm"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+        <span>PDF</span>
+      </button>
+    </div>
+
+    <button (click)="openCreateModal()"
+        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 text-white font-semibold text-sm hover:bg-amber-600 text-slate-950 font-bold shadow-sm transition"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -26,10 +52,10 @@
   </div>
 
   <!-- Vendors Table -->
-  <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+  <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs text-slate-600">
-        <thead class="bg-slate-50 text-[11px] uppercase font-bold text-slate-400 border-b border-slate-100">
+        <thead class="bg-slate-100/90 dark:bg-slate-800/95 text-xs font-bold uppercase text-slate-700 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700">
           <tr>
             <th class="py-3 px-4">Vendor Name</th>
             <th class="py-3 px-4">Category</th>
@@ -44,7 +70,7 @@
         <tbody class="divide-y divide-slate-100">
           @for (v of vendors(); track v._id) {
             <tr class="hover:bg-slate-50/50 transition">
-              <td class="py-3.5 px-4 font-semibold text-slate-900">
+              <td class="py-3.5 px-4 font-semibold text-slate-900 dark:text-white">
                 <div class="flex items-center gap-3">
                   <div class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 font-bold flex items-center justify-center text-xs">
                     {{ (v.name || 'V').slice(0, 2).toUpperCase() }}
@@ -72,7 +98,7 @@
                   <span class="text-slate-400 italic">Cash / Unspecified</span>
                 }
               </td>
-              <td class="py-3.5 px-4 text-right font-medium text-slate-900">
+              <td class="py-3.5 px-4 text-right font-medium text-slate-900 dark:text-white">
                 ৳ {{ (v.totalPurchased || 0) | number:'1.2-2' }}
               </td>
               <td class="py-3.5 px-4 text-right font-bold text-emerald-600">
@@ -123,7 +149,7 @@
       <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 animate-in zoom-in-95 duration-150">
         <div class="flex items-center justify-between pb-3 border-b border-slate-100">
           <div>
-            <h3 class="text-base font-bold text-slate-900">Supplier Discount — {{ activeVendor().name }}</h3>
+            <h3 class="text-base font-bold text-slate-900 dark:text-white">Supplier Discount — {{ activeVendor().name }}</h3>
             <p class="text-xs text-slate-500">Record agreed discount from supplier on bill procurement.</p>
           </div>
           <button (click)="showDiscountModal.set(false)" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
@@ -135,7 +161,7 @@
               <label class="block font-semibold text-slate-700 mb-1">Select Purchase Invoice / Bill *</label>
               <select
                 [(ngModel)]="discountForm.vendorBillId"
-                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
               >
                 @for (b of vendorBills(); track b._id) {
                   <option [value]="b._id">
@@ -154,7 +180,7 @@
                 </div>
                 <div class="flex justify-between">
                   <span class="text-slate-500">Total Purchase Amount:</span>
-                  <span class="font-bold text-slate-900">৳ {{ selectedVendorBill.totalAmount | number:'1.2-2' }}</span>
+                  <span class="font-bold text-slate-900 dark:text-white">৳ {{ selectedVendorBill.totalAmount | number:'1.2-2' }}</span>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-slate-500">Discount Already Given:</span>
@@ -162,7 +188,7 @@
                 </div>
                 <div class="flex justify-between pt-1 border-t border-slate-200">
                   <span class="text-slate-600 font-bold">Current Net Purchase:</span>
-                  <span class="font-bold text-slate-900">৳ {{ (selectedVendorBill.totalAmount - (selectedVendorBill.discountAmount || 0)) | number:'1.2-2' }}</span>
+                  <span class="font-bold text-slate-900 dark:text-white">৳ {{ (selectedVendorBill.totalAmount - (selectedVendorBill.discountAmount || 0)) | number:'1.2-2' }}</span>
                 </div>
               </div>
             }
@@ -172,7 +198,7 @@
                 <label class="block font-semibold text-slate-700 mb-1">Discount Type</label>
                 <select
                   [(ngModel)]="discountForm.type"
-                  class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+                  class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
                 >
                   <option value="Fixed">Fixed Amount (৳)</option>
                   <option value="Percent">Percentage (%)</option>
@@ -187,7 +213,7 @@
                   step="0.01"
                   [(ngModel)]="discountForm.value"
                   placeholder="0.00"
-                  class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
             </div>
@@ -199,7 +225,7 @@
                   <span>Adjusted Discount:</span>
                   <span class="font-bold">- ৳ {{ calculatedDiscountAmount | number:'1.2-2' }}</span>
                 </div>
-                <div class="flex justify-between font-bold text-slate-900 pt-1 border-t border-emerald-200">
+                <div class="flex justify-between font-bold text-slate-900 dark:text-white pt-1 border-t border-emerald-200">
                   <span>Net Purchase Payable After Discount:</span>
                   <span>৳ {{ remainingNetPurchase | number:'1.2-2' }}</span>
                 </div>
@@ -212,7 +238,7 @@
                 type="text"
                 [(ngModel)]="discountForm.note"
                 placeholder="e.g. 5% rebate agreed on bulk glass purchase"
-                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
           </div>
@@ -257,7 +283,7 @@
       <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col p-6 animate-in zoom-in-95 duration-150">
         <div class="flex items-center justify-between pb-3 border-b border-slate-100">
           <div>
-            <h3 class="text-base font-bold text-slate-900">{{ activeVendor().name }} — Discount History</h3>
+            <h3 class="text-base font-bold text-slate-900 dark:text-white">{{ activeVendor().name }} — Discount History</h3>
             <p class="text-xs text-slate-500">Cumulative supplier discounts received: <b class="text-emerald-600">৳ {{ (activeVendor().totalDiscountReceived || 0) | number:'1.2-2' }}</b></p>
           </div>
           <button (click)="showHistoryModal.set(false)" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
@@ -279,7 +305,7 @@
               @for (d of (activeVendor().discounts || []); track d._id) {
                 <tr class="hover:bg-slate-50/50">
                   <td class="py-2.5 px-3 text-slate-500">{{ d.date | date:'dd/MM/yyyy' }}</td>
-                  <td class="py-2.5 px-3 font-semibold text-slate-900">{{ d.billNo || '—' }} ({{ d.supplierRef || '—' }})</td>
+                  <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ d.billNo || '—' }} ({{ d.supplierRef || '—' }})</td>
                   <td class="py-2.5 px-3">{{ d.type }} ({{ d.value }}{{ d.type === 'Percent' ? '%' : '৳' }})</td>
                   <td class="py-2.5 px-3 text-right font-bold text-emerald-600">৳ {{ d.amount | number:'1.2-2' }}</td>
                   <td class="py-2.5 px-3 text-slate-400 max-w-xs truncate">{{ d.note || '—' }}</td>
@@ -328,7 +354,7 @@
               <span class="text-xs text-slate-400">•</span>
               <span class="text-xs text-slate-500 font-medium">Sales Bill Integration</span>
             </div>
-            <h2 class="text-xl font-bold text-slate-900 mt-1">Vendor Procurement & Supplier Setup</h2>
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white mt-1">Vendor Procurement & Supplier Setup</h2>
             <p class="text-xs text-slate-500 mt-0.5">
               Link master customer sales bill, view project & salesperson specs, import product lines with rates, and register or assign a vendor.
             </p>
@@ -383,7 +409,7 @@
                     [(ngModel)]="billSearch"
                     (input)="onBillSearchChange()"
                     placeholder="Enter bill number (e.g. A748, A747)..."
-                    class="w-full pl-9 pr-9 py-2.5 text-sm rounded-xl border border-indigo-200 bg-white font-mono font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs"
+                    class="w-full pl-9 pr-9 py-2.5 text-sm rounded-xl border border-indigo-200 bg-white font-mono font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-xs"
                   />
                   <!-- Search Icon Left -->
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-indigo-500">
@@ -460,7 +486,7 @@
                   type="text"
                   [(ngModel)]="billRef"
                   placeholder="Supplier Inv/Ref # (Optional)"
-                  class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-indigo-200 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs"
+                  class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-indigo-200 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-xs"
                 />
               </div>
             </div>
@@ -474,7 +500,7 @@
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                     Sales Person
                   </div>
-                  <div class="text-sm font-extrabold text-slate-900 truncate">
+                  <div class="text-sm font-extrabold text-slate-900 dark:text-white truncate">
                     {{ getSalespersonName(bill) }}
                   </div>
                   <div class="text-[11px] text-slate-400 mt-0.5">
@@ -488,7 +514,7 @@
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                     Customer / Client
                   </div>
-                  <div class="text-sm font-extrabold text-slate-900 truncate">
+                  <div class="text-sm font-extrabold text-slate-900 dark:text-white truncate">
                     {{ getCustomerName(bill) }}
                   </div>
                   <div class="text-[11px] text-slate-400 mt-0.5 truncate">
@@ -502,7 +528,7 @@
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
                     Project
                   </div>
-                  <div class="text-sm font-extrabold text-slate-900 truncate">
+                  <div class="text-sm font-extrabold text-slate-900 dark:text-white truncate">
                     {{ bill.projectName }}
                   </div>
                   <div class="text-[11px] text-slate-400 mt-0.5 truncate">
@@ -582,7 +608,7 @@
                             <input
                               type="checkbox"
                               [(ngModel)]="item.isSelected"
-                              class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                              class="h-4 w-4 rounded border-slate-300 text-amber-600 dark:text-amber-400 focus:ring-amber-500 cursor-pointer"
                               title="Tick to supply this product from this vendor"
                             />
                           </td>
@@ -591,7 +617,7 @@
                               type="text"
                               [(ngModel)]="item.description"
                               placeholder="Material or item name"
-                              class="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                              class="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-amber-500"
                             />
                           </td>
                           <td class="py-2 px-2">
@@ -599,7 +625,7 @@
                               type="text"
                               [(ngModel)]="item.unit"
                               placeholder="pcs"
-                              class="w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 text-center focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                              class="w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 text-center focus:outline-none focus:ring-1 focus:ring-amber-500"
                             />
                           </td>
                           <td class="py-2 px-2">
@@ -609,7 +635,7 @@
                               (ngModelChange)="calculateItemAmount(item)"
                               placeholder="1"
                               min="0"
-                              class="w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 text-right focus:outline-none focus:ring-1 focus:ring-indigo-500 font-semibold"
+                              class="w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 text-right focus:outline-none focus:ring-1 focus:ring-amber-500 font-semibold"
                             />
                           </td>
                           <td class="py-2 px-2">
@@ -619,7 +645,7 @@
                               (ngModelChange)="calculateItemAmount(item)"
                               placeholder="0"
                               min="0"
-                              class="w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 text-right focus:outline-none focus:ring-1 focus:ring-indigo-500 font-semibold"
+                              class="w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 text-right focus:outline-none focus:ring-1 focus:ring-amber-500 font-semibold"
                             />
                           </td>
                           <td class="py-2 px-3 text-right font-bold text-slate-800 text-xs">
@@ -651,7 +677,7 @@
                   </div>
                   <div class="flex items-center gap-3">
                     <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Procurement Cost:</span>
-                    <span class="text-lg font-extrabold text-indigo-600">৳{{ formItemsTotal | number:'1.2-2' }}</span>
+                    <span class="text-lg font-extrabold text-amber-600 dark:text-amber-400">৳{{ formItemsTotal | number:'1.2-2' }}</span>
                   </div>
                 </div>
               </div>
@@ -676,7 +702,7 @@
                   type="button"
                   (click)="vendorMode = 'new'"
                   class="px-3 py-1.5 rounded-lg font-semibold transition"
-                  [ngClass]="vendorMode === 'new' ? 'bg-white text-indigo-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'"
+                  [ngClass]="vendorMode === 'new' ? 'bg-white text-indigo-700 shadow-xs' : 'text-slate-600 hover:text-slate-900 dark:text-white'"
                 >
                   + Add New Vendor
                 </button>
@@ -684,7 +710,7 @@
                   type="button"
                   (click)="vendorMode = 'existing'"
                   class="px-3 py-1.5 rounded-lg font-semibold transition"
-                  [ngClass]="vendorMode === 'existing' ? 'bg-white text-indigo-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'"
+                  [ngClass]="vendorMode === 'existing' ? 'bg-white text-indigo-700 shadow-xs' : 'text-slate-600 hover:text-slate-900 dark:text-white'"
                 >
                   Select Existing Vendor
                 </button>
@@ -700,7 +726,7 @@
                     type="text"
                     [(ngModel)]="newVendor.name"
                     placeholder="e.g. Royal Glass & Aluminum or Hasan Hardware"
-                    class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                   />
                 </div>
 
@@ -709,7 +735,7 @@
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Category</label>
                     <select
                       [(ngModel)]="newVendor.category"
-                      class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                      class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
                     >
                       <option value="wood_board">Wood & Board (Plywood/MDF)</option>
                       <option value="hardware">Hardware & Fittings</option>
@@ -729,7 +755,7 @@
                       type="text"
                       [(ngModel)]="newVendor.phone"
                       placeholder="017XXXXXXXX"
-                      class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                     />
                   </div>
                 </div>
@@ -741,7 +767,7 @@
                       type="text"
                       [(ngModel)]="newVendor.bankName"
                       placeholder="e.g. City Bank"
-                      class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                     />
                   </div>
                   <div>
@@ -750,7 +776,7 @@
                       type="text"
                       [(ngModel)]="newVendor.bankAccountNumber"
                       placeholder="Account number"
-                      class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                     />
                   </div>
                   <div>
@@ -759,7 +785,7 @@
                       type="text"
                       [(ngModel)]="newVendor.bankAccountName"
                       placeholder="e.g. Royal Glass Ltd."
-                      class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                     />
                   </div>
                 </div>
@@ -771,7 +797,7 @@
                   <label class="block text-xs font-semibold text-slate-700 mb-1">Select Existing Vendor *</label>
                   <select
                     [(ngModel)]="selectedExistingVendorId"
-                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
                   >
                     <option value="" disabled>-- Select Vendor --</option>
                     @for (v of vendors(); track v._id) {
@@ -787,7 +813,7 @@
                   <button
                     type="button"
                     (click)="vendorMode = 'new'"
-                    class="text-indigo-600 hover:text-indigo-800 font-semibold"
+                    class="text-amber-600 dark:text-amber-400 hover:text-indigo-800 font-semibold"
                   >
                     + Add New Vendor
                   </button>
@@ -817,7 +843,7 @@
             <button
               type="button"
               (click)="saveVendorAndProcurement()"
-              class="px-5 py-2.5 rounded-xl bg-indigo-600 text-sm font-semibold text-white hover:bg-indigo-700 shadow-sm transition inline-flex items-center gap-2"
+              class="px-5 py-2.5 rounded-xl bg-amber-500 text-sm font-semibold text-white hover:bg-amber-600 text-slate-950 font-bold shadow-sm transition inline-flex items-center gap-2"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
               <span>Save Vendor & Procurement</span>

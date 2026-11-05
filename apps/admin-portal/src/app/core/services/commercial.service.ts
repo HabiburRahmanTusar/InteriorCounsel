@@ -229,6 +229,23 @@ export class CommercialService {
     return this.http.post<any>(`${this.baseUrl}/shareholders/distribute-profit`, { month });
   }
 
+  getShareholderPortalSummary(shareholderId?: string): Observable<any> {
+    let params = new HttpParams();
+    if (shareholderId) params = params.set('shareholderId', shareholderId);
+    return this.http.get<any>(`${this.baseUrl}/shareholders/portal-summary`, { params });
+  }
+
+  requestShareholderWithdrawal(payload: {
+    shareholderId?: string;
+    amount: number;
+    paymentMethod: string;
+    bankName?: string;
+    chequeNumber?: string;
+    notes?: string;
+  }): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/shareholders/request-withdrawal`, payload);
+  }
+
   // ---------------- Quotations ----------------
   getQuotations(params?: any): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/quotations`, { params });

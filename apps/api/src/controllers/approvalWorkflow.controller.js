@@ -62,7 +62,7 @@ exports.deleteWorkflow = async (req, res, next) => {
 exports.getRoles = async (req, res, next) => {
   try {
     const roles = await User.distinct('role');
-    const defaultRoles = ['admin', 'hr', 'manager', 'employee'];
+    const defaultRoles = ['admin', 'hr', 'manager', 'employee', 'shareholder'];
     // Merge, lowercase, and deduplicate
     const uniqueRoles = Array.from(
       new Set([...defaultRoles, ...roles].map((r) => r.toLowerCase()))

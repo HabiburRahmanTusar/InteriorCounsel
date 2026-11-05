@@ -23,10 +23,12 @@
     "@vercel/speed-insights": "^2.0.0",
     "chart.js": "^4.4.4",
     "dayjs": "^1.11.13",
+    "jspdf-autotable": "^5.0.9",
     "leaflet": "^1.9.4",
     "ngx-toastr": "^18.0.0",
     "rxjs": "^7.8.1",
     "tslib": "^2.7.0",
+    "xlsx": "^0.18.5",
     "zone.js": "^0.14.10"
   },
   "devDependencies": {
