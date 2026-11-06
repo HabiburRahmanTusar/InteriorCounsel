@@ -308,9 +308,9 @@
               <tbody>
                 @for (grp of acc.expGroups; track grp.name) {
                   <!-- Category Header -->
-                  <tr class="bg-[#eaf0fe] font-bold">
-                    <td class="text-amber-500">{{ grp.name }}</td>
-                    <td class="num text-amber-500">৳ {{ grp.totalCur | number }}</td>
+                  <tr class="bg-amber-500/10 dark:bg-amber-950/40 border-y border-amber-500/30 font-bold">
+                    <td class="text-amber-700 dark:text-amber-400 font-extrabold uppercase tracking-wider text-xs">{{ grp.name }}</td>
+                    <td class="num text-amber-700 dark:text-amber-400 font-extrabold">৳ {{ grp.totalCur | number }}</td>
                   </tr>
 
                   <!-- Category Rows -->

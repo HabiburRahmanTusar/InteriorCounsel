@@ -578,7 +578,10 @@ html.dark,
   /* Universal fix for any category header rows like Expenses Breakdown */
   .bg-\[\#eaf0fe\],
   tr.bg-\[\#eaf0fe\],
-  tr[class*="bg-[#eaf0fe]"] {
+  tr.category-row {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f59e0b !important;
     background-color: #1e293b !important;
     border-color: #334155 !important;
     color: #f59e0b !important;
