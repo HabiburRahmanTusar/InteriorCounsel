@@ -1,0 +1,370 @@
+<div class="p-6 max-w-7xl mx-auto space-y-6">
+  <!-- Header & Breadcrumbs -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2 text-xs font-semibold text-slate-400 mb-1">
+        <span>Interior Counsel</span>
+        <span>/</span>
+        <span>Inventory & Materials</span>
+      </div>
+      <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Products & Stock Inventory</h1>
+      <p class="text-xs text-slate-500 mt-0.5">Manage materials, storable items, standard rates, and inventory levels</p>
+    </div>
+
+    
+    <div class="flex items-center gap-2">
+      <button
+        (click)="exportExcel()"
+        type="button"
+        title="Download Excel Spreadsheet (.xlsx)"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-emerald-600/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-bold text-xs transition shadow-sm"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <span>Excel</span>
+      </button>
+
+      <button
+        (click)="exportPdf()"
+        type="button"
+        title="Download Official PDF (.pdf)"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-rose-600/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 font-bold text-xs transition shadow-sm"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+        <span>PDF</span>
+      </button>
+    </div>
+
+    <button type="button" (click)="openNewModal()"
+      class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-white text-xs font-bold shadow-xs transition"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4" />
+      </svg>
+      <span>New Product</span>
+    </button>
+  </div>
+
+  <!-- KPI Overview Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs space-y-1">
+      <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Products</span>
+      <div class="flex items-baseline justify-between">
+        <span class="text-2xl font-black text-slate-900 dark:text-white">{{ totalProducts() }}</span>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-semibold">Active Catalog</span>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs space-y-1">
+      <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Low Stock Warnings</span>
+      <div class="flex items-baseline justify-between">
+        <span class="text-2xl font-black text-amber-600">{{ lowStockCount() }}</span>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-semibold">Reorder Soon</span>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs space-y-1">
+      <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Estimated Valuation</span>
+      <div class="flex items-baseline justify-between">
+        <span class="text-2xl font-black text-emerald-600">৳ {{ totalStockValue() | number:'1.2-2' }}</span>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold">Asset Value</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & Search Toolbar -->
+  <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+    <div class="flex flex-wrap items-center gap-2">
+      <!-- Search Input -->
+      <div class="relative w-64">
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          (input)="loadProducts()"
+          placeholder="Search product or ref..."
+          class="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+        />
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+
+      <!-- Category Filter -->
+      <select
+        [(ngModel)]="selectedCategory"
+        (change)="loadProducts()"
+        class="px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+      >
+        @for (c of categories; track c) {
+          <option [value]="c">{{ c }}</option>
+        }
+      </select>
+
+      <!-- Product Type Filter -->
+      <select
+        [(ngModel)]="selectedType"
+        (change)="loadProducts()"
+        class="px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+      >
+        <option value="">All Types</option>
+        <option value="Storable Product">Storable Product</option>
+        <option value="Consumable">Consumable</option>
+        <option value="Service">Service</option>
+      </select>
+    </div>
+
+    <span class="text-xs text-slate-400 font-medium">Showing {{ filteredProducts().length }} product(s)</span>
+  </div>
+
+  <!-- Products Table -->
+  <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs border-collapse">
+        <thead>
+          <tr class="bg-slate-50/80 text-[11px] uppercase font-bold text-slate-400 border-b border-slate-100">
+            <th class="py-3 px-4">ITEM NAME</th>
+            <th class="py-3 px-4">TYPE</th>
+            <th class="py-3 px-4">CATEGORY</th>
+            <th class="py-3 px-4 text-right">SALES PRICE</th>
+            <th class="py-3 px-4 text-right">COST</th>
+            <th class="py-3 px-4 text-center">ON HAND</th>
+            <th class="py-3 px-4">UNIT</th>
+            <th class="py-3 px-4 text-center">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          @if (loading()) {
+            <tr>
+              <td colspan="8" class="py-8 text-center text-slate-400">Loading catalog...</td>
+            </tr>
+          } @else if (filteredProducts().length === 0) {
+            <tr>
+              <td colspan="8" class="py-8 text-center text-slate-400">No products found</td>
+            </tr>
+          } @else {
+            @for (p of filteredProducts(); track p._id || p.name) {
+              <tr class="hover:bg-slate-50/70 transition">
+                <td class="py-3 px-4">
+                  <div class="font-bold text-slate-900 dark:text-white">{{ p.name }}</div>
+                  @if (p.internalRef) {
+                    <span class="text-[11px] text-slate-400">Ref: {{ p.internalRef }}</span>
+                  }
+                </td>
+                <td class="py-3 px-4">
+                  <span
+                    class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                    [ngClass]="{
+                      'bg-amber-500/10 text-amber-600 dark:text-amber-400': p.productType === 'Storable Product',
+                      'bg-emerald-50 text-emerald-700': p.productType === 'Consumable',
+                      'bg-amber-50 text-amber-700': p.productType === 'Service'
+                    }"
+                  >
+                    {{ p.productType }}
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-slate-600 font-medium">{{ p.category }}</td>
+                <td class="py-3 px-4 text-right font-bold text-slate-900 dark:text-white">৳ {{ p.salesPrice | number:'1.2-2' }}</td>
+                <td class="py-3 px-4 text-right text-slate-500">৳ {{ p.cost | number:'1.2-2' }}</td>
+                <td class="py-3 px-4 text-center">
+                  <span
+                    class="font-extrabold"
+                    [class.text-rose-600]="p.productType === 'Storable Product' && (p.stockQuantity || 0) <= (p.minStockAlert || 5)"
+                    [class.text-slate-700]="(p.stockQuantity || 0) > (p.minStockAlert || 5)"
+                  >
+                    {{ p.stockQuantity || 0 }}
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-slate-500 uppercase font-semibold text-[11px]">{{ p.unit || 'sft' }}</td>
+                <td class="py-3 px-4 text-center">
+                  <div class="inline-flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      (click)="editProduct(p)"
+                      class="px-2.5 py-1 rounded-lg border border-slate-200 text-[11px] font-semibold text-slate-700 hover:bg-slate-100 transition"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      (click)="deleteProduct(p._id)"
+                      class="px-2.5 py-1 rounded-lg border border-rose-200 text-[11px] font-semibold text-rose-600 hover:bg-rose-50 transition"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- New / Edit Product Modal -->
+  @if (showModal()) {
+    <div class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-150 border border-slate-200 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <h3 class="text-base font-bold text-slate-900 dark:text-white">
+            {{ isEditing() ? 'Edit Product' : 'Create New Product' }}
+          </h3>
+          <button
+            type="button"
+            (click)="showModal.set(false)"
+            class="text-slate-400 hover:text-slate-600 text-lg leading-none"
+          >
+            &times;
+          </button>
+        </div>
+
+        <div class="space-y-4 text-xs">
+          <div>
+            <label class="block font-bold text-slate-800 mb-1">Product Name <span class="text-rose-500">*</span></label>
+            <input
+              type="text"
+              [(ngModel)]="formProduct.name"
+              placeholder="e.g. Gypsum Board 9mm Elephant Brand"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-semibold"
+            />
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-800 mb-1">Product Type</label>
+              <select
+                [(ngModel)]="formProduct.productType"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              >
+                <option value="Storable Product">Storable Product</option>
+                <option value="Consumable">Consumable</option>
+                <option value="Service">Service</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block font-bold text-slate-800 mb-1">Category</label>
+              <select
+                [(ngModel)]="formProduct.category"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              >
+                @for (c of categories; track c) {
+                  @if (c !== 'All') {
+                    <option [value]="c">{{ c }}</option>
+                  }
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block font-bold text-slate-800 mb-1">Sales Price (৳)</label>
+              <input
+                type="number"
+                [(ngModel)]="formProduct.salesPrice"
+                min="0"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 font-bold"
+              />
+              <span class="block text-[10px] text-slate-400 mt-1">
+                Incl. 15% VAT: ৳ {{ (formProduct.salesPrice * 1.15) | number:'1.2-2' }}
+              </span>
+            </div>
+
+            <div>
+              <label class="block font-bold text-slate-800 mb-1">Cost Price (৳)</label>
+              <input
+                type="number"
+                [(ngModel)]="formProduct.cost"
+                min="0"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              />
+            </div>
+
+            <div>
+              <label class="block font-bold text-slate-800 mb-1">Measurement Unit</label>
+              <input
+                type="text"
+                [(ngModel)]="formProduct.unit"
+                placeholder="sft, rft, nos..."
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-800 mb-1">Stock On Hand</label>
+              <input
+                type="number"
+                [(ngModel)]="formProduct.stockQuantity"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              />
+            </div>
+
+            <div>
+              <label class="block font-bold text-slate-800 mb-1">Low Stock Alert Level</label>
+              <input
+                type="number"
+                [(ngModel)]="formProduct.minStockAlert"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-800 mb-1">Internal Reference</label>
+              <input
+                type="text"
+                [(ngModel)]="formProduct.internalRef"
+                placeholder="e.g. PRD-1002"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              />
+            </div>
+
+            <div>
+              <label class="block font-bold text-slate-800 mb-1">Barcode / SKU</label>
+              <input
+                type="text"
+                [(ngModel)]="formProduct.barcode"
+                placeholder="Barcode"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-800 mb-1">Internal Notes</label>
+            <textarea
+              [(ngModel)]="formProduct.notes"
+              rows="2"
+              placeholder="Notes on supplier, specifications, technical details..."
+              class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
+          <button
+            type="button"
+            (click)="showModal.set(false)"
+            class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            (click)="saveProduct()"
+            class="px-4 py-2 rounded-xl bg-amber-500 text-white text-xs font-bold hover:bg-amber-600 text-slate-950 font-bold shadow-xs transition"
+          >
+            {{ isEditing() ? 'Update Product' : 'Create Product' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

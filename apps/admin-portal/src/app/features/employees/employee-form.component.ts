@@ -1,4 +1,5 @@
 import { Component, ChangeDetectionStrategy, signal, inject, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -8,12 +9,13 @@ import { EmployeeService } from '../../core/services/employee.service';
 import { ShiftService } from '../../core/services/shift.service';
 import { Shift } from '../../core/models/shift.model';
 import { AdminPolicyService, EmployeeType } from '../../core/services/admin-policy.service';
+import { ApprovalWorkflowService } from '../../core/services/approval-workflow.service';
 
 @Component({
   selector: 'wfm-employee-form',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, CommonModule],
   templateUrl: './employee-form.component.html',
 })
 export class EmployeeFormComponent implements OnDestroy {
@@ -23,6 +25,7 @@ export class EmployeeFormComponent implements OnDestroy {
   private employeeService = inject(EmployeeService);
   private shiftService = inject(ShiftService);
   private adminPolicyService = inject(AdminPolicyService);
+  private approvalWorkflowService = inject(ApprovalWorkflowService);
   private destroy$ = new Subject<void>();
 
   readonly loading = signal(true);
@@ -33,6 +36,12 @@ export class EmployeeFormComponent implements OnDestroy {
   readonly employeeTypes = signal<EmployeeType[]>([]);
   readonly isEdit = signal(false);
   readonly employeeId = signal<string | null>(null);
+  readonly roles = signal<string[]>([]);
+
+  capitalize(val: string): string {
+    if (!val) return '';
+    return val.charAt(0).toUpperCase() + val.slice(1);
+  }
 
   readonly form = this.fb.nonNullable.group({
     employeeId: [''],
@@ -42,6 +51,7 @@ export class EmployeeFormComponent implements OnDestroy {
     designation: [''],
     salary: [0],
     role: ['employee'],
+    customRole: [''],
     shiftId: [''],
     employeeType: [''],
     status: ['active'],
@@ -84,6 +94,15 @@ export class EmployeeFormComponent implements OnDestroy {
         takeUntil(this.destroy$),
       )
       .subscribe();
+
+    this.approvalWorkflowService
+      .getRoles()
+      .pipe(
+        tap((roles) => this.roles.set(roles)),
+        catchError(() => of([])),
+        takeUntil(this.destroy$),
+      )
+      .subscribe();
   }
 
   loadEmployee() {
@@ -96,6 +115,7 @@ export class EmployeeFormComponent implements OnDestroy {
       .getById(id)
       .pipe(
         tap((emp) => {
+          const isStandard = ['employee', 'manager', 'hr', 'admin'].includes(emp.role?.toLowerCase());
           this.form.patchValue({
             employeeId: emp.employeeId,
             name: emp.name,
@@ -103,7 +123,8 @@ export class EmployeeFormComponent implements OnDestroy {
             phone: emp.phone || '',
             designation: emp.designation || '',
             salary: emp.salary ?? 0,
-            role: emp.role,
+            role: isStandard ? emp.role : 'custom',
+            customRole: isStandard ? '' : emp.role,
             shiftId: (emp.shiftId as any)?._id || emp.shiftId || '',
             employeeType: (emp.employeeType as any)?._id || emp.employeeType || '',
             status: emp.status,
@@ -129,6 +150,11 @@ export class EmployeeFormComponent implements OnDestroy {
     this.saving.set(true);
     const raw = this.form.getRawValue();
     const payload: any = { ...raw };
+    if (payload.role === 'custom') {
+      payload.role = (payload.customRole || '').toLowerCase().trim();
+    }
+    delete payload.customRole;
+
     if (!payload.shiftId) payload.shiftId = null;
     if (!payload.employeeType) payload.employeeType = null;
     if (!payload.joiningDate) payload.joiningDate = null;

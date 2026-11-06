@@ -98,12 +98,12 @@ class LeaveProvider extends ChangeNotifier {
     return end.difference(start).inDays + 1;
   }
 
-  /// Submit a new leave request
   Future<bool> submitLeave({
     required DateTime startDate,
     required DateTime endDate,
     required String leaveType,
     required String reason,
+    bool halfDay = false,
   }) async {
     _isSaving = true;
     _errorMessage = null;
@@ -115,6 +115,7 @@ class LeaveProvider extends ChangeNotifier {
         endDate: endDate,
         leaveType: leaveType,
         reason: reason,
+        halfDay: halfDay,
       );
 
       if (response.success) {

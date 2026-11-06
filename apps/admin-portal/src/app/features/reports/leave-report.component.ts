@@ -1,23 +1,25 @@
 import { Component, ChangeDetectionStrategy, signal, inject, OnDestroy } from '@angular/core';
-import { DatePipe, TitleCasePipe } from '@angular/common';
+import { DatePipe, TitleCasePipe, CommonModule } from '@angular/common';
 import { Subject, of } from 'rxjs';
 import { catchError, finalize, tap, takeUntil } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 
 import { ReportService } from '../../core/services/report.service';
 import { EmployeeService } from '../../core/services/employee.service';
+import { ExportService } from '../../core/services/export.service';
 import { Employee } from '../../core/models/employee.model';
 
 @Component({
   selector: 'wfm-leave-report',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, TitleCasePipe],
+  imports: [CommonModule, DatePipe, TitleCasePipe],
   templateUrl: './leave-report.component.html',
 })
 export class LeaveReportComponent implements OnDestroy {
   private reportService = inject(ReportService);
   private employeeService = inject(EmployeeService);
+  private exportService = inject(ExportService);
   private toastr = inject(ToastrService);
   private destroy$ = new Subject<void>();
 
@@ -35,6 +37,8 @@ export class LeaveReportComponent implements OnDestroy {
 
   constructor() {
     this.loadEmployees();
+    // Auto load current month leave report on init
+    this.search();
   }
 
   ngOnDestroy() {
@@ -118,10 +122,77 @@ export class LeaveReportComponent implements OnDestroy {
     this.selectedLeaveType.set('');
     this.from.set(this.getStartOfMonth());
     this.to.set(this.getToday());
-    this.reportData.set(null);
+    this.search();
+  }
+
+  exportExcel() {
+    const items = this.reportData()?.items || [];
+    if (items.length === 0) {
+      this.toastr.warning('No leave records found to export', 'Export Warning');
+      return;
+    }
+
+    const rows = items.map((r: any) => [
+      r.employeeId || '—',
+      r.employeeName || '—',
+      r.leaveType || '—',
+      r.startDate || '—',
+      r.endDate || '—',
+      r.totalDays || 1,
+      r.status || 'Pending',
+      r.reason || '—',
+      r.approvedBy || '—',
+    ]);
+
+    this.exportService.exportToExcel({
+      filename: `InteriorCounsel_Leave_Report_${this.from()}_${this.to()}`,
+      title: 'Workforce Leave Utilization Report',
+      subtitle: `Date Range: ${this.from()} to ${this.to()} | Filter Type: ${this.selectedLeaveType() || 'All'}`,
+      headers: ['Employee ID', 'Name', 'Leave Type', 'Start Date', 'End Date', 'Days', 'Status', 'Reason', 'Approved By'],
+      rows,
+    });
+    this.toastr.success('Leave report exported to Excel', 'Export Complete');
+  }
+
+  exportPdf() {
+    const items = this.reportData()?.items || [];
+    if (items.length === 0) {
+      this.toastr.warning('No leave records found to export', 'Export Warning');
+      return;
+    }
+
+    const rows = items.map((r: any) => [
+      r.employeeId || '—',
+      r.employeeName || '—',
+      r.leaveType || '—',
+      r.startDate || '—',
+      r.endDate || '—',
+      r.totalDays || 1,
+      r.status || 'Pending',
+      r.reason || '—',
+    ]);
+
+    this.exportService.exportToPdf({
+      filename: `InteriorCounsel_Leave_Report_${this.from()}_${this.to()}`,
+      title: 'Employee Leave Audit Report',
+      subtitle: `Date Range: ${this.from()} to ${this.to()} | Type: ${this.selectedLeaveType() || 'All Types'}`,
+      headers: ['Emp ID', 'Name', 'Type', 'Start Date', 'End Date', 'Days', 'Status', 'Reason'],
+      rows,
+      orientation: 'landscape',
+    });
+    this.toastr.success('Leave report exported to PDF', 'Export Complete');
   }
 
   exportReport(format: 'excel' | 'csv' | 'pdf') {
+    if (format === 'excel') {
+      this.exportExcel();
+      return;
+    }
+    if (format === 'pdf') {
+      this.exportPdf();
+      return;
+    }
+
     this.exporting.set(true);
     this.reportService
       .exportLeaveWise({
@@ -145,7 +216,7 @@ export class LeaveReportComponent implements OnDestroy {
           const url = window.URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          const extension = format === 'excel' ? 'xlsx' : format;
+          const extension = 'csv';
           a.download = `leave-report-${this.from()}-${this.to()}.${extension}`;
           a.click();
           window.URL.revokeObjectURL(url);

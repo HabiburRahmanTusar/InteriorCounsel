@@ -24,6 +24,8 @@ const allowedOrigins = [
   'http://192.168.0.141:4300',
   'http://192.168.0.141:4200',
   'http://localhost:58922',
+  'https://arafatdesign.netlify.app',
+  'https://attendlysoft.netlify.app',
 ];
 
 if (config.corsOrigin) {

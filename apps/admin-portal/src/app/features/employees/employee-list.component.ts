@@ -13,6 +13,7 @@ import { catchError, finalize, of, tap } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { EmployeeService } from '../../core/services/employee.service';
 import { AuthService } from '../../core/services/auth.service';
+import { ExportService } from '../../core/services/export.service';
 import { Employee, UserStatus } from '../../core/models/employee.model';
 
 @Component({
@@ -25,6 +26,7 @@ import { Employee, UserStatus } from '../../core/models/employee.model';
 export class EmployeeListComponent implements OnDestroy {
   private employeeService = inject(EmployeeService);
   private authService = inject(AuthService);
+  private exportService = inject(ExportService);
   private toastr = inject(ToastrService);
   private destroy$ = new Subject<void>();
 
@@ -95,6 +97,55 @@ export class EmployeeListComponent implements OnDestroy {
     this.status.set(value);
     this.page.set(1);
     this.loadEmployees();
+  }
+
+  exportExcel() {
+    const list = this.employees();
+    if (!list || list.length === 0) {
+      this.toastr.warning('No employees to export', 'Export Warning');
+      return;
+    }
+    const rows = list.map((e) => [
+      e.employeeId || '—',
+      e.name || '—',
+      e.email || '—',
+      e.designation || '—',
+      (e.role || 'employee').toUpperCase(),
+      e.status === 'active' ? 'Active' : 'Inactive',
+    ]);
+    this.exportService.exportToExcel({
+      filename: 'InteriorCounsel_Employees',
+      title: 'Interior Counsel — Workforce Directory',
+      subtitle: `Total Employees: ${rows.length}`,
+      headers: ['Employee ID', 'Full Name', 'Email Address', 'Designation', 'System Role', 'Status'],
+      rows,
+    });
+    this.toastr.success('Employee list exported to Excel', 'Export Complete');
+  }
+
+  exportPdf() {
+    const list = this.employees();
+    if (!list || list.length === 0) {
+      this.toastr.warning('No employees to export', 'Export Warning');
+      return;
+    }
+    const rows = list.map((e) => [
+      e.employeeId || '—',
+      e.name || '—',
+      e.email || '—',
+      e.designation || '—',
+      (e.role || 'employee').toUpperCase(),
+      e.status === 'active' ? 'Active' : 'Inactive',
+    ]);
+    this.exportService.exportToPdf({
+      filename: 'InteriorCounsel_Employees',
+      title: 'Interior Counsel — Workforce Directory',
+      subtitle: `Total Personnel: ${rows.length}`,
+      headers: ['Emp ID', 'Full Name', 'Email', 'Designation', 'Role', 'Status'],
+      rows,
+      orientation: 'landscape',
+    });
+    this.toastr.success('Employee list exported to PDF', 'Export Complete');
   }
 
   prevPage() {

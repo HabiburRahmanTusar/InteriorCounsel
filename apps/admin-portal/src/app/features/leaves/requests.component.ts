@@ -13,6 +13,8 @@ import { catchError, finalize, tap, takeUntil } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { LeaveService, LeaveRequest } from '../../core/services/leave.service';
 import { EmployeeService } from '../../core/services/employee.service';
+import { AuthService } from '../../core/services/auth.service';
+import { ExportService } from '../../core/services/export.service';
 
 @Component({
   selector: 'wfm-leave-requests',
@@ -24,7 +26,9 @@ import { EmployeeService } from '../../core/services/employee.service';
 export class LeaveRequestsComponent implements OnInit, OnDestroy {
   private leaveService = inject(LeaveService);
   private employeeService = inject(EmployeeService);
+  private authService = inject(AuthService);
   private toastr = inject(ToastrService);
+  private exportService = inject(ExportService);
   private destroy$ = new Subject<void>();
 
   loading = signal(true);
@@ -147,4 +151,84 @@ export class LeaveRequestsComponent implements OnInit, OnDestroy {
       )
       .subscribe();
   }
+
+  isApprover(req: LeaveRequest): boolean {
+    if (req.status !== 'Pending') return false;
+    
+    const user = this.authService.currentUser();
+    if (!user) return false;
+    
+    const role = user.role?.toLowerCase();
+    if (role === 'admin') return true;
+
+    // Active stage
+    const activeStage = req.approvalStages && req.approvalStages.length > 0
+      ? req.approvalStages.find(s => s.status === 'Pending')
+      : null;
+
+    if (!activeStage) {
+      // Legacy request, default is HR approval
+      return role === 'hr';
+    }
+
+    if (activeStage.role === 'manager') {
+      const reportsToId = req.employeeId && ((req.employeeId.reportsTo as any)?._id || (req.employeeId as any)?.reportsTo);
+      return !!(reportsToId && reportsToId.toString() === user.id.toString());
+    }
+
+    return role === activeStage.role?.toLowerCase();
+  }
+
+  exportExcel() {
+    const list = this.requests();
+    if (!list || list.length === 0) {
+      this.toastr.warning('No leave requests to export', 'Export Warning');
+      return;
+    }
+    const rows = list.map((r: any) => [
+      r.employeeId?.employeeId || '—',
+      r.employeeId?.name || 'Employee',
+      r.leaveType || 'Annual',
+      r.startDate ? new Date(r.startDate).toISOString().slice(0, 10) : '—',
+      r.endDate ? new Date(r.endDate).toISOString().slice(0, 10) : '—',
+      r.requestedDays || 1,
+      r.status || 'Pending',
+      r.reason || '—',
+    ]);
+    this.exportService.exportToExcel({
+      filename: 'InteriorCounsel_Leave_Requests',
+      title: 'Employee Leave Applications & Requests',
+      subtitle: 'Total Requests: ' + rows.length,
+      headers: ['Emp ID', 'Staff Name', 'Leave Type', 'Start Date', 'End Date', 'Days', 'Status', 'Reason'],
+      rows,
+    });
+    this.toastr.success('Leave requests exported to Excel', 'Export Complete');
+  }
+
+  exportPdf() {
+    const list = this.requests();
+    if (!list || list.length === 0) {
+      this.toastr.warning('No leave requests to export', 'Export Warning');
+      return;
+    }
+    const rows = list.map((r: any) => [
+      r.employeeId?.employeeId || '—',
+      r.employeeId?.name || 'Employee',
+      r.leaveType || 'Annual',
+      r.startDate ? new Date(r.startDate).toISOString().slice(0, 10) : '—',
+      r.endDate ? new Date(r.endDate).toISOString().slice(0, 10) : '—',
+      (r.requestedDays || 1) + 'd',
+      r.status || 'Pending',
+    ]);
+    this.exportService.exportToPdf({
+      filename: 'InteriorCounsel_Leave_Requests',
+      title: 'Employee Leave Requests Register',
+      subtitle: 'Total Applications: ' + rows.length,
+      headers: ['Emp ID', 'Name', 'Type', 'Start', 'End', 'Days', 'Status'],
+      rows,
+      orientation: 'landscape',
+    });
+    this.toastr.success('Leave requests exported to PDF', 'Export Complete');
+  }
+
 }

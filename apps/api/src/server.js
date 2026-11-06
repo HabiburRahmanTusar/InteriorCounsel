@@ -10,25 +10,34 @@ const logger = require('./utils/logger');
 const { connectDatabase, disconnectDatabase } = require('./config/db');
 
 async function start() {
-  await connectDatabase(config.mongodbUri, config.mongodb);
+  try {
+    await connectDatabase(config.mongodbUri, config.mongodb);
+  } catch (dbErr) {
+    logger.error(`Initial database connection failed (${dbErr.message}). Server will start and continue listening.`);
+  }
 
   const server = app.listen(config.port, () => {
     logger.info(`API listening on http://localhost:${config.port} [${config.env}]`);
   });
 
-  // Start daily payroll evaluation scheduler
+  // Start daily payroll evaluation scheduler only if DB connected
+  const mongoose = require('mongoose');
   const automationService = require('./services/automation.service');
-  automationService
-    .evaluateAllActive()
-    .then(() => logger.info('Startup automation evaluation completed'))
-    .catch((err) => logger.error('Startup automation evaluation failed', err));
+  if (mongoose.connection.readyState === 1) {
+    automationService
+      .evaluateAllActive()
+      .then(() => logger.info('Startup automation evaluation completed'))
+      .catch((err) => logger.error('Startup automation evaluation failed', err));
+  }
 
   const intervalId = setInterval(
     () => {
-      automationService
-        .evaluateAllActive()
-        .then(() => logger.info('Scheduled automation evaluation completed'))
-        .catch((err) => logger.error('Scheduled automation evaluation failed', err));
+      if (mongoose.connection.readyState === 1) {
+        automationService
+          .evaluateAllActive()
+          .then(() => logger.info('Scheduled automation evaluation completed'))
+          .catch((err) => logger.error('Scheduled automation evaluation failed', err));
+      }
     },
     12 * 60 * 60 * 1000,
   ); // 12 hours

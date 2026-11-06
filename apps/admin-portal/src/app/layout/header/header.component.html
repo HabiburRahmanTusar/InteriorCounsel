@@ -1,71 +1,234 @@
-<header class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-6 z-30">
+<header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 h-16 flex items-center justify-between px-4 sm:px-6 z-30 transition-colors duration-200">
   <div class="flex items-center gap-3">
     <!-- Mobile Hamburger Toggle -->
     <button
       (click)="toggleSidebar.emit()"
       type="button"
-      class="md:hidden text-slate-500 hover:text-slate-700 hover:bg-slate-50 p-2 rounded-xl transition-colors outline-none"
+      class="md:hidden text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 p-2 rounded-xl transition-colors outline-none"
     >
       <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
       </svg>
     </button>
-    <span class="text-slate-900 font-semibold text-lg tracking-tight">Attendly</span>
+    <div class="flex items-center gap-2.5">
+      <img
+        src="assets/logo.png"
+        alt="Interior Counsel"
+        class="h-7 w-7 object-contain inline-block"
+        onerror="this.onerror=null;this.src='https://interiorcounsel.com/wp-content/uploads/2025/08/515437069_122096031092965832_8744308631215311737_n-removebg-preview-1.png';"
+      />
+      <span class="text-slate-900 dark:text-slate-100 font-bold text-lg tracking-tight hidden xs:inline">
+        Interior <span class="text-amber-500 font-extrabold">Counsel</span>
+      </span>
+    </div>
   </div>
 
-  <!-- Dropdown -->
-  <div class="relative">
+  <!-- Center Quick Search Bar Button (Ctrl + K) -->
+  <div class="flex-1 max-w-md mx-3 hidden sm:block">
     <button
-      (click)="toggleDropdown()"
-      class="flex items-center gap-2 hover:bg-slate-100/80 px-3 py-1.5 rounded-xl transition-all select-none"
+      type="button"
+      (click)="openSearch()"
+      class="w-full flex items-center justify-between px-3.5 py-1.5 bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs text-slate-400 dark:text-slate-400 transition-all shadow-2xs group cursor-pointer"
     >
-      <!-- User avatar / icon placeholder -->
-      <div
-        class="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-semibold text-sm"
-      >
-        {{ userInitial() }}
-      </div>
-      <span class="text-slate-700 font-medium text-sm hidden sm:inline">{{ userName() }}</span>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-4 w-4 text-slate-400 transition-transform duration-200"
-        [class.rotate-180]="showDropdown()"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+      <span class="flex items-center gap-2">
+        <svg class="w-4 h-4 text-slate-400 group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <span class="group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">Search pages, tools, or actions...</span>
+      </span>
+      <kbd class="px-1.5 py-0.5 font-mono text-[10px] text-slate-400 dark:text-slate-400 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded">
+        Ctrl + K
+      </kbd>
+    </button>
+  </div>
+
+  <!-- Right Actions (Quick Tools, Theme Switcher, Presentation Mode, Profile) -->
+  <div class="flex items-center gap-1.5 sm:gap-2">
+
+    <!-- Mobile Search Icon Button -->
+    <button
+      (click)="openSearch()"
+      type="button"
+      title="Search (Ctrl + K)"
+      class="sm:hidden text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 p-2 rounded-xl transition-colors cursor-pointer"
+    >
+      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
       </svg>
     </button>
 
-    @if (showDropdown()) {
-      <!-- Click outer mask to close dropdown -->
-      <div class="fixed inset-0 z-40" (click)="showDropdown.set(false)"></div>
+    <!-- Quick Tools Estimator Button -->
+    <button
+      (click)="openTools()"
+      type="button"
+      title="Interior Quick Tools & Area Estimator (Ctrl + J)"
+      class="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition border border-transparent hover:border-slate-200 dark:hover:border-slate-700 cursor-pointer"
+    >
+      <span class="text-sm">📐</span>
+      <span class="hidden lg:inline">Quick Tools</span>
+    </button>
 
-      <div
-        class="absolute right-0 mt-2 w-48 bg-white border border-slate-200/80 rounded-2xl p-1.5 shadow-lg shadow-slate-100 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
+    <!-- Client Presentation Mode Toggle Button -->
+    <button
+      (click)="togglePresentationMode()"
+      type="button"
+      [title]="themeService.presentationMode() ? 'Exit Presentation Mode' : 'Enter Client Presentation Mode'"
+      [ngClass]="themeService.presentationMode() ? 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/70 dark:text-amber-300 dark:border-amber-800' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border-transparent'"
+      class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition border cursor-pointer"
+    >
+      @if (themeService.presentationMode()) {
+        <svg class="w-4 h-4 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+        </svg>
+        <span class="hidden md:inline font-bold">Client Mode ON</span>
+      } @else {
+        <svg class="w-4 h-4 text-slate-400 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        </svg>
+        <span class="hidden xl:inline">Client Mode</span>
+      }
+    </button>
+
+    <!-- Dark Mode Quick Toggle Button -->
+    <button
+      (click)="toggleDarkMode()"
+      type="button"
+      [title]="themeService.isDark() ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+      class="p-2 rounded-xl text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+    >
+      @if (themeService.isDark()) {
+        <!-- Sun Icon for Dark Mode -->
+        <svg class="w-5 h-5 text-amber-400 animate-in spin-in-90 duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      } @else {
+        <!-- Moon Icon for Light Mode -->
+        <svg class="w-5 h-5 text-slate-600 animate-in spin-in-90 duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+        </svg>
+      }
+    </button>
+
+    <!-- User Profile Dropdown -->
+    <div class="relative">
+      <button
+        (click)="toggleDropdown()"
+        class="flex items-center gap-2 hover:bg-slate-100/80 dark:hover:bg-slate-800 px-2.5 py-1.5 rounded-xl transition-all select-none cursor-pointer"
       >
-        <button
-          (click)="logout()"
-          class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-slate-700 hover:bg-rose-50 hover:text-rose-600 text-sm font-medium transition-colors"
+        <div
+          class="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/80 flex items-center justify-center text-amber-800 dark:text-amber-300 font-bold text-sm"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+          {{ userInitial() }}
+        </div>
+        <span class="text-slate-700 dark:text-slate-200 font-medium text-sm hidden sm:inline">{{ userName() }}</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-4 w-4 text-slate-400 transition-transform duration-200"
+          [class.rotate-180]="showDropdown()"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      @if (showDropdown()) {
+        <!-- Click outer mask to close dropdown -->
+        <div class="fixed inset-0 z-40" (click)="showDropdown.set(false)"></div>
+
+        <div
+          class="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-2 shadow-xl shadow-slate-100 dark:shadow-none z-50 animate-in fade-in slide-in-from-top-2 duration-150 space-y-1"
+        >
+          <!-- User info -->
+          <div class="px-3 py-2 border-b border-slate-100 dark:border-slate-800">
+            <div class="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{{ userName() }}</div>
+            <div class="text-[10px] text-slate-400 truncate">Interior Counsel ERP</div>
+          </div>
+
+          <!-- Theme Selector in Dropdown -->
+          <div class="px-2 py-1.5">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Theme</span>
+            <div class="grid grid-cols-3 gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg text-center text-xs">
+              <button
+                type="button"
+                (click)="setTheme('light')"
+                [ngClass]="themeService.theme() === 'light' ? 'bg-white dark:bg-slate-700 font-bold text-amber-600 dark:text-amber-400 shadow-2xs' : 'text-slate-600 dark:text-slate-300'"
+                class="py-1 rounded-md transition cursor-pointer"
+              >
+                Light
+              </button>
+              <button
+                type="button"
+                (click)="setTheme('dark')"
+                [ngClass]="themeService.theme() === 'dark' ? 'bg-white dark:bg-slate-700 font-bold text-amber-600 dark:text-amber-400 shadow-2xs' : 'text-slate-600 dark:text-slate-300'"
+                class="py-1 rounded-md transition cursor-pointer"
+              >
+                Dark
+              </button>
+              <button
+                type="button"
+                (click)="setTheme('system')"
+                [ngClass]="themeService.theme() === 'system' ? 'bg-white dark:bg-slate-700 font-bold text-amber-600 dark:text-amber-400 shadow-2xs' : 'text-slate-600 dark:text-slate-300'"
+                class="py-1 rounded-md transition cursor-pointer"
+              >
+                Auto
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <button
+            (click)="openSearch(); showDropdown.set(false)"
+            type="button"
+            class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium transition-colors cursor-pointer"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-            />
-          </svg>
-          <span>Sign out</span>
-        </button>
-      </div>
-    }
+            <span class="flex items-center gap-2">
+              <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <span>Command Palette</span>
+            </span>
+            <kbd class="text-[9px] font-mono text-slate-400">Ctrl+K</kbd>
+          </button>
+
+          <button
+            (click)="openTools(); showDropdown.set(false)"
+            type="button"
+            class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium transition-colors cursor-pointer"
+          >
+            <span class="flex items-center gap-2">
+              <span class="text-xs">📐</span>
+              <span>Quick Estimator</span>
+            </span>
+            <kbd class="text-[9px] font-mono text-slate-400">Ctrl+J</kbd>
+          </button>
+
+          <div class="border-t border-slate-100 dark:border-slate-800 pt-1">
+            <button
+              (click)="logout()"
+              class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 text-xs font-medium transition-colors cursor-pointer"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                />
+              </svg>
+              <span>Sign out</span>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
   </div>
 </header>

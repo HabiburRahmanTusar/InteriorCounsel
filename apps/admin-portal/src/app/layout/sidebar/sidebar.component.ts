@@ -1,8 +1,9 @@
-import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 
 import { AuthService } from '../../core/services/auth.service';
+import { RbacService } from '../../core/services/rbac.service';
 
 @Component({
   selector: 'wfm-sidebar',
@@ -13,36 +14,47 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class SidebarComponent {
   private auth = inject(AuthService);
+  private rbac = inject(RbacService);
   private router = inject(Router);
 
   readonly currentRole = this.auth.currentRole;
+  readonly activeUser = this.rbac.activeUser;
+  readonly activeRole = this.rbac.activeRole;
   readonly loggingOut = signal(false);
-  readonly settingsOpen = signal(false);
-  readonly calendarOpen = signal(false);
-  readonly leavesOpen = signal(false);
-  readonly salaryOpen = signal(false);
-  readonly reportsOpen = signal(false);
 
-
-  toggleSettings() {
-    this.settingsOpen.update((v) => !v);
+  hasMenu(key: string): boolean {
+    return this.rbac.hasMenu(key);
   }
 
-  toggleSalary() {
-    this.salaryOpen.update((v) => !v);
-  }
+  // Group visibility calculations
+  readonly hasOverviewGroup = computed(
+    () => this.hasMenu('dashboard') || this.hasMenu('commercial-dashboard')
+  );
 
-  toggleCalendar() {
-    this.calendarOpen.update((v) => !v);
-  }
+  readonly hasPeopleGroup = computed(
+    () =>
+      this.hasMenu('employees') ||
+      this.hasMenu('attendance') ||
+      this.hasMenu('manual-attendance') ||
+      this.hasMenu('leave') ||
+      this.hasMenu('payroll')
+  );
 
-  toggleLeaves() {
-    this.leavesOpen.update((v) => !v);
-  }
+  readonly hasSalesGroup = computed(
+    () => this.hasMenu('sales') || this.hasMenu('customers') || this.hasMenu('projects')
+  );
 
-  toggleReports() {
-    this.reportsOpen.update((v) => !v);
-  }
+  readonly hasInventoryGroup = computed(
+    () => this.hasMenu('inventory') || this.hasMenu('purchase') || this.hasMenu('suppliers')
+  );
+
+  readonly hasFinanceGroup = computed(
+    () => this.hasMenu('cash-flow') || this.hasMenu('transfers') || this.hasMenu('shareholders') || this.hasMenu('shareholder-portal')
+  );
+
+  readonly hasSystemGroup = computed(
+    () => this.hasMenu('reports') || this.hasMenu('access') || this.hasMenu('settings')
+  );
 
   logout() {
     this.loggingOut.set(true);

@@ -1,0 +1,257 @@
+<div class="p-6 max-w-7xl mx-auto space-y-6">
+  <!-- Header & Breadcrumbs -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2 text-xs font-semibold text-slate-400 mb-1">
+        <span>Interior Counsel</span>
+        <span>/</span>
+        <span>Accounting & Banking</span>
+      </div>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Bank & Cash Transfers</h1>
+      <p class="text-xs text-slate-500 mt-0.5">Record internal money movements between cash desks and commercial bank accounts</p>
+    </div>
+
+    <button
+      type="button"
+      (click)="openNewModal()"
+      class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4" />
+      </svg>
+      <span>New Transfer</span>
+    </button>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-1">
+      <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Transferred</span>
+      <div class="flex items-baseline justify-between">
+        <span class="text-2xl font-black text-slate-900">৳ {{ totalTransferred() | number:'1.2-2' }}</span>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-semibold">Net Movement</span>
+      </div>
+    </div>
+
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-1">
+      <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Transactions</span>
+      <div class="flex items-baseline justify-between">
+        <span class="text-2xl font-black text-indigo-600">{{ transfers().length }}</span>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 font-semibold">Recorded</span>
+      </div>
+    </div>
+
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-1">
+      <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Managed Accounts</span>
+      <div class="flex items-baseline justify-between">
+        <span class="text-2xl font-black text-emerald-600">{{ accounts.length }}</span>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold">Cash & Banks</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search Toolbar -->
+  <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs flex items-center justify-between gap-3">
+    <div class="relative w-72">
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (input)="loadTransfers()"
+        placeholder="Search transfer number, memo..."
+        class="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+    </div>
+
+    <span class="text-xs text-slate-400 font-medium">Showing {{ filteredTransfers().length }} transfer(s)</span>
+  </div>
+
+  <!-- Transfers Table (Matching Menu_RBAC tbl Int.Trns) -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs border-collapse">
+        <thead>
+          <tr class="bg-slate-50/80 text-[11px] uppercase font-bold text-slate-400 border-b border-slate-100">
+            <th class="py-3 px-4">NUMBER</th>
+            <th class="py-3 px-4">DATE</th>
+            <th class="py-3 px-4">MEMO / REFERENCE</th>
+            <th class="py-3 px-4">TRANSFER FROM</th>
+            <th class="py-3 px-4">TRANSFER TO</th>
+            <th class="py-3 px-4 text-right">AMOUNT</th>
+            <th class="py-3 px-4 text-center">STATE</th>
+            <th class="py-3 px-4 text-center">ACTION</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          @if (loading()) {
+            <tr>
+              <td colspan="8" class="py-8 text-center text-slate-400">Loading transfers...</td>
+            </tr>
+          } @else if (filteredTransfers().length === 0) {
+            <tr>
+              <td colspan="8" class="py-8 text-center text-slate-400">No transfer records found</td>
+            </tr>
+          } @else {
+            @for (t of filteredTransfers(); track t._id || t.transferNumber) {
+              <tr class="hover:bg-slate-50/70 transition">
+                <td class="py-3 px-4 font-bold text-slate-900">{{ t.transferNumber }}</td>
+                <td class="py-3 px-4 text-slate-600">{{ t.date }}</td>
+                <td class="py-3 px-4 text-slate-700">
+                  <div>{{ t.memo || 'Internal Cash Transfer' }}</div>
+                  @if (t.chequeNo) {
+                    <span class="text-[11px] text-slate-400">Chq: {{ t.chequeNo }} ({{ t.chequeDate }})</span>
+                  }
+                </td>
+                <td class="py-3 px-4 font-semibold text-rose-600">
+                  <span class="inline-flex items-center gap-1">
+                    <span>&minus;</span> {{ t.transferFrom }}
+                  </span>
+                </td>
+                <td class="py-3 px-4 font-semibold text-emerald-600">
+                  <span class="inline-flex items-center gap-1">
+                    <span>&plus;</span> {{ t.transferTo }}
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-right font-black text-slate-900">৳ {{ t.amount | number:'1.2-2' }}</td>
+                <td class="py-3 px-4 text-center">
+                  <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700">
+                    {{ t.status }}
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-center">
+                  <button
+                    type="button"
+                    (click)="deleteTransfer(t._id)"
+                    class="px-2.5 py-1 rounded-lg border border-rose-200 text-[11px] font-semibold text-rose-600 hover:bg-rose-50 transition"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- New Transfer Modal (Matching Menu_RBAC xferForm) -->
+  @if (showModal()) {
+    <div class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-150 border border-slate-200">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <h3 class="text-base font-bold text-slate-900">New Bank / Cash Transfer</h3>
+          <button
+            type="button"
+            (click)="showModal.set(false)"
+            class="text-slate-400 hover:text-slate-600 text-lg leading-none"
+          >
+            &times;
+          </button>
+        </div>
+
+        <div class="space-y-4 text-xs">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-800 mb-1">Transfer Date <span class="text-rose-500">*</span></label>
+              <input
+                type="date"
+                [(ngModel)]="formTransfer.date"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label class="block font-bold text-slate-800 mb-1">Transfer Amount (৳) <span class="text-rose-500">*</span></label>
+              <input
+                type="number"
+                [(ngModel)]="formTransfer.amount"
+                min="0.01"
+                placeholder="0.00"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-800 mb-1">Transfer From <span class="text-rose-500">*</span></label>
+              <select
+                [(ngModel)]="formTransfer.transferFrom"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                @for (acc of accounts; track acc) {
+                  <option [value]="acc">{{ acc }}</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label class="block font-bold text-slate-800 mb-1">Transfer To <span class="text-rose-500">*</span></label>
+              <select
+                [(ngModel)]="formTransfer.transferTo"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                @for (acc of accounts; track acc) {
+                  <option [value]="acc">{{ acc }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          @if (isChequeApplicable) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+              <div>
+                <label class="block font-bold text-slate-800 mb-1">Cheque No.</label>
+                <input
+                  type="text"
+                  [(ngModel)]="formTransfer.chequeNo"
+                  placeholder="e.g. CHQ-99201"
+                  class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label class="block font-bold text-slate-800 mb-1">Cheque Date</label>
+                <input
+                  type="date"
+                  [(ngModel)]="formTransfer.chequeDate"
+                  class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+          }
+
+          <div>
+            <label class="block font-bold text-slate-800 mb-1">Memo / Purpose</label>
+            <input
+              type="text"
+              [(ngModel)]="formTransfer.memo"
+              placeholder="e.g. Cash deposit to bank / Petty cash replenishment"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
+          <button
+            type="button"
+            (click)="showModal.set(false)"
+            class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            (click)="saveTransfer()"
+            class="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-xs transition"
+          >
+            Record Transfer
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

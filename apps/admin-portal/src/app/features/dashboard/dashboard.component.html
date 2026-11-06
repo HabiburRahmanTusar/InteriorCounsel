@@ -1,407 +1,1045 @@
-<div class="space-y-6">
-  <!-- Top Header Area -->
-  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-    <div class="space-y-1">
-      <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Dashboard</h1>
-      <p class="text-sm text-slate-500 font-medium">Real-time attendance summary for today</p>
-    </div>
-    <!-- Compact Date Pill -->
-    <div class="self-start sm:self-auto inline-flex items-center gap-2 bg-indigo-50 border border-indigo-100/40 px-4 py-2 rounded-xl text-indigo-600 text-sm font-bold select-none shadow-xs">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg>
-      <span>{{ today | date: 'EEEE, MMMM d, y' }}</span>
-    </div>
-  </div>
-
-  <!-- KPI Grid (Compact metrics list style to minimize empty space) -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-    
-    <!-- Present Card -->
-    <button
-      (click)="setFilter('present')"
-      [class.ring-2]="activeFilter() === 'present'"
-      [class.ring-indigo-500]="activeFilter() === 'present'"
-      [class.bg-indigo-50]="activeFilter() === 'present'"
-      class="bg-white border border-slate-200/60 rounded-xl p-4 flex items-center justify-between text-left transition-all hover:shadow-xs hover:border-indigo-300 select-none group cursor-pointer outline-none w-full"
-    >
-      <div class="flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg bg-emerald-50 border border-emerald-100/50 flex items-center justify-center text-emerald-600 group-hover:scale-105 transition-transform shrink-0">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </div>
-        <div>
-          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Present Today</span>
-          <div class="text-2xl font-extrabold text-slate-800 mt-0.5 group-hover:text-indigo-600 transition-colors">{{ present() }}</div>
-        </div>
-      </div>
-    </button>
-
-    <!-- Absent Card -->
-    <button
-      (click)="setFilter('absent')"
-      [class.ring-2]="activeFilter() === 'absent'"
-      [class.ring-rose-500]="activeFilter() === 'absent'"
-      [class.bg-rose-50]="activeFilter() === 'absent'"
-      class="bg-white border border-slate-200/60 rounded-xl p-4 flex items-center justify-between text-left transition-all hover:shadow-xs hover:border-rose-300 select-none group cursor-pointer outline-none w-full"
-    >
-      <div class="flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg bg-rose-50 border border-rose-100/50 flex items-center justify-center text-rose-600 group-hover:scale-105 transition-transform shrink-0">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </div>
-        <div>
-          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Absent Today</span>
-          <div class="text-2xl font-extrabold text-slate-800 mt-0.5 group-hover:text-rose-600 transition-colors">{{ absent() }}</div>
-        </div>
-      </div>
-    </button>
-
-    <!-- Late Card -->
-    <button
-      (click)="setFilter('late')"
-      [class.ring-2]="activeFilter() === 'late'"
-      [class.ring-amber-500]="activeFilter() === 'late'"
-      [class.bg-amber-50]="activeFilter() === 'late'"
-      class="bg-white border border-slate-200/60 rounded-xl p-4 flex items-center justify-between text-left transition-all hover:shadow-xs hover:border-amber-300 select-none group cursor-pointer outline-none w-full"
-    >
-      <div class="flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg bg-amber-50 border border-amber-100/50 flex items-center justify-center text-amber-600 group-hover:scale-105 transition-transform shrink-0">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </div>
-        <div>
-          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Late Arrivals</span>
-          <div class="text-2xl font-extrabold text-slate-800 mt-0.5 group-hover:text-amber-600 transition-colors">{{ late() }}</div>
-        </div>
-      </div>
-    </button>
-
-    <!-- Early Card -->
-    <button
-      (click)="setFilter('early')"
-      [class.ring-2]="activeFilter() === 'early'"
-      [class.ring-slate-500]="activeFilter() === 'early'"
-      [class.bg-slate-50]="activeFilter() === 'early'"
-      class="bg-white border border-slate-200/60 rounded-xl p-4 flex items-center justify-between text-left transition-all hover:shadow-xs hover:border-slate-300 select-none group cursor-pointer outline-none w-full"
-    >
-      <div class="flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg bg-slate-50 border border-slate-200/50 flex items-center justify-center text-slate-600 group-hover:scale-105 transition-transform shrink-0">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-        </div>
-        <div>
-          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Early Departures</span>
-          <div class="text-2xl font-extrabold text-slate-800 mt-0.5 group-hover:text-slate-600 transition-colors">{{ early() }}</div>
-        </div>
-      </div>
-    </button>
-
-  </div>
-
-  <!-- Filled 3-column Grid Section -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-    
-    <!-- Card 1: Attendance Progress -->
-    <div class="bg-white border border-slate-200/60 rounded-xl p-5 flex flex-col justify-between shadow-xs min-h-[240px]">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Attendance Rate</h3>
-        <span class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-700 uppercase">
-          {{ attendanceRate() }}% Checked In
+﻿<div class="space-y-5">
+  <!-- Top Breadcrumb & Page Head -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-[#e8ecf2] dark:border-slate-800">
+    <div>
+      <div class="flex items-center gap-2 text-xs font-semibold text-[#8a93a6] dark:text-slate-400 uppercase tracking-wider mb-1">
+        <span>Interior Counsel</span>
+        <span>/</span>
+        <span class="text-amber-500">Dashboard</span>
+        <span class="inline-flex items-center gap-1.5 ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          Live Database Connected
         </span>
       </div>
-
-      <div class="flex items-center justify-center py-4 gap-6">
-        <!-- Visual Circular Progress Ring -->
-        <div class="relative w-28 h-28 flex items-center justify-center shrink-0">
-          <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-            <path
-              class="text-slate-100"
-              stroke-width="3"
-              stroke="currentColor"
-              fill="none"
-              d="M18 2.0845
-                a 15.9155 15.9155 0 0 1 0 31.831
-                a 15.9155 15.9155 0 0 1 0 -31.831"
-            />
-            <path
-              class="text-indigo-600 transition-all duration-500 ease-out"
-              [attr.stroke-dasharray]="attendanceRate() + ', 100'"
-              stroke-width="3.5"
-              stroke-linecap="round"
-              stroke="currentColor"
-              fill="none"
-              d="M18 2.0845
-                a 15.9155 15.9155 0 0 1 0 31.831
-                a 15.9155 15.9155 0 0 1 0 -31.831"
-            />
-          </svg>
-          <div class="absolute text-center">
-            <span class="text-2xl font-black text-slate-800">{{ attendanceRate() }}%</span>
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Punch Rate</p>
-          </div>
-        </div>
-      </div>
-      
-      <div class="text-center text-xs text-slate-400 font-semibold">
-        {{ present() }} out of {{ allRows().length }} staff present today
-      </div>
+      <h1 class="text-2xl font-black text-[#1b2333] dark:text-white tracking-tight">Executive Dashboard</h1>
+      <p class="text-xs text-[#697386] dark:text-slate-400 mt-0.5">{{ subtitle() }}</p>
     </div>
 
-    <!-- Card 2: Workforce Statistics -->
-    <div class="bg-white border border-slate-200/60 rounded-xl p-5 flex flex-col justify-between shadow-xs min-h-[240px]">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Workforce Metrics</h3>
-        <span class="text-xs text-slate-400 font-bold uppercase">Punch Status</span>
-      </div>
+    <!-- Actions -->
+    <div class="flex items-center gap-2.5">
+      <button
+        type="button"
+        (click)="loadAllRealData()"
+        [disabled]="isLoading()"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#1b2333] dark:text-slate-100 bg-white dark:bg-slate-800 border border-[#e8ecf2] dark:border-slate-700 rounded-xl hover:bg-[#f6f8fb] dark:hover:bg-slate-700 shadow-xs transition-colors"
+        title="Refresh live data from database"
+      >
+        <svg class="w-3.5 h-3.5" [class.animate-spin]="isLoading()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+        <span>{{ isLoading() ? 'Syncing...' : 'Sync Live Data' }}</span>
+      </button>
 
-      <div class="space-y-3 py-2">
-        <div class="flex items-center justify-between text-sm font-medium">
-          <div class="flex items-center gap-2">
-            <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-            <span class="text-slate-500">On-Time Arrivals</span>
-          </div>
-          <span class="font-bold text-slate-800 text-sm">{{ present() - late() }}</span>
-        </div>
-        
-        <div class="flex items-center justify-between text-sm font-medium">
-          <div class="flex items-center gap-2">
-            <div class="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
-            <span class="text-slate-500">Late Arrivals</span>
-          </div>
-          <span class="font-bold text-slate-800 text-sm">{{ late() }}</span>
-        </div>
+      <button
+        type="button"
+        (click)="exportSummary()"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#1b2333] dark:text-slate-100 bg-white dark:bg-slate-800 border border-[#e8ecf2] dark:border-slate-700 rounded-xl hover:bg-[#f6f8fb] dark:hover:bg-slate-700 shadow-xs transition-colors"
+      >
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+        </svg>
+        <span>Export</span>
+      </button>
 
-        <div class="flex items-center justify-between text-sm font-medium">
-          <div class="flex items-center gap-2">
-            <div class="w-1.5 h-1.5 rounded-full bg-rose-500"></div>
-            <span class="text-slate-500">Absent Employees</span>
-          </div>
-          <span class="font-bold text-slate-800 text-sm">{{ absent() }}</span>
-        </div>
-
-        <div class="flex items-center justify-between text-sm font-medium">
-          <div class="flex items-center gap-2">
-            <div class="w-1.5 h-1.5 rounded-full bg-slate-500"></div>
-            <span class="text-slate-500">Early Out</span>
-          </div>
-          <span class="font-bold text-slate-800 text-sm">{{ early() }}</span>
-        </div>
-      </div>
-
-      <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-        <div class="bg-indigo-600 h-full rounded-full transition-all" [style.width.%]="attendanceRate()"></div>
-      </div>
+      <button
+        type="button"
+        (click)="printSummary()"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-950 bg-amber-500 rounded-xl hover:bg-amber-600 text-slate-950 font-bold shadow-xs transition-colors"
+      >
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 6 2 18 2 18 9"></polyline>
+          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+          <rect x="6" y="14" width="12" height="8"></rect>
+        </svg>
+        <span>Print Summary</span>
+      </button>
     </div>
-
-    <!-- Card 3: Quick Action Tools -->
-    <div class="bg-white border border-slate-200/60 rounded-xl p-5 flex flex-col justify-between shadow-xs min-h-[240px]">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Quick Actions</h3>
-        <span class="text-xs text-slate-400 font-bold uppercase">Shortcuts</span>
-      </div>
-
-      <div class="grid grid-cols-2 gap-3 py-2">
-        <a
-          routerLink="/employees"
-          class="flex items-center gap-2.5 px-3 py-2.5 bg-slate-50 border border-slate-100 rounded-lg hover:bg-indigo-50/40 hover:border-indigo-200 transition-all group"
-        >
-          <div class="w-8 h-8 rounded bg-indigo-50 border border-indigo-100/50 flex items-center justify-center text-indigo-600 group-hover:scale-105 transition-transform shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-          </div>
-          <span class="text-xs font-bold text-slate-600">Employees</span>
-        </a>
-
-        <a
-          routerLink="/attendance"
-          class="flex items-center gap-2.5 px-3 py-2.5 bg-slate-50 border border-slate-100 rounded-lg hover:bg-emerald-50/40 hover:border-emerald-200 transition-all group"
-        >
-          <div class="w-8 h-8 rounded bg-emerald-50 border border-emerald-100/50 flex items-center justify-center text-emerald-600 group-hover:scale-105 transition-transform shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-            </svg>
-          </div>
-          <span class="text-xs font-bold text-slate-600">Attendance</span>
-        </a>
-
-        <a
-          routerLink="/leaves/requests"
-          class="flex items-center gap-2.5 px-3 py-2.5 bg-slate-50 border border-slate-100 rounded-lg hover:bg-rose-50/40 hover:border-rose-200 transition-all group"
-        >
-          <div class="w-8 h-8 rounded bg-rose-50 border border-rose-100/50 flex items-center justify-center text-rose-600 group-hover:scale-105 transition-transform shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-          </div>
-          <span class="text-xs font-bold text-slate-600">Requests</span>
-        </a>
-
-        <a
-          routerLink="/shifts"
-          class="flex items-center gap-2.5 px-3 py-2.5 bg-slate-50 border border-slate-100 rounded-lg hover:bg-amber-50/40 hover:border-amber-200 transition-all group"
-        >
-          <div class="w-8 h-8 rounded bg-amber-50 border border-amber-100/50 flex items-center justify-center text-amber-600 group-hover:scale-105 transition-transform shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <span class="text-xs font-bold text-slate-600">Shifts</span>
-        </a>
-      </div>
-    </div>
-
   </div>
 
-  <!-- Today's Attendance Logs Section -->
-  <div class="bg-white border border-slate-200/60 rounded-xl overflow-hidden shadow-xs">
-    
-    <div class="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <div class="space-y-1">
-        <h3 class="text-base font-bold text-slate-800 tracking-tight">Today's Attendance Logs</h3>
-        <p class="text-xs text-slate-400 font-semibold">Real-time listing of daily employee entries</p>
+  <!-- Primary Tab Selector -->
+  <div class="tabs-header">
+    <button
+      type="button"
+      (click)="selectTab('accounting')"
+      [class.active]="activeTab() === 'accounting'"
+      class="tab-btn"
+    >
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+        <line x1="8" y1="6" x2="16" y2="6"></line>
+        <line x1="16" y1="14" x2="16" y2="18"></line>
+        <path d="M16 10h.01M12 10h.01M8 10h.01M12 14h.01M8 14h.01M12 18h.01M8 18h.01"></path>
+      </svg>
+      <span>Accounting</span>
+    </button>
+
+    <button
+      type="button"
+      (click)="selectTab('hr')"
+      [class.active]="activeTab() === 'hr'"
+      class="tab-btn"
+    >
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+      </svg>
+      <span>HR</span>
+    </button>
+
+    <button
+      type="button"
+      (click)="selectTab('operations')"
+      [class.active]="activeTab() === 'operations'"
+      class="tab-btn"
+    >
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+      </svg>
+      <span>Operations</span>
+    </button>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- TAB 1: ACCOUNTING                                              -->
+  <!-- ============================================================== -->
+  @if (activeTab() === 'accounting') {
+    <div class="space-y-4">
+      <!-- Search by Month Bar -->
+      <div class="ic-card">
+        <div class="p-3.5 flex items-center justify-between flex-wrap gap-3">
+          <div class="flex items-center gap-2.5">
+            <svg class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <label class="text-xs font-bold text-[#1b2333] dark:text-slate-200 whitespace-nowrap">Filter by Period</label>
+            <select
+              (change)="onMonthChange($event)"
+              class="border border-[#e8ecf2] dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-semibold text-[#1b2333] dark:text-slate-100 bg-[#f6f8fb] dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-700 outline-none"
+            >
+              <option value="cur" [selected]="selectedMonth() === 'cur'">Current Month ({{ months[currentMonthIdx] }} 2026)</option>
+              @for (m of months; track $index) {
+                <option [value]="$index" [selected]="selectedMonth() === $index">{{ m }} 2026</option>
+              }
+            </select>
+          </div>
+          <span class="badge badge-blue">Active Filter: {{ effectiveMonthName() }} 2026</span>
+        </div>
       </div>
 
-      <!-- Quick Filter Segment Control -->
-      <div class="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl self-start sm:self-auto select-none">
-        <button
-          (click)="setFilter('all')"
-          [class.bg-white]="activeFilter() === 'all'"
-          [class.text-slate-800]="activeFilter() === 'all'"
-          [class.shadow-xs]="activeFilter() === 'all'"
-          class="px-4 py-1.5 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-700 transition-all outline-none cursor-pointer"
-        >
-          All
-        </button>
-        <button
-          (click)="setFilter('present')"
-          [class.bg-white]="activeFilter() === 'present'"
-          [class.text-slate-800]="activeFilter() === 'present'"
-          [class.shadow-xs]="activeFilter() === 'present'"
-          class="px-4 py-1.5 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-700 transition-all outline-none cursor-pointer"
-        >
-          Present
-        </button>
-        <button
-          (click)="setFilter('absent')"
-          [class.bg-white]="activeFilter() === 'absent'"
-          [class.text-slate-800]="activeFilter() === 'absent'"
-          [class.shadow-xs]="activeFilter() === 'absent'"
-          class="px-4 py-1.5 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-700 transition-all outline-none cursor-pointer"
-        >
-          Absent
-        </button>
-        <button
-          (click)="setFilter('late')"
-          [class.bg-white]="activeFilter() === 'late'"
-          [class.text-slate-800]="activeFilter() === 'late'"
-          [class.shadow-xs]="activeFilter() === 'late'"
-          class="px-4 py-1.5 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-700 transition-all outline-none cursor-pointer"
-        >
-          Late
-        </button>
-      </div>
-    </div>
+      <!-- 9 Real Executive KPI Cards (3x3 grid) -->
+      @let acc = accountingData();
+      <div class="grid g-kpi kpi-3">
+        <!-- Monthly Sales -->
+        <div class="kpi">
+          <div class="row1">
+            <div class="ic" style="background: var(--green-50); color: var(--green)">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                <polyline points="17 6 23 6 23 12"></polyline>
+              </svg>
+            </div>
+          </div>
+          <div class="label">Total Billed Sales</div>
+          <div class="value">৳ {{ acc.sales | number }}</div>
+          <div class="delta" [class.up]="acc.sales >= acc.prevSales" [class.down]="acc.sales < acc.prevSales">
+            vs ৳ {{ acc.prevSales | number }} last period
+          </div>
+        </div>
 
-    <!-- Logs Table -->
-    <div class="overflow-x-auto">
-      <table class="w-full text-left border-collapse">
-        <thead>
-          <tr class="bg-slate-50/50 border-b border-slate-100 text-xs font-bold text-slate-400 uppercase tracking-wider">
-            <th class="px-6 py-4">Employee</th>
-            <th class="px-6 py-4">Status</th>
-            <th class="px-6 py-4">Check-In</th>
-            <th class="px-6 py-4">Check-Out</th>
-            <th class="px-6 py-4 text-right">Work Time</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100">
-          @for (row of filteredRows(); track row.employeeId) {
-            <tr class="hover:bg-slate-50/30 transition-colors">
-              <td class="px-6 py-4">
-                <div class="text-sm font-semibold text-slate-700">{{ row.employeeName }}</div>
-                <div class="text-xs text-slate-400 font-semibold mt-0.5">{{ row.employeeCode }}</div>
-              </td>
-              <td class="px-6 py-4">
-                @if (row.status === 'On Time') {
-                  <span class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-700/5">
-                    On Time
-                  </span>
-                } @else if (row.status === 'Late') {
-                  <span class="inline-flex items-center rounded-md bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700 ring-1 ring-inset ring-amber-700/5">
-                    Late
-                  </span>
-                } @else if (row.status === 'Absent') {
-                  <span class="inline-flex items-center rounded-md bg-rose-50 px-2 py-1 text-xs font-semibold text-rose-700 ring-1 ring-inset ring-rose-700/5">
-                    Absent
-                  </span>
-                } @else {
-                  <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-semibold text-slate-600">
-                    {{ row.status }}
-                  </span>
-                }
-              </td>
-              <td class="px-6 py-4 text-sm font-semibold text-slate-600">
-                @if (row.checkIn?.time) {
-                  <div>{{ row.checkIn?.time | date: 'h:mm a' }}</div>
-                  @if (row.checkIn?.location?.address) {
-                    <div class="text-xs text-slate-400 flex items-center gap-1 font-semibold mt-0.5">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      <span class="truncate max-w-[150px]">{{ row.checkIn?.location?.address }}</span>
-                    </div>
+        <!-- Customer Due -->
+        <div class="kpi">
+          <div class="row1">
+            <div class="ic" style="background: var(--red-50); color: var(--red)">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="7" y1="17" x2="17" y2="7"></line>
+                <polyline points="7 7 17 7 17 17"></polyline>
+              </svg>
+            </div>
+          </div>
+          <div class="label">Customer Due (Receivable)</div>
+          <div class="value">৳ {{ acc.customerDue | number }}</div>
+          <div class="delta down">unpaid balance from clients</div>
+        </div>
+
+        <!-- Vendor Due -->
+        <div class="kpi">
+          <div class="row1">
+            <div class="ic" style="background: var(--amber-50); color: var(--amber)">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="1" x2="12" y2="23"></line>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="label">Vendor Due (Payable)</div>
+          <div class="value">৳ {{ acc.vendorDue | number }}</div>
+          <div class="delta">outstanding supplier liabilities</div>
+        </div>
+
+        <!-- Monthly Purchase -->
+        <div class="kpi">
+          <div class="row1">
+            <div class="ic" style="background: var(--amber-50); color: var(--amber)">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="9" cy="21" r="1"></circle>
+                <circle cx="20" cy="21" r="1"></circle>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="label">Material Purchases</div>
+          <div class="value">৳ {{ acc.purchase | number }}</div>
+          <div class="delta">from supplier bills</div>
+        </div>
+
+        <!-- Total Expenses -->
+        <div class="kpi">
+          <div class="row1">
+            <div class="ic" style="background: var(--red-50); color: var(--red)">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1z"></path>
+                <line x1="8" y1="6" x2="16" y2="6"></line>
+                <line x1="8" y1="10" x2="16" y2="10"></line>
+              </svg>
+            </div>
+          </div>
+          <div class="label">Total Costs & Expenses</div>
+          <div class="value">৳ {{ acc.totalExpCur | number }}</div>
+          <div class="delta">direct costs + operating expenses</div>
+        </div>
+
+        <!-- Employee Loan -->
+        <div class="kpi">
+          <div class="row1">
+            <div class="ic" style="background: var(--amber-50); color: var(--amber)">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+              </svg>
+            </div>
+          </div>
+          <div class="label">Staff Advance / Loan</div>
+          <div class="value">৳ {{ acc.employeeLoan | number }}</div>
+          <div class="delta">active employee balances</div>
+        </div>
+
+        <!-- Monthly Profit -->
+        <div class="kpi">
+          <div class="row1">
+            <div class="ic" style="background: var(--green-50); color: var(--green)">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="1" x2="12" y2="23"></line>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="label">Gross Profit</div>
+          <div class="value text-emerald-600">৳ {{ acc.monthlyProfit | number }}</div>
+          <div class="delta up">billed sales − direct purchases</div>
+        </div>
+
+        <!-- Net Profit -->
+        <div class="kpi">
+          <div class="row1">
+            <div class="ic" [style.background]="acc.netProfit >= 0 ? 'var(--green-50)' : 'var(--red-50)'" [style.color]="acc.netProfit >= 0 ? 'var(--green)' : 'var(--red)'">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                <polyline points="17 6 23 6 23 12"></polyline>
+              </svg>
+            </div>
+          </div>
+          <div class="label">Net Profit</div>
+          <div class="value" [class.text-emerald-600]="acc.netProfit >= 0" [class.text-rose-600]="acc.netProfit < 0">
+            ৳ {{ acc.netProfit | number }}
+          </div>
+          <div class="delta" [class.up]="acc.netProfit >= 0" [class.down]="acc.netProfit < 0">
+            profit − operating overheads
+          </div>
+        </div>
+
+        <!-- Total Balance -->
+        <div class="kpi">
+          <div class="row1">
+            <div class="ic" style="background: var(--green-50); color: var(--green)">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                <line x1="6" y1="8" x2="6" y2="8"></line>
+                <line x1="10" y1="8" x2="18" y2="8"></line>
+              </svg>
+            </div>
+          </div>
+          <div class="label">Net Liquid Balance</div>
+          <div class="value text-amber-500">৳ {{ acc.totalBalance | number }}</div>
+          <div class="delta up">total cash in − total disbursements</div>
+        </div>
+      </div>
+
+      <!-- Split 2-Column: Grouped Expenses Table + Accounts Stack -->
+      <div class="grid g-12-2">
+        <!-- Grouped Expenses Table -->
+        <div class="ic-card">
+          <div class="ic-card-head">
+            <h3>
+              <svg class="w-4 h-4 text-[#e0394a]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1z"></path>
+                <line x1="8" y1="6" x2="16" y2="6"></line>
+                <line x1="8" y1="10" x2="16" y2="10"></line>
+              </svg>
+              <span>Expenses Breakdown</span>
+            </h3>
+            <span class="badge badge-blue">{{ effectiveMonthName() }} 2026</span>
+          </div>
+
+          <div class="table-wrap">
+            <table class="table-clean">
+              <thead>
+                <tr>
+                  <th>Expense Category</th>
+                  <th class="num">{{ effectiveMonthName() }} 2026</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (grp of acc.expGroups; track grp.name) {
+                  <!-- Category Header -->
+                  <tr class="bg-[#eaf0fe] font-bold">
+                    <td class="text-amber-500">{{ grp.name }}</td>
+                    <td class="num text-amber-500">৳ {{ grp.totalCur | number }}</td>
+                  </tr>
+
+                  <!-- Category Rows -->
+                  @for (row of grp.rows; track row.label) {
+                    <tr>
+                      <td class="sub-item-indent" [class.font-bold]="row.bold">
+                        {{ row.label }}
+                      </td>
+                      <td class="num" [class.font-bold]="row.bold">
+                        ৳ {{ row.cur | number }}
+                      </td>
+                    </tr>
+
+                    <!-- Child items if any -->
+                    @if (row.kids) {
+                      @for (kid of row.kids; track kid.label) {
+                        <tr>
+                          <td class="child-item-indent">{{ kid.label }}</td>
+                          <td class="num text-slate-500">৳ {{ kid.cur | number }}</td>
+                        </tr>
+                      }
+                    }
                   }
-                } @else {
-                  <span class="text-slate-300 font-medium">-</span>
                 }
-              </td>
-              <td class="px-6 py-4 text-sm font-semibold text-slate-600">
-                @if (row.checkOut?.time) {
-                  <div>{{ row.checkOut?.time | date: 'h:mm a' }}</div>
-                  @if (row.checkOut?.location?.address) {
-                    <div class="text-xs text-slate-400 flex items-center gap-1 font-semibold mt-0.5">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      <span class="truncate max-w-[150px]">{{ row.checkOut?.location?.address }}</span>
-                    </div>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td class="font-extrabold text-[#1b2333] dark:text-slate-100">Total Recorded Expenses</td>
+                  <td class="num font-extrabold text-[#e0394a]">৳ {{ acc.totalExpCur | number }}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- Right Stack: Sales, Profit & Bank Balance Cards -->
+        <div class="acc-stack">
+          <!-- Sales Card -->
+          <div class="ic-card">
+            <div class="ic-card-head">
+              <h3>
+                <svg class="w-4 h-4 text-[#189a5a]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                </svg>
+                <span>Sales Revenue</span>
+              </h3>
+            </div>
+            <div class="table-wrap">
+              <table class="table-clean">
+                <thead>
+                  <tr>
+                    <th>Period</th>
+                    <th class="num">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (sp of acc.salesPeriod; track sp.period) {
+                    <tr>
+                      <td class="font-bold">{{ sp.period }}</td>
+                      <td class="num font-semibold text-[#1b2333] dark:text-slate-100">৳ {{ sp.amount | number }}</td>
+                    </tr>
                   }
-                } @else {
-                  <span class="text-slate-300 font-medium">-</span>
-                }
-              </td>
-              <td class="px-6 py-4 text-sm font-bold text-slate-700 text-right">
-                {{ formatWorkingTime(row.workingMinutes) }}
-              </td>
-            </tr>
-          } @empty {
-            <tr>
-              <td colspan="5" class="px-6 py-12 text-center">
-                <div class="flex flex-col items-center justify-center gap-2.5">
-                  <div class="w-11 h-11 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Profit Card -->
+          <div class="ic-card">
+            <div class="ic-card-head">
+              <h3>
+                <svg class="w-4 h-4 text-[#189a5a]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="1" x2="12" y2="23"></line>
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+                <span>Gross Profit</span>
+              </h3>
+            </div>
+            <div class="table-wrap">
+              <table class="table-clean">
+                <thead>
+                  <tr>
+                    <th>Period</th>
+                    <th class="num">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (pp of acc.profitPeriod; track pp.period) {
+                    <tr>
+                      <td class="font-bold">{{ pp.period }}</td>
+                      <td class="num font-semibold text-emerald-600">৳ {{ pp.amount | number }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Balance Card -->
+          <div class="ic-card">
+            <div class="ic-card-head">
+              <h3>
+                <svg class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                  <line x1="6" y1="8" x2="6" y2="8"></line>
+                </svg>
+                <span>Liquid Accounts</span>
+              </h3>
+              <span class="badge badge-green">৳ {{ acc.totalBalance | number }}</span>
+            </div>
+            <div class="ic-card-body space-y-3">
+              @for (b of acc.bankAccounts; track b.name) {
+                <div class="bank-row">
+                  <div class="top">
+                    <span>{{ b.name }}</span>
+                    <b>৳ {{ b.balance | number }}</b>
                   </div>
-                  <div>
-                    <p class="text-sm font-bold text-slate-700">No matching logs found</p>
-                    <p class="text-xs text-slate-400 mt-0.5">Try toggling to a different status filter</p>
+                  <div class="progress-bar-wrap">
+                    <div [style.width.%]="b.percent"></div>
                   </div>
                 </div>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+              }
+              <div class="flex items-center justify-between pt-2 border-t border-[#e8ecf2] dark:border-slate-800 font-extrabold text-sm text-[#1b2333] dark:text-slate-100">
+                <span>Total Liquid Balance</span>
+                <span class="text-amber-500">৳ {{ acc.totalBalance | number }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-  </div>
+      <!-- Expense Categories Donut Breakdown Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        @for (grp of acc.expGroups; track grp.name; let idx = $index) {
+          <div class="ic-card">
+            <div class="text-center pt-4 pb-2 border-b border-[#e8ecf2] dark:border-slate-800">
+              <div class="text-base font-extrabold text-[#1b2333] dark:text-slate-100">{{ grp.name }}</div>
+              <div class="text-xs text-[#697386] dark:text-slate-400 mt-0.5">{{ effectiveMonthName() }} 2026 &bull; ৳ {{ grp.totalCur | number }}</div>
+            </div>
+            <div class="ic-card-body">
+              <div class="cv h-[220px]">
+                <canvas [id]="'chartExp' + idx"></canvas>
+              </div>
+
+              <!-- Slices Legend -->
+              <div class="mt-3 divide-y divide-[#e8ecf2] max-h-48 overflow-y-auto pr-1">
+                @for (sl of grp.chartSlices; track sl.label) {
+                  <div class="legend-row">
+                    <span class="sw" [style.background]="sl.color"></span>
+                    <span class="truncate text-xs">{{ sl.label }}</span>
+                    <span class="n text-xs">৳ {{ sl.value | number }} &bull; {{ sl.percent }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Real Charts: Sales Overview (Line) & Sales vs Purchase (Bar) -->
+      <div class="grid g-2">
+        <div class="ic-card">
+          <div class="ic-card-head">
+            <h3>
+              <svg class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+              </svg>
+              <span>Sales Overview — 2026</span>
+            </h3>
+            <span class="badge badge-blue">Monthly Real Sales</span>
+          </div>
+          <div class="ic-card-body">
+            <div class="cv h-[260px]">
+              <canvas id="chartSales"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="ic-card">
+          <div class="ic-card-head">
+            <h3>
+              <svg class="w-4 h-4 text-[#d7a13c]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+              <span>Sales vs Purchase</span>
+            </h3>
+            <span class="badge badge-gray">Real Invoices vs POs</span>
+          </div>
+          <div class="ic-card-body">
+            <div class="cv h-[260px]">
+              <canvas id="chartVs"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real Tables: Recent Sales & Recent Purchases -->
+      <div class="grid g-2">
+        <!-- Recent Real Sales -->
+        <div class="ic-card">
+          <div class="ic-card-head">
+            <h3>
+              <svg class="w-4 h-4 text-[#189a5a]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+              <span>Recent Sales Invoices</span>
+            </h3>
+            <a routerLink="/commercial/billing" class="badge badge-blue hover:opacity-80 transition-opacity">View all ({{ realBills().length }})</a>
+          </div>
+          <div class="table-wrap">
+            <table class="table-clean">
+              <thead>
+                <tr>
+                  <th>Invoice</th>
+                  <th>Customer</th>
+                  <th>Date</th>
+                  <th class="num">Amount</th>
+                  <th>Payment</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (inv of acc.recentSales; track inv.no) {
+                  <tr>
+                    <td class="font-bold text-amber-500">{{ inv.no }}</td>
+                    <td class="font-medium text-[#1b2333] dark:text-slate-100">{{ inv.customer }}</td>
+                    <td class="text-slate-500 text-xs">{{ inv.date }}</td>
+                    <td class="num font-bold">৳ {{ inv.amount | number }}</td>
+                    <td>
+                      <span
+                        class="badge"
+                        [class.badge-green]="inv.status === 'Paid'"
+                        [class.badge-amber]="inv.status === 'Partial'"
+                        [class.badge-red]="inv.status === 'Pending'"
+                      >
+                        {{ inv.status }}
+                      </span>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="5" class="text-center py-6 text-slate-400 text-xs">No sales invoices recorded in database yet</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Recent Real Purchases -->
+        <div class="ic-card">
+          <div class="ic-card-head">
+            <h3>
+              <svg class="w-4 h-4 text-[#d7a13c]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="9" cy="21" r="1"></circle>
+                <circle cx="20" cy="21" r="1"></circle>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+              </svg>
+              <span>Recent Vendor Bills</span>
+            </h3>
+            <a routerLink="/commercial/vendors" class="badge badge-blue hover:opacity-80 transition-opacity">View all ({{ realVendorBills().length }})</a>
+          </div>
+          <div class="table-wrap">
+            <table class="table-clean">
+              <thead>
+                <tr>
+                  <th>Bill No.</th>
+                  <th>Supplier</th>
+                  <th>Date</th>
+                  <th class="num">Amount</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (po of acc.recentPurchases; track po.no) {
+                  <tr>
+                    <td class="font-bold text-[#d7a13c]">{{ po.no }}</td>
+                    <td class="font-medium text-[#1b2333] dark:text-slate-100">{{ po.supplier }}</td>
+                    <td class="text-slate-500 text-xs">{{ po.date }}</td>
+                    <td class="num font-bold">৳ {{ po.amount | number }}</td>
+                    <td>
+                      <span
+                        class="badge"
+                        [class.badge-green]="po.status === 'Delivered' || po.status === 'Approved' || po.status === 'Confirmed'"
+                        [class.badge-amber]="po.status === 'Pending' || po.status === 'Draft'"
+                      >
+                        {{ po.status }}
+                      </span>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="5" class="text-center py-6 text-slate-400 text-xs">No vendor purchase bills recorded in database yet</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ============================================================== -->
+  <!-- TAB 2: HR                                                      -->
+  <!-- ============================================================== -->
+  @if (activeTab() === 'hr') {
+    @let hr = hrData();
+    <div class="space-y-4">
+      <!-- 5 Real HR KPI Cards -->
+      <div class="grid g-kpi">
+        <!-- Total Employees -->
+        <div class="kpi">
+          <div class="row1">
+            <div class="ic" style="background: var(--blue-50); color: var(--blue)">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+              </svg>
+            </div>
+          </div>
+          <div class="label">Total Employees</div>
+          <div class="value">{{ hr.totalEmployees }}</div>
+          <div class="delta up">{{ hr.departmentsCount }} roles / depts</div>
+        </div>
+
+        <!-- Present Today -->
+        <div class="kpi">
+          <div class="row1">
+            <div class="ic" style="background: var(--green-50); color: var(--green)">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            </div>
+          </div>
+          <div class="label">Present Today</div>
+          <div class="value">{{ hr.presentToday }}</div>
+          <div class="delta up">{{ hr.attendanceRate }}% attendance rate</div>
+        </div>
+
+        <!-- On Leave Today -->
+        <div class="kpi">
+          <div class="row1">
+            <div class="ic" style="background: var(--amber-50); color: var(--amber)">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </div>
+          </div>
+          <div class="label">On Leave Today</div>
+          <div class="value">{{ hr.onLeaveToday }}</div>
+          <div class="delta">{{ hr.pendingLeavesCount }} pending requests</div>
+        </div>
+
+        <!-- Absent Today -->
+        <div class="kpi">
+          <div class="row1">
+            <div class="ic" style="background: var(--red-50); color: var(--red)">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+            </div>
+          </div>
+          <div class="label">Absent Today</div>
+          <div class="value">{{ hr.absentToday }}</div>
+          <div class="delta down">{{ hr.lateArrivals }} late arrivals</div>
+        </div>
+
+        <!-- Monthly Payroll -->
+        <div class="kpi">
+          <div class="row1">
+            <div class="ic" style="background: var(--blue-50); color: var(--blue)">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                <line x1="6" y1="8" x2="6" y2="8"></line>
+              </svg>
+            </div>
+          </div>
+          <div class="label">Monthly Payroll</div>
+          <div class="value">৳ {{ hr.grossSalary | number }}</div>
+          <div class="delta up">total gross salary</div>
+        </div>
+      </div>
+
+      <!-- Split 2-Column: Real Headcount by Dept + Today's Attendance -->
+      <div class="grid g-12-2">
+        <div class="ic-card">
+          <div class="ic-card-head">
+            <h3>
+              <svg class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+              </svg>
+              <span>Headcount by Designation / Department</span>
+            </h3>
+            <span class="badge badge-blue">{{ hr.totalEmployees }} active staff</span>
+          </div>
+          <div class="ic-card-body">
+            <div class="cv h-[220px]">
+              <canvas id="chartDept"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="ic-card">
+          <div class="ic-card-head">
+            <h3>
+              <svg class="w-4 h-4 text-[#189a5a]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+              <span>Today's Attendance</span>
+            </h3>
+            <span class="badge badge-gray">{{ hr.presentToday }}/{{ hr.totalEmployees }} checked in</span>
+          </div>
+          <div class="ic-card-body">
+            <div class="cv h-[180px]">
+              <canvas id="chartAtt"></canvas>
+            </div>
+            <div class="mt-3 divide-y divide-[#e8ecf2]">
+              @for (b of hr.attBreakdown; track b.status) {
+                <div class="legend-row">
+                  <span class="sw" [style.background]="b.color"></span>
+                  <span class="text-xs">{{ b.status }}</span>
+                  <span class="n text-xs font-bold">{{ b.count }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real Attendance Trend Card -->
+      <div class="ic-card">
+        <div class="ic-card-head">
+          <h3>
+            <svg class="w-4 h-4 text-[#189a5a]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+            </svg>
+            <span>Live Attendance Rate</span>
+          </h3>
+          <a routerLink="/attendance" class="badge badge-blue hover:opacity-80 transition-opacity">View attendance</a>
+        </div>
+        <div class="ic-card-body">
+          <div class="cv h-[160px]">
+            <canvas id="chartAttTrend"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real Tables: Pending Leave Requests & Recently Joined -->
+      <div class="grid g-2">
+        <div class="ic-card">
+          <div class="ic-card-head">
+            <h3>
+              <svg class="w-4 h-4 text-[#e0932e]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              </svg>
+              <span>Pending Leave Requests</span>
+            </h3>
+            <a routerLink="/leaves/requests" class="badge badge-amber hover:opacity-80 transition-opacity">View all</a>
+          </div>
+          <div class="table-wrap">
+            <table class="table-clean">
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th>Type</th>
+                  <th>From</th>
+                  <th>Days</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (l of hr.pendingLeaves; track l.employee) {
+                  <tr>
+                    <td>
+                      <div class="font-bold text-[#1b2333] dark:text-slate-100">{{ l.employee }}</div>
+                      <div class="text-[11px] text-slate-500">{{ l.dept }}</div>
+                    </td>
+                    <td class="text-xs font-medium">{{ l.type }}</td>
+                    <td class="text-xs text-slate-500">{{ l.from }}</td>
+                    <td class="font-semibold">{{ l.days }}d</td>
+                    <td><span class="badge badge-amber">{{ l.status }}</span></td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="5" class="text-center py-6 text-slate-400 text-xs">No pending leave requests in database</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="ic-card">
+          <div class="ic-card-head">
+            <h3>
+              <svg class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="8.5" cy="7" r="4"></circle>
+                <polyline points="17 11 19 13 23 9"></polyline>
+              </svg>
+              <span>Real Registered Team Members</span>
+            </h3>
+            <a routerLink="/employees" class="badge badge-blue hover:opacity-80 transition-opacity">All Employees ({{ realEmployees().length }})</a>
+          </div>
+          <div class="table-wrap">
+            <table class="table-clean">
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th>Role / Dept</th>
+                  <th>Joined</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (e of hr.recentlyJoined; track e.name) {
+                  <tr class="hover:bg-slate-50/60 transition-colors">
+                    <td>
+                      <a [routerLink]="['/employees', e.id, 'profile']" class="flex items-center gap-2.5 group">
+                        <div class="avatar-badge group-hover:scale-105 transition-transform">{{ e.photo }}</div>
+                        <div>
+                          <div class="font-bold text-[#1b2333] dark:text-slate-100 group-hover:text-indigo-600 transition-colors">{{ e.name }}</div>
+                          <div class="text-[11px] text-slate-500">{{ e.desig }}</div>
+                        </div>
+                      </a>
+                    </td>
+                    <td class="text-xs font-medium">{{ e.dept }}</td>
+                    <td class="text-xs text-slate-500">{{ e.join }}</td>
+                    <td>
+                      <a [routerLink]="['/employees', e.id, 'profile']" class="badge badge-green hover:opacity-85 transition-opacity">
+                        {{ e.status }}
+                      </a>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="4" class="text-center py-6 text-slate-400 text-xs">No employees found in database</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ============================================================== -->
+  <!-- TAB 3: OPERATIONS                                              -->
+  <!-- ============================================================== -->
+  @if (activeTab() === 'operations') {
+    @let ops = opsData();
+    <div class="space-y-4">
+      <!-- 4 Real Operations KPI Cards -->
+      <div class="grid g-kpi">
+        <!-- Total Customers -->
+        <div class="kpi">
+          <div class="row1">
+            <div class="ic" style="background: var(--blue-50); color: var(--blue)">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="8.5" cy="7" r="4"></circle>
+              </svg>
+            </div>
+          </div>
+          <div class="label">Total Real Clients</div>
+          <div class="value">{{ ops.totalCustomers }}</div>
+          <div class="delta up">active customers</div>
+        </div>
+
+        <!-- Active Projects -->
+        <div class="kpi">
+          <div class="row1">
+            <div class="ic" style="background: var(--blue-50); color: var(--blue)">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="label">Active Projects</div>
+          <div class="value">{{ ops.activeProjects }}</div>
+          <div class="delta up">{{ ops.totalProjects }} total active</div>
+        </div>
+
+        <!-- Stock Value -->
+        <div class="kpi">
+          <div class="row1">
+            <div class="ic" style="background: var(--blue-50); color: var(--blue)">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="label">Total Stock Value</div>
+          <div class="value">৳ {{ ops.stockValue | number }}</div>
+          <div class="delta up">{{ ops.totalSkus }} products in inventory</div>
+        </div>
+
+        <!-- Low Stock -->
+        <div class="kpi">
+          <div class="row1">
+            <div class="ic" style="background: var(--amber-50); color: var(--amber)">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+            </div>
+          </div>
+          <div class="label">Low / Out of Stock</div>
+          <div class="value">{{ ops.lowStockCount }}</div>
+          <div class="delta down">needs replenishment</div>
+        </div>
+      </div>
+
+      <!-- Split 2-Column: Real Low Stock Alert + Project Status Donut -->
+      <div class="grid g-12-2">
+        <div class="ic-card">
+          <div class="ic-card-head">
+            <h3>
+              <svg class="w-4 h-4 text-[#e0932e]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              <span>Inventory Stock Monitoring</span>
+            </h3>
+            <a routerLink="/commercial/inventory" class="badge badge-amber hover:opacity-80 transition-opacity">Manage Inventory ({{ realProducts().length }})</a>
+          </div>
+          <div class="table-wrap">
+            <table class="table-clean">
+              <thead>
+                <tr>
+                  <th>SKU</th>
+                  <th>Product</th>
+                  <th class="num">Current Stock</th>
+                  <th class="num">Min. Reorder</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (p of ops.lowStockItems; track p.sku) {
+                  <tr>
+                    <td class="font-mono text-xs text-amber-500">{{ p.sku }}</td>
+                    <td class="font-medium text-[#1b2333] dark:text-slate-100">{{ p.name }}</td>
+                    <td class="num font-bold text-[#e0394a]">{{ p.stock }}</td>
+                    <td class="num text-slate-500">{{ p.min }}</td>
+                    <td>
+                      <span class="badge" [class.badge-red]="p.status === 'Out of Stock'" [class.badge-amber]="p.status === 'Low Stock'">
+                        {{ p.status }}
+                      </span>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="5" class="text-center py-6 text-emerald-600 text-xs font-semibold">
+                      All products currently have sufficient stock levels
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="ic-card">
+          <div class="ic-card-head">
+            <h3>
+              <svg class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                <polyline points="2 17 12 22 22 17"></polyline>
+                <polyline points="2 12 12 17 22 12"></polyline>
+              </svg>
+              <span>Real Projects Status</span>
+            </h3>
+            <a routerLink="/projects" class="badge badge-blue hover:opacity-80 transition-opacity">View Projects</a>
+          </div>
+          <div class="ic-card-body">
+            <div class="cv h-[180px]">
+              <canvas id="chartProj"></canvas>
+            </div>
+            <div class="mt-3 divide-y divide-[#e8ecf2]">
+              @for (st of ops.projectStatuses; track st.status) {
+                <div class="legend-row">
+                  <span class="sw" [style.background]="st.color"></span>
+                  <span class="text-xs">{{ st.status }}</span>
+                  <span class="n text-xs font-bold">{{ st.count }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real Live Recent Activities Feed -->
+      <div class="ic-card">
+        <div class="ic-card-head">
+          <h3>
+            <svg class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 14 14"></polyline>
+            </svg>
+            <span>Real System Activity Log</span>
+          </h3>
+          <span class="badge badge-gray">Real-time</span>
+        </div>
+        <div class="ic-card-body divide-y divide-[#e8ecf2]">
+          @for (act of ops.activities; track act.text) {
+            <div class="flex items-start gap-3 py-2.5">
+              <div class="timeline-dot"></div>
+              <div class="flex-1">
+                <p class="text-xs font-medium text-[#1b2333] dark:text-slate-100">{{ act.text }}</p>
+                <span class="text-[11px] text-[#8a93a6] dark:text-slate-400">{{ act.time }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
 </div>

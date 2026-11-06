@@ -23,10 +23,26 @@ export class LoginComponent {
   readonly errorMessage = signal<string | null>(null);
 
   readonly form = this.fb.nonNullable.group({
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(8)]],
-    rememberMe: [false],
+    email: ['admin@attendly.com', [Validators.required, Validators.email]],
+    password: ['password123', [Validators.required, Validators.minLength(8)]],
+    rememberMe: [true],
   });
+
+  fillAdminDemo() {
+    this.form.patchValue({
+      email: 'admin@attendly.com',
+      password: 'password123',
+      rememberMe: true,
+    });
+  }
+
+  fillShareholderDemo() {
+    this.form.patchValue({
+      email: 'partner@interiorcounsel.com',
+      password: 'password123',
+      rememberMe: true,
+    });
+  }
 
   private handleError(error: any): void {
     console.error('Login failed', error);
@@ -44,7 +60,14 @@ export class LoginComponent {
       .login({ email, password, rememberMe })
       .pipe(
         tap(() => {
-          this.router.navigate(['/dashboard']);
+          const role = this.auth.currentRole();
+          if (role === 'shareholder') {
+            this.router.navigate(['/shareholder/portal']);
+          } else if (role === 'employee') {
+            this.router.navigate(['/attendance']);
+          } else {
+            this.router.navigate(['/dashboard']);
+          }
         }),
         catchError((err) => {
           this.errorMessage.set(err.error?.message || 'Invalid email or password.');

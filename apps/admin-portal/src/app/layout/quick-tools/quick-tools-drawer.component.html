@@ -1,0 +1,643 @@
+@if (isOpen()) {
+  <!-- Backdrop -->
+  <div
+    class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs transition-opacity duration-300 animate-in fade-in"
+    (click)="close()"
+  ></div>
+
+  <!-- Slide-Over Drawer Container -->
+  <div
+    class="fixed inset-y-0 right-0 z-50 w-full sm:w-[460px] bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col transition-transform duration-300 animate-in slide-in-from-right"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Drawer Header -->
+    <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold text-sm">
+          🧮
+        </div>
+        <div>
+          <h2 class="text-base font-bold text-slate-900 dark:text-slate-100 leading-tight">Quick Tools &amp; Utilities</h2>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400">Interior Counsel Fast Calculations</p>
+        </div>
+      </div>
+
+      <button
+        (click)="close()"
+        type="button"
+        class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+      >
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Navigation Tabs (Calculator, Area/Cost, Margin/VAT, Scratchpad) -->
+    <div class="flex border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 p-1 gap-1">
+      <button
+        type="button"
+        (click)="setTab('calculator')"
+        [ngClass]="activeTab() === 'calculator' ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-slate-600 dark:text-slate-400'"
+        class="flex-1 py-2 text-xs font-semibold rounded-lg hover:text-slate-900 dark:hover:text-slate-200 transition-all flex items-center justify-center gap-1 cursor-pointer"
+      >
+        <span>🧮 Calc</span>
+      </button>
+
+      <button
+        type="button"
+        (click)="setTab('estimator')"
+        [ngClass]="activeTab() === 'estimator' ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-slate-600 dark:text-slate-400'"
+        class="flex-1 py-2 text-xs font-semibold rounded-lg hover:text-slate-900 dark:hover:text-slate-200 transition-all flex items-center justify-center gap-1 cursor-pointer"
+      >
+        <span>📐 Area</span>
+      </button>
+
+      <button
+        type="button"
+        (click)="setTab('margins')"
+        [ngClass]="activeTab() === 'margins' ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-slate-600 dark:text-slate-400'"
+        class="flex-1 py-2 text-xs font-semibold rounded-lg hover:text-slate-900 dark:hover:text-slate-200 transition-all flex items-center justify-center gap-1 cursor-pointer"
+      >
+        <span>💰 Margin</span>
+      </button>
+
+      <button
+        type="button"
+        (click)="setTab('scratchpad')"
+        [ngClass]="activeTab() === 'scratchpad' ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-slate-600 dark:text-slate-400'"
+        class="flex-1 py-2 text-xs font-semibold rounded-lg hover:text-slate-900 dark:hover:text-slate-200 transition-all flex items-center justify-center gap-1 cursor-pointer"
+      >
+        <span>📝 Notes</span>
+      </button>
+    </div>
+
+    <!-- Feedback Banner if Copied -->
+    @if (copyFeedback()) {
+      <div class="bg-emerald-50 dark:bg-emerald-950/70 border-b border-emerald-200 dark:border-emerald-800 px-4 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 flex items-center justify-between">
+        <span>✓ {{ copyFeedback() }}</span>
+      </div>
+    }
+
+    <!-- Tab Contents Container -->
+    <div class="flex-1 overflow-y-auto p-5 space-y-6">
+
+      <!-- =========================================================================
+           TAB 1: QUICK CALCULATOR
+           ========================================================================= -->
+      @if (activeTab() === 'calculator') {
+        <div class="space-y-4">
+          <!-- Digital Display Screen -->
+          <div class="bg-slate-900 text-white rounded-2xl p-4 shadow-inner flex flex-col justify-between border border-slate-800">
+            <!-- Equation line -->
+            <div class="text-right text-xs font-mono text-slate-400 min-h-[1.25rem] truncate">
+              {{ calcEquation() || '&nbsp;' }}
+            </div>
+
+            <!-- Current input / result display -->
+            <div class="text-right text-3xl sm:text-4xl font-extrabold font-mono tracking-tight text-white select-all overflow-x-auto py-1">
+              {{ calcInput() }}
+            </div>
+
+            <!-- Quick Action Badges -->
+            <div class="flex items-center justify-between pt-2 border-t border-slate-800 mt-2 text-xs">
+              <span class="text-[10px] text-slate-500 font-mono">Keyboard enabled</span>
+              <div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  (click)="copyToClipboard(calcInput(), 'Calculator result copied!')"
+                  class="text-[11px] text-slate-400 hover:text-indigo-400 font-semibold transition"
+                >
+                  Copy
+                </button>
+                <span class="text-slate-700">•</span>
+                <button
+                  type="button"
+                  (click)="sendCalcToScratchpad()"
+                  class="text-[11px] text-slate-400 hover:text-indigo-400 font-semibold transition"
+                >
+                  To Notes
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modifiers Row (x², √, %, 00) -->
+          <div class="grid grid-cols-4 gap-2">
+            <button
+              type="button"
+              (click)="square()"
+              class="py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition cursor-pointer"
+            >
+              x²
+            </button>
+            <button
+              type="button"
+              (click)="squareRoot()"
+              class="py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition cursor-pointer"
+            >
+              √x
+            </button>
+            <button
+              type="button"
+              (click)="percent()"
+              class="py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition cursor-pointer"
+            >
+              %
+            </button>
+            <button
+              type="button"
+              (click)="inputDigit('00')"
+              class="py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition cursor-pointer"
+            >
+              00
+            </button>
+          </div>
+
+          <!-- Main Keypad Grid (4 columns) -->
+          <div class="grid grid-cols-4 gap-2">
+            <!-- Row 1 -->
+            <button
+              type="button"
+              (click)="clearAll()"
+              class="py-3 rounded-xl text-xs font-bold bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 transition cursor-pointer"
+            >
+              AC
+            </button>
+            <button
+              type="button"
+              (click)="clearEntry()"
+              class="py-3 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition cursor-pointer"
+            >
+              C
+            </button>
+            <button
+              type="button"
+              (click)="backspace()"
+              class="py-3 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition cursor-pointer"
+            >
+              ⌫
+            </button>
+            <button
+              type="button"
+              (click)="inputOperator('÷')"
+              class="py-3 rounded-xl text-sm font-extrabold bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 transition cursor-pointer"
+            >
+              ÷
+            </button>
+
+            <!-- Row 2 -->
+            <button
+              type="button"
+              (click)="inputDigit('7')"
+              class="py-3 rounded-xl text-sm font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 transition cursor-pointer"
+            >
+              7
+            </button>
+            <button
+              type="button"
+              (click)="inputDigit('8')"
+              class="py-3 rounded-xl text-sm font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 transition cursor-pointer"
+            >
+              8
+            </button>
+            <button
+              type="button"
+              (click)="inputDigit('9')"
+              class="py-3 rounded-xl text-sm font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 transition cursor-pointer"
+            >
+              9
+            </button>
+            <button
+              type="button"
+              (click)="inputOperator('×')"
+              class="py-3 rounded-xl text-sm font-extrabold bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 transition cursor-pointer"
+            >
+              ×
+            </button>
+
+            <!-- Row 3 -->
+            <button
+              type="button"
+              (click)="inputDigit('4')"
+              class="py-3 rounded-xl text-sm font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 transition cursor-pointer"
+            >
+              4
+            </button>
+            <button
+              type="button"
+              (click)="inputDigit('5')"
+              class="py-3 rounded-xl text-sm font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 transition cursor-pointer"
+            >
+              5
+            </button>
+            <button
+              type="button"
+              (click)="inputDigit('6')"
+              class="py-3 rounded-xl text-sm font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 transition cursor-pointer"
+            >
+              6
+            </button>
+            <button
+              type="button"
+              (click)="inputOperator('-')"
+              class="py-3 rounded-xl text-sm font-extrabold bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 transition cursor-pointer"
+            >
+              -
+            </button>
+
+            <!-- Row 4 -->
+            <button
+              type="button"
+              (click)="inputDigit('1')"
+              class="py-3 rounded-xl text-sm font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 transition cursor-pointer"
+            >
+              1
+            </button>
+            <button
+              type="button"
+              (click)="inputDigit('2')"
+              class="py-3 rounded-xl text-sm font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 transition cursor-pointer"
+            >
+              2
+            </button>
+            <button
+              type="button"
+              (click)="inputDigit('3')"
+              class="py-3 rounded-xl text-sm font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 transition cursor-pointer"
+            >
+              3
+            </button>
+            <button
+              type="button"
+              (click)="inputOperator('+')"
+              class="py-3 rounded-xl text-sm font-extrabold bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 transition cursor-pointer"
+            >
+              +
+            </button>
+
+            <!-- Row 5 -->
+            <button
+              type="button"
+              (click)="toggleSign()"
+              class="py-3 rounded-xl text-sm font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition cursor-pointer"
+            >
+              ±
+            </button>
+            <button
+              type="button"
+              (click)="inputDigit('0')"
+              class="py-3 rounded-xl text-sm font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 transition cursor-pointer"
+            >
+              0
+            </button>
+            <button
+              type="button"
+              (click)="inputDecimal()"
+              class="py-3 rounded-xl text-sm font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 transition cursor-pointer"
+            >
+              .
+            </button>
+            <button
+              type="button"
+              (click)="calculate()"
+              class="py-3 rounded-xl text-base font-extrabold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 transition cursor-pointer"
+            >
+              =
+            </button>
+          </div>
+
+          <!-- Calculation History Tape -->
+          @if (calcHistory().length > 0) {
+            <div class="pt-2 border-t border-slate-100 dark:border-slate-800">
+              <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-2">
+                <span class="font-bold uppercase tracking-wider text-[10px]">Recent Calculations</span>
+                <button
+                  type="button"
+                  (click)="clearHistory()"
+                  class="text-[10px] text-slate-400 hover:text-rose-500 transition cursor-pointer"
+                >
+                  Clear history
+                </button>
+              </div>
+
+              <div class="space-y-1.5 max-h-36 overflow-y-auto">
+                @for (item of calcHistory(); track $index) {
+                  <button
+                    type="button"
+                    (click)="reuseHistory(item)"
+                    class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-left transition cursor-pointer group"
+                  >
+                    <span class="text-xs text-slate-500 dark:text-slate-400 font-mono truncate mr-2">{{ item.expression }} =</span>
+                    <span class="text-xs font-bold text-slate-800 dark:text-slate-200 font-mono group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                      {{ item.result }}
+                    </span>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- =========================================================================
+           TAB 2: AREA & COST ESTIMATOR
+           ========================================================================= -->
+      @if (activeTab() === 'estimator') {
+        <div class="space-y-4">
+          <!-- Unit Toggle -->
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Measurement Unit</span>
+            <div class="inline-flex rounded-lg border border-slate-200 dark:border-slate-700 p-0.5 bg-slate-100 dark:bg-slate-800 text-xs">
+              <button
+                type="button"
+                (click)="estimatorUnit.set('ft')"
+                [ngClass]="estimatorUnit() === 'ft' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs' : 'text-slate-600 dark:text-slate-400'"
+                class="px-2.5 py-1 rounded-md font-semibold transition cursor-pointer"
+              >
+                Feet (ft / sq.ft)
+              </button>
+              <button
+                type="button"
+                (click)="estimatorUnit.set('m')"
+                [ngClass]="estimatorUnit() === 'm' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs' : 'text-slate-600 dark:text-slate-400'"
+                class="px-2.5 py-1 rounded-md font-semibold transition cursor-pointer"
+              >
+                Meters (m / m²)
+              </button>
+            </div>
+          </div>
+
+          <!-- Inputs -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Length ({{ estimatorUnit() }})</label>
+              <input
+                type="number"
+                [ngModel]="length()"
+                (ngModelChange)="length.set(+$event || 0)"
+                (focus)="$any($event.target).select()"
+                placeholder="0"
+                min="0"
+                step="0.5"
+                class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Width ({{ estimatorUnit() }})</label>
+              <input
+                type="number"
+                [ngModel]="width()"
+                (ngModelChange)="width.set(+$event || 0)"
+                (focus)="$any($event.target).select()"
+                placeholder="0"
+                min="0"
+                step="0.5"
+                class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+              />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                Rate / {{ estimatorUnit() === 'ft' ? 'sq.ft' : 'm²' }} ($)
+              </label>
+              <input
+                type="number"
+                [ngModel]="ratePerUnit()"
+                (ngModelChange)="ratePerUnit.set(+$event || 0)"
+                (focus)="$any($event.target).select()"
+                placeholder="0"
+                min="0"
+                class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Wastage / Buffer (%)</label>
+              <select
+                [ngModel]="wastagePercent()"
+                (ngModelChange)="wastagePercent.set(+$event)"
+                class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+              >
+                <option [value]="0">0% (Exact)</option>
+                <option [value]="5">+5% (Standard tiles/paint)</option>
+                <option [value]="10">+10% (Flooring/Woodwork)</option>
+                <option [value]="15">+15% (Irregular walls)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Calculation Cards -->
+          <div class="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-4 space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-200/80 dark:border-slate-700">
+              <span class="text-xs text-slate-500 dark:text-slate-400">Total Net Area</span>
+              <span class="text-sm font-bold text-slate-900 dark:text-slate-100">
+                {{ baseArea() | number:'1.2-2' }} {{ estimatorUnit() === 'ft' ? 'sq. ft' : 'm²' }}
+              </span>
+            </div>
+
+            <div class="flex items-center justify-between pb-2 border-b border-slate-200/80 dark:border-slate-700">
+              <span class="text-xs text-slate-500 dark:text-slate-400">Alternative Unit</span>
+              <span class="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                {{ areaInOtherUnit() | number:'1.2-2' }} {{ estimatorUnit() === 'ft' ? 'm²' : 'sq. ft' }}
+              </span>
+            </div>
+
+            <div class="flex items-center justify-between pb-2 border-b border-slate-200/80 dark:border-slate-700">
+              <span class="text-xs text-slate-500 dark:text-slate-400">Perimeter (Running Length)</span>
+              <span class="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                {{ perimeterRunningLength() | number:'1.1-1' }} {{ estimatorUnit() }}
+              </span>
+            </div>
+
+            <div class="flex items-center justify-between pb-2 border-b border-slate-200/80 dark:border-slate-700">
+              <span class="text-xs text-slate-500 dark:text-slate-400">Area with +{{ wastagePercent() }}% Wastage</span>
+              <span class="text-sm font-bold text-indigo-600 dark:text-indigo-400">
+                {{ areaWithWastage() | number:'1.2-2' }} {{ estimatorUnit() === 'ft' ? 'sq. ft' : 'm²' }}
+              </span>
+            </div>
+
+            <div class="pt-1 flex items-center justify-between">
+              <div>
+                <span class="text-xs font-bold text-slate-800 dark:text-slate-200 block">Total Estimated Cost</span>
+                <span class="text-[11px] text-slate-400">Includes chosen wastage buffer</span>
+              </div>
+              <span class="text-lg font-extrabold text-emerald-600 dark:text-emerald-400">
+                ${{ totalEstimatedCost() | number:'1.2-2' }}
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            (click)="copyEstimatorSummary()"
+            class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+          >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+            </svg>
+            <span>Copy Estimate to Clipboard</span>
+          </button>
+        </div>
+      }
+
+      <!-- =========================================================================
+           TAB 3: MARGIN & VAT CALCULATOR
+           ========================================================================= -->
+      @if (activeTab() === 'margins') {
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              Supplier Catalog / Cost Price ($)
+            </label>
+            <input
+              type="number"
+              [ngModel]="costPrice()"
+              (ngModelChange)="costPrice.set(+$event || 0)"
+              (focus)="$any($event.target).select()"
+              placeholder="0"
+              min="0"
+              class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+            />
+          </div>
+
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                Vendor Disc (%)
+              </label>
+              <input
+                type="number"
+                [ngModel]="supplierDiscountPercent()"
+                (ngModelChange)="supplierDiscountPercent.set(+$event || 0)"
+                (focus)="$any($event.target).select()"
+                placeholder="0"
+                min="0"
+                class="w-full px-2 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+              />
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                Our Markup (%)
+              </label>
+              <input
+                type="number"
+                [ngModel]="markupPercent()"
+                (ngModelChange)="markupPercent.set(+$event || 0)"
+                (focus)="$any($event.target).select()"
+                placeholder="0"
+                min="0"
+                class="w-full px-2 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+              />
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                VAT / Tax (%)
+              </label>
+              <input
+                type="number"
+                [ngModel]="taxPercent()"
+                (ngModelChange)="taxPercent.set(+$event || 0)"
+                (focus)="$any($event.target).select()"
+                placeholder="0"
+                min="0"
+                class="w-full px-2 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+              />
+            </div>
+          </div>
+
+          <!-- Margin Result Breakdown -->
+          <div class="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-4 space-y-2.5">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-500 dark:text-slate-400">Net Purchase Cost (After {{ supplierDiscountPercent() }}% discount):</span>
+              <span class="font-semibold text-slate-700 dark:text-slate-200">${{ netSupplierCost() | number:'1.2-2' }}</span>
+            </div>
+
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-500 dark:text-slate-400">Client Selling Price (Pre-Tax):</span>
+              <span class="font-bold text-slate-900 dark:text-slate-100">${{ sellingPrice() | number:'1.2-2' }}</span>
+            </div>
+
+            <div class="flex items-center justify-between text-xs py-1 border-y border-slate-200/80 dark:border-slate-700">
+              <span class="font-bold text-emerald-600 dark:text-emerald-400">Your Gross Profit:</span>
+              <span class="font-extrabold text-emerald-600 dark:text-emerald-400">
+                +${{ grossProfit() | number:'1.2-2' }} ({{ markupPercent() }}%)
+              </span>
+            </div>
+
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-500 dark:text-slate-400">Tax / VAT ({{ taxPercent() }}%):</span>
+              <span class="font-semibold text-slate-700 dark:text-slate-200">${{ taxAmount() | number:'1.2-2' }}</span>
+            </div>
+
+            <div class="pt-2 flex items-center justify-between border-t border-slate-200 dark:border-slate-700">
+              <span class="text-xs font-bold text-slate-900 dark:text-slate-100">Final Client Invoice Bill:</span>
+              <span class="text-lg font-extrabold text-indigo-600 dark:text-indigo-400">
+                ${{ finalClientBill() | number:'1.2-2' }}
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            (click)="copyMarginSummary()"
+            class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+          >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            <span>Copy Pricing Breakdown</span>
+          </button>
+        </div>
+      }
+
+      <!-- =========================================================================
+           TAB 4: SCRATCHPAD & STICKY NOTES
+           ========================================================================= -->
+      @if (activeTab() === 'scratchpad') {
+        <div class="space-y-3">
+          <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+            <span>Auto-saved in browser local storage</span>
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                (click)="copyToClipboard(scratchpadContent(), 'Scratchpad notes copied!')"
+                class="hover:text-indigo-600 dark:hover:text-indigo-400 font-semibold cursor-pointer"
+              >
+                Copy
+              </button>
+              <span>•</span>
+              <button
+                type="button"
+                (click)="clearScratchpad()"
+                class="hover:text-rose-600 font-semibold cursor-pointer"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+
+          <textarea
+            [ngModel]="scratchpadContent()"
+            (ngModelChange)="updateScratchpad($event)"
+            rows="12"
+            placeholder="Jot down site measurements, client requests, vendor phone numbers, or quick calculation thoughts..."
+            class="w-full p-3.5 text-xs sm:text-sm font-mono rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/80 text-slate-800 dark:text-slate-200 focus:bg-white dark:focus:bg-slate-800 transition outline-none resize-none"
+          ></textarea>
+
+          <div class="text-[11px] text-slate-400 text-right">
+            {{ scratchpadContent().length }} characters
+          </div>
+        </div>
+      }
+
+    </div>
+
+    <!-- Quick Footer -->
+    <div class="px-5 py-2.5 bg-slate-50 dark:bg-slate-800/60 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
+      <span>Tip: Press <kbd class="px-1.5 py-0.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-[9px] font-mono">Ctrl + J</kbd> to toggle</span>
+      <span class="text-amber-500 font-semibold">Interior Counsel ERP</span>
+    </div>
+  </div>
+}

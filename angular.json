@@ -23,7 +23,7 @@
             "browser": "apps/admin-portal/src/main.ts",
             "polyfills": ["zone.js"],
             "tsConfig": "apps/admin-portal/tsconfig.app.json",
-            "assets": ["apps/admin-portal/src/assets"],
+            "assets": ["apps/admin-portal/src/assets", "apps/admin-portal/src/_redirects"],
             "styles": ["apps/admin-portal/src/styles.scss"],
             "scripts": []
           },

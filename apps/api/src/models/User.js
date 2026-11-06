@@ -5,7 +5,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-const ROLES = ['admin', 'hr', 'manager', 'employee'];
+const ROLES = ['admin', 'hr', 'manager', 'employee', 'shareholder'];
 const USER_STATUSES = ['active', 'inactive'];
 
 const userSchema = new mongoose.Schema(
@@ -17,12 +17,51 @@ const userSchema = new mongoose.Schema(
     phone: { type: String, trim: true },
     designation: { type: String, trim: true },
     salary: { type: Number, min: 0, default: 0 },
-    role: { type: String, enum: ROLES, default: 'employee' },
+    attendanceDeductionDays: { type: Number, default: 3, min: 1 }, // Odoo: Late Days per Deduction (e.g. 3 = 1 day salary deduction per 3 late check-ins in month)
+    role: { type: String, default: 'employee' },
+    customMenus: [{ type: String }],
     shiftId: { type: mongoose.Schema.Types.ObjectId, ref: 'Shift' },
     joiningDate: { type: Date, default: Date.now },
     resignationDate: { type: Date },
     status: { type: String, enum: USER_STATUSES, default: 'active' },
     employeeType: { type: mongoose.Schema.Types.ObjectId, ref: 'EmployeeType' },
+    reportsTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    // Extended employee information from HR custom logic
+    fatherName: { type: String, trim: true },
+    fatherMobile: { type: String, trim: true },
+    motherName: { type: String, trim: true },
+    motherMobile: { type: String, trim: true },
+    spouseMobile: { type: String, trim: true },
+    childrenNames: [{ type: String, trim: true }],
+    presentAddress: { type: String, trim: true },
+    permanentAddress: { type: String, trim: true },
+    education: [
+      {
+        degree: { type: String, trim: true },
+        institution: { type: String, trim: true },
+        passingYear: { type: String, trim: true },
+        result: { type: String, trim: true },
+      },
+    ],
+    emergencyContact: {
+      name: { type: String, trim: true },
+      relationship: { type: String, trim: true },
+      phone: { type: String, trim: true },
+      email: { type: String, trim: true },
+      address: { type: String, trim: true },
+    },
+    documents: [
+      {
+        documentType: {
+          type: String,
+          enum: ['NID', 'Passport', 'Certificate', 'TIN', 'Photo', 'Others'],
+          default: 'Others',
+        },
+        documentName: { type: String, trim: true },
+        documentUrl: { type: String, trim: true },
+        uploadedAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true },
 );

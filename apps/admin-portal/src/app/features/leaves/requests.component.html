@@ -1,37 +1,64 @@
 <div class="space-y-6">
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div class="space-y-1">
-      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Leave Requests</h1>
+      <h1 class="text-2xl font-bold text-slate-900 dark:text-white dark:text-white tracking-tight">Leave Requests</h1>
       <p class="text-sm text-slate-500">Manage employee leave applications and approvals.</p>
+    </div>
+
+  
+    <div class="flex items-center gap-2">
+      <button
+        (click)="exportExcel()"
+        type="button"
+        title="Download Excel Spreadsheet (.xlsx)"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl border border-emerald-600/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 transition shadow-sm"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <span>Excel</span>
+      </button>
+
+      <button
+        (click)="exportPdf()"
+        type="button"
+        title="Download Official PDF (.pdf)"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl border border-rose-600/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 transition shadow-sm"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+        <span>PDF</span>
+      </button>
     </div>
 
   </div>
 
   <!-- Requests Table -->
-  <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+  <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden">
     <div class="overflow-x-auto">
       <table class="w-full text-left border-collapse">
         <thead>
-          <tr class="bg-slate-50/80 border-b border-slate-200">
-            <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
+          <tr class="bg-slate-100/90 dark:bg-slate-800/95 border-b border-slate-200 dark:border-slate-700">
+            <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4">
               Employee
             </th>
-            <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
+            <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4">
               Type
             </th>
-            <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
+            <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4">
               Duration
             </th>
-            <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
+            <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4">
               Reason
             </th>
-            <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
+            <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4">
               Requested On
             </th>
-            <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
+            <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4">
               Status
             </th>
-            <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4 text-right">
+            <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4 text-right">
               Actions
             </th>
           </tr>
@@ -51,12 +78,12 @@
           @for (req of requests(); track req._id) {
           <tr class="hover:bg-slate-50/50 transition-colors">
             <td class="px-6 py-4">
-              <div class="text-sm font-medium text-slate-900">{{ req.employeeId?.name }}</div>
+              <div class="text-sm font-medium text-slate-900 dark:text-white">{{ req.employeeId?.name }}</div>
               <div class="flex flex-wrap items-center gap-1.5 mt-0.5">
                 <span class="text-xs text-slate-500 font-medium">{{ req.employeeId?.employeeId }}</span>
                 @if (req.employeeId?.role) {
                   <span class="text-slate-300">•</span>
-                  <span class="inline-flex items-center rounded-md bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700 uppercase tracking-wide">
+                  <span class="inline-flex items-center rounded-md bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide">
                     {{ req.employeeId?.role }}
                   </span>
                 }
@@ -68,7 +95,7 @@
             </td>
             <td class="px-6 py-4">
               <span
-                class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                class="inline-flex items-center rounded-md bg-amber-500/10 px-2 py-1 text-xs font-medium text-amber-700 dark:text-amber-400 ring-1 ring-inset ring-amber-500/20">
                 {{ req.leaveType }}
               </span>
             </td>
@@ -83,7 +110,7 @@
                 <span class="text-xs text-slate-500">{{ req.requestedDays }} day(s)</span>
                 @if (req.halfDay) {
                 <span
-                  class="inline-flex items-center rounded-md bg-indigo-50 px-1.5 py-0.5 text-[10px] font-medium text-indigo-700 ring-1 ring-inset ring-indigo-600/10">Half
+                  class="inline-flex items-center rounded-md bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-400 ring-1 ring-inset ring-amber-500/20">Half
                   Day</span>
                 }
               </div>
@@ -106,9 +133,28 @@
                     }" class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset">
                 {{ req.status }}
               </span>
+
+              @if (req.approvalStages && req.approvalStages.length > 0) {
+                <div class="flex items-center gap-1 mt-2 flex-wrap max-w-[200px]">
+                  @for (stage of req.approvalStages; track stage.sequence; let last = $last) {
+                    <div class="flex items-center gap-1">
+                      <span 
+                        [class]="stage.status === 'Approved' ? 'text-emerald-600 font-bold bg-emerald-50 border-emerald-100' : (stage.status === 'Rejected' ? 'text-rose-600 font-bold bg-rose-50 border-rose-100' : 'text-slate-400 bg-slate-50 border-slate-100')"
+                        class="text-[9px] px-1.5 py-0.5 border rounded font-semibold capitalize"
+                        [title]="stage.status === 'Approved' ? 'Approved' : (stage.status === 'Rejected' ? 'Rejected' : 'Pending')"
+                      >
+                        {{ stage.role }}
+                      </span>
+                      @if (!last) {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                      }
+                    </div>
+                  }
+                </div>
+              }
             </td>
             <td class="px-6 py-4 text-right">
-              @if (req.status === 'Pending') {
+              @if (isApprover(req)) {
               <div class="flex items-center justify-end gap-2">
                 <button (click)="updateStatus(req, 'Approved')"
                   class="text-xs font-medium text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors">
@@ -135,7 +181,7 @@
 <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
   <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
     <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-      <h2 class="text-lg font-semibold text-slate-900">Add Leave Record</h2>
+      <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Add Leave Record</h2>
       <button (click)="closeCreateModal()" class="text-slate-400 hover:text-slate-500">
         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -147,7 +193,7 @@
       <div class="space-y-1">
         <label class="block text-sm font-medium text-slate-700">Employee</label>
         <select [(ngModel)]="newRequest.employeeId"
-          class="block w-full rounded-lg border-0 py-2 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm">
+          class="block w-full rounded-lg border-0 py-2 px-3 text-slate-900 dark:text-white shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm">
           <option value="">Select Employee</option>
           @for (emp of employees(); track emp._id) {
           <option [value]="emp._id">{{ emp.name }} ({{ emp.employeeId }})</option>
@@ -159,12 +205,12 @@
         <div class="space-y-1">
           <label class="block text-sm font-medium text-slate-700">Start Date</label>
           <input type="date" [(ngModel)]="newRequest.startDate"
-            class="block w-full rounded-lg border-0 py-2 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm" />
+            class="block w-full rounded-lg border-0 py-2 px-3 text-slate-900 dark:text-white shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm" />
         </div>
         <div class="space-y-1">
           <label class="block text-sm font-medium text-slate-700">End Date</label>
           <input type="date" [(ngModel)]="newRequest.endDate"
-            class="block w-full rounded-lg border-0 py-2 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm" />
+            class="block w-full rounded-lg border-0 py-2 px-3 text-slate-900 dark:text-white shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm" />
         </div>
       </div>
 
@@ -172,7 +218,7 @@
         <div class="space-y-1">
           <label class="block text-sm font-medium text-slate-700">Leave Type</label>
           <select [(ngModel)]="newRequest.leaveType"
-            class="block w-full rounded-lg border-0 py-2 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm">
+            class="block w-full rounded-lg border-0 py-2 px-3 text-slate-900 dark:text-white shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm">
             <option value="Annual">Annual</option>
             <option value="Sick">Sick</option>
             <option value="Casual">Casual</option>
@@ -182,14 +228,14 @@
         <div class="space-y-1">
           <label class="block text-sm font-medium text-slate-700">Days Count</label>
           <input type="number" [(ngModel)]="newRequest.requestedDays"
-            class="block w-full rounded-lg border-0 py-2 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm" />
+            class="block w-full rounded-lg border-0 py-2 px-3 text-slate-900 dark:text-white shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm" />
         </div>
       </div>
 
       <div class="space-y-1">
         <label class="block text-sm font-medium text-slate-700">Reason</label>
         <textarea [(ngModel)]="newRequest.reason" rows="2"
-          class="block w-full rounded-lg border-0 py-2 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"></textarea>
+          class="block w-full rounded-lg border-0 py-2 px-3 text-slate-900 dark:text-white shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm"></textarea>
       </div>
     </div>
 

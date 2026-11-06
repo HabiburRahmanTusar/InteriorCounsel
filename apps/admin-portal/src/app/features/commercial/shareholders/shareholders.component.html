@@ -1,0 +1,663 @@
+<div class="p-6 max-w-7xl mx-auto space-y-6">
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Shareholder Equity & Wallets</h1>
+      <p class="text-sm text-slate-500 mt-1">
+        Two-tier profit distribution, individual owner equity accounts, and ledger balance tracking.
+      </p>
+    </div>
+    <div class="flex flex-wrap items-center gap-3">
+      <div class="flex items-center gap-2 bg-white px-3 py-1.5 border border-slate-200 rounded-xl shadow-xs">
+        <span class="text-xs font-semibold text-slate-500">Period:</span>
+        <input
+          type="month"
+          [(ngModel)]="selectedMonth"
+          (change)="onMonthChange()"
+          class="text-xs font-bold text-slate-800 bg-transparent border-none outline-none focus:ring-0 cursor-pointer"
+        />
+      </div>
+
+      <button
+        (click)="openCreateModal()"
+        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 text-white font-semibold text-sm hover:bg-slate-800 shadow-xs transition"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        <span>Add Shareholder</span>
+      </button>
+
+      <button
+        (click)="triggerDistributeProfit()"
+        [disabled]="distributing() || !monthlyProfit()"
+        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 text-white font-semibold text-sm hover:bg-amber-600 text-slate-900 font-bold shadow-xs transition disabled:opacity-50"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .8-3 1.8 0 .9 1.343 1.2 3 1.5s3 .6 3 1.5c0 .9-1.343 1.8-3 1.8m0-5.4v-1.8m0 5.4v1.8M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
+        </svg>
+        <span>{{ distributing() ? 'Distributing...' : 'Distribute Monthly Profit' }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Equity Overview KPI Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+      <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Allocated Equity</span>
+      <span class="text-2xl font-bold text-slate-900 mt-1 block">{{ totalAllocatedPercentage }}%</span>
+      <span class="text-xs font-medium text-slate-500 mt-1 block">Of 100% total company capital</span>
+    </div>
+
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+      <span class="text-xs font-semibold text-emerald-600 uppercase tracking-wider block">Total Distributed</span>
+      <span class="text-2xl font-bold text-emerald-700 mt-1 block">৳{{ totalDistributedPool | number:'1.2-2' }}</span>
+      <span class="text-xs text-slate-500 mt-1 block">Cumulative monthly profits distributed</span>
+    </div>
+
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+      <span class="text-xs font-semibold text-amber-600 uppercase tracking-wider block">Total Withdrawn</span>
+      <span class="text-2xl font-bold text-amber-700 mt-1 block">৳{{ totalWithdrawnPool | number:'1.2-2' }}</span>
+      <span class="text-xs text-slate-500 mt-1 block">Transferred to personal accounts</span>
+    </div>
+
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+      <span class="text-xs font-semibold text-amber-600 uppercase tracking-wider block">Available Wallet Balance</span>
+      <span class="text-2xl font-bold text-amber-700 mt-1 block">৳{{ totalWalletLiabilities | number:'1.2-2' }}</span>
+      <span class="text-xs text-slate-500 mt-1 block">Active shareholder claims</span>
+    </div>
+  </div>
+
+  <!-- Monthly Net Profit Computation Panel (Waterfall: Product Sales -> Sales Expenses -> Profit -> Office Expenses -> Net Profit -> Shareholders) -->
+  @if (monthlyProfit()) {
+    <div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 sm:p-7 shadow-xl border border-slate-800 space-y-6">
+      <!-- Panel Header -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-white/10">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-indigo-400/30">
+              P&L Financial Engine
+            </span>
+            <span class="text-xs text-slate-400">•</span>
+            <span class="text-xs font-medium text-slate-300">Period: {{ monthlyProfit().month }}</span>
+          </div>
+          <h2 class="text-xl font-black mt-1 text-white">Profit & Loss Waterfall to Shareholder Equity</h2>
+          <p class="text-xs text-slate-400 mt-0.5">
+            Deducts Sales Expenses from Product Sales to calculate Operating Profit, then deducts Office Expenses to determine Net Profit for Shareholder distribution.
+          </p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="text-right">
+            <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Distributable Net Profit</span>
+            <span class="text-3xl font-black text-emerald-400 tracking-tight">৳{{ monthlyProfit().netProfit | number:'1.2-2' }}</span>
+          </div>
+          @if (monthlyProfit().isDistributed) {
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              ✓ Distributed
+            </span>
+          } @else {
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+              Pending Allocation
+            </span>
+          }
+        </div>
+      </div>
+
+      <!-- 5-Stage Visual Waterfall Summary Strip -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        <!-- 1. Product Calculation -->
+        <div class="bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-xs relative overflow-hidden">
+          <div class="text-[10px] font-bold text-amber-300 uppercase tracking-wider mb-1 flex items-center justify-between">
+            <span>1. Product Sales</span>
+            <span class="text-white/40">Revenue</span>
+          </div>
+          <div class="text-lg font-black text-white">
+            ৳{{ monthlyProfit().totalConfirmedSales | number:'1.2-2' }}
+          </div>
+          <div class="text-[11px] text-slate-400 mt-1">Confirmed Project Bills</div>
+        </div>
+
+        <!-- 2. Sales Expenses -->
+        <div class="bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4 backdrop-blur-xs relative overflow-hidden">
+          <div class="text-[10px] font-bold text-rose-300 uppercase tracking-wider mb-1 flex items-center justify-between">
+            <span>2. Sales Expenses</span>
+            <span class="text-rose-400">(-) Deduct</span>
+          </div>
+          <div class="text-lg font-black text-rose-300">
+            -৳{{ getSalesExpensesTotal(monthlyProfit()) | number:'1.2-2' }}
+          </div>
+          <div class="text-[11px] text-rose-200/60 mt-1">Purchases, Transport, HPL, Comm.</div>
+        </div>
+
+        <!-- 3. Operating Profit -->
+        <div class="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 backdrop-blur-xs relative overflow-hidden">
+          <div class="text-[10px] font-bold text-amber-200 uppercase tracking-wider mb-1 flex items-center justify-between">
+            <span>3. Profit</span>
+            <span class="text-amber-300">(=) Sales Profit</span>
+          </div>
+          <div class="text-lg font-black text-indigo-100">
+            ৳{{ getProfitBeforeOffice(monthlyProfit()) | number:'1.2-2' }}
+          </div>
+          <div class="text-[11px] text-amber-300/60 mt-1">Sales minus Sales Expenses</div>
+        </div>
+
+        <!-- 4. Office Expenses -->
+        <div class="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 backdrop-blur-xs relative overflow-hidden">
+          <div class="text-[10px] font-bold text-amber-300 uppercase tracking-wider mb-1 flex items-center justify-between">
+            <span>4. Office Expenses</span>
+            <span class="text-amber-400">(-) Deduct</span>
+          </div>
+          <div class="text-lg font-black text-amber-300">
+            -৳{{ getOfficeExpensesTotal(monthlyProfit()) | number:'1.2-2' }}
+          </div>
+          <div class="text-[11px] text-amber-200/60 mt-1">Rent, Salaries, Utilities, Admin</div>
+        </div>
+
+        <!-- 5. Net Profit to Shareholders -->
+        <div class="bg-emerald-500/15 border border-emerald-500/30 rounded-2xl p-4 backdrop-blur-xs relative overflow-hidden">
+          <div class="text-[10px] font-bold text-emerald-300 uppercase tracking-wider mb-1 flex items-center justify-between">
+            <span>5. Net Profit</span>
+            <span class="text-emerald-400">(=) Distribute</span>
+          </div>
+          <div class="text-lg font-black text-emerald-300">
+            ৳{{ monthlyProfit().netProfit | number:'1.2-2' }}
+          </div>
+          <div class="text-[11px] text-emerald-200/60 mt-1">Available for Shareholders</div>
+        </div>
+      </div>
+
+      <!-- Collapsible Detailed Breakdown Grid: Sales Expenses vs Office Expenses -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+        <!-- Sales Expenses Itemized Box -->
+        <div class="bg-white/5 border border-white/10 rounded-2xl p-4 text-xs">
+          <div class="flex items-center justify-between pb-2 mb-3 border-b border-white/10">
+            <span class="font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+              Sales Expenses Breakdown
+            </span>
+            <span class="font-bold text-rose-400">Total: ৳{{ getSalesExpensesTotal(monthlyProfit()) | number:'1.2-2' }}</span>
+          </div>
+
+          <div class="space-y-2 text-slate-300">
+            <div class="flex justify-between py-1 border-b border-white/5">
+              <span>• Purchase Payment (Vendor Bills)</span>
+              <span class="font-semibold text-white">৳{{ (monthlyProfit().salesExpenses?.purchasePayment || monthlyProfit().totalPurchases || 0) | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-white/5">
+              <span>• HPL Carrying / Petty Box</span>
+              <span class="font-semibold text-white">৳{{ (monthlyProfit().salesExpenses?.hplCarryingPettyBox || 0) | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-white/5">
+              <span>• Transportation / Load-Unload Charge</span>
+              <span class="font-semibold text-white">৳{{ (monthlyProfit().salesExpenses?.transportationCharge || 0) | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-white/5">
+              <span>• Sales Commission</span>
+              <span class="font-semibold text-white">৳{{ (monthlyProfit().salesExpenses?.salesCommission || 0) | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-white/5">
+              <span>• Sales Return & Adjustments</span>
+              <span class="font-semibold text-white">৳{{ (monthlyProfit().salesExpenses?.salesReturn || 0) | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex justify-between py-1">
+              <span>• Fitting & Installation Labor</span>
+              <span class="font-semibold text-white">৳{{ (monthlyProfit().salesExpenses?.fittingLabor || 0) | number:'1.2-2' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Office Expenses Itemized Box -->
+        <div class="bg-white/5 border border-white/10 rounded-2xl p-4 text-xs">
+          <div class="flex items-center justify-between pb-2 mb-3 border-b border-white/10">
+            <span class="font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+              Office Expenses Breakdown
+            </span>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-amber-400 mr-1">Total: ৳{{ getOfficeExpensesTotal(monthlyProfit()) | number:'1.2-2' }}</span>
+              <a
+                routerLink="/commercial/cash-flow"
+                [queryParams]="{ type: 'office' }"
+                class="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-semibold text-[11px] border border-amber-400/30 transition cursor-pointer inline-flex items-center gap-1"
+                title="Go to Cash Flow to record an Office Expense voucher"
+              >
+                <span>+ Insert Office Expense</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-slate-300">
+            <div class="flex justify-between py-0.5 border-b border-white/5">
+              <span>• Office / Showroom Rent:</span>
+              <span class="font-semibold text-white">৳{{ (monthlyProfit().officeExpenses?.rent || 0) | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex justify-between py-0.5 border-b border-white/5">
+              <span>• Staff Salaries:</span>
+              <span class="font-semibold text-white">৳{{ (monthlyProfit().officeExpenses?.salaries || 0) | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex justify-between py-0.5 border-b border-white/5">
+              <span>• Electricity Bills:</span>
+              <span class="font-semibold text-white">৳{{ (monthlyProfit().officeExpenses?.electricity || 0) | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex justify-between py-0.5 border-b border-white/5">
+              <span>• WASA / Water Bills:</span>
+              <span class="font-semibold text-white">৳{{ (monthlyProfit().officeExpenses?.wasa || 0) | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex justify-between py-0.5 border-b border-white/5">
+              <span>• Internet & Mobile:</span>
+              <span class="font-semibold text-white">৳{{ (monthlyProfit().officeExpenses?.internet || 0) | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex justify-between py-0.5 border-b border-white/5">
+              <span>• Conveyance & Travel:</span>
+              <span class="font-semibold text-white">৳{{ (monthlyProfit().officeExpenses?.conveyance || 0) | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex justify-between py-0.5 border-b border-white/5">
+              <span>• Guest Entertainment:</span>
+              <span class="font-semibold text-white">৳{{ (monthlyProfit().officeExpenses?.entertainment || 0) | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex justify-between py-0.5 border-b border-white/5">
+              <span>• Office Administration:</span>
+              <span class="font-semibold text-white">৳{{ (monthlyProfit().officeExpenses?.admin || 0) | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex justify-between py-0.5 border-b border-white/5">
+              <span>• VAT & Tax Charges:</span>
+              <span class="font-semibold text-white">৳{{ (monthlyProfit().officeExpenses?.vat || 0) | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex justify-between py-0.5 border-b border-white/5">
+              <span>• Other Operations:</span>
+              <span class="font-semibold text-white">৳{{ (monthlyProfit().officeExpenses?.other || 0) | number:'1.2-2' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shareholder Equity Allocation Preview for this Month -->
+      <div class="pt-3 border-t border-white/10">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-amber-300">
+              Shareholder Net Profit Allocation (Equity Distribution)
+            </h3>
+            <p class="text-[11px] text-slate-400">
+              Net Profit ৳{{ monthlyProfit().netProfit | number:'1.2-2' }} is allocated to active partners as per ownership %.
+            </p>
+          </div>
+          @if (!monthlyProfit().isDistributed && monthlyProfit().netProfit > 0) {
+            <button
+              (click)="triggerDistributeProfit()"
+              [disabled]="distributing()"
+              class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-xs transition cursor-pointer"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>{{ distributing() ? 'Distributing...' : 'Execute Distribution to Wallets' }}</span>
+            </button>
+          }
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          @for (w of wallets(); track w._id) {
+            <div class="bg-white/5 border border-white/10 rounded-xl p-3 flex items-center justify-between text-xs">
+              <div>
+                <div class="font-bold text-white">{{ w.shareholderId?.name || 'Shareholder' }}</div>
+                <div class="text-[11px] text-amber-300">{{ w.sharePercentage }}% Equity Share</div>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] text-slate-400 block uppercase">Profit Share</span>
+                <span class="font-bold text-emerald-400 text-sm">
+                  ৳{{ ((monthlyProfit().netProfit * w.sharePercentage) / 100) | number:'1.2-2' }}
+                </span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Shareholder Wallets Table -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+    <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+      <h3 class="text-base font-bold text-slate-900">Registered Shareholder Accounts</h3>
+      <span class="text-xs text-slate-500">{{ wallets().length }} Active Shareholder(s)</span>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm text-slate-600">
+        <thead class="bg-slate-50/80 text-xs uppercase font-semibold text-slate-400 border-b border-slate-100">
+          <tr>
+            <th class="py-3 px-4">Shareholder / Partner</th>
+            <th class="py-3 px-4">Equity Share (%)</th>
+            <th class="py-3 px-4 text-right">Total Distributed</th>
+            <th class="py-3 px-4 text-right">Total Withdrawn</th>
+            <th class="py-3 px-4 text-right">Current Balance</th>
+            <th class="py-3 px-4 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          @for (w of wallets(); track w._id) {
+            <tr class="hover:bg-slate-50/50 transition">
+              <td class="py-3.5 px-4 font-semibold text-slate-900">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full bg-amber-50 text-amber-600 font-bold flex items-center justify-center text-xs">
+                    {{ (w.shareholderId?.name || 'S').slice(0, 2).toUpperCase() }}
+                  </div>
+                  <div>
+                    <div>{{ w.shareholderId?.name || 'Unnamed' }}</div>
+                    <div class="text-xs text-slate-400 font-normal">
+                      {{ w.shareholderId?.email }} • {{ w.shareholderId?.designation || 'Partner' }}
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td class="py-3.5 px-4">
+                <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700">
+                  {{ w.sharePercentage }}%
+                </span>
+              </td>
+              <td class="py-3.5 px-4 text-right font-medium text-emerald-600">
+                ৳{{ w.totalDistributed | number:'1.2-2' }}
+              </td>
+              <td class="py-3.5 px-4 text-right font-medium text-amber-600">
+                ৳{{ w.totalWithdrawn | number:'1.2-2' }}
+              </td>
+              <td class="py-3.5 px-4 text-right font-bold text-slate-900">
+                ৳{{ w.currentBalance | number:'1.2-2' }}
+              </td>
+              <td class="py-3.5 px-4 text-center">
+                <div class="inline-flex items-center gap-1.5">
+                  <button
+                    (click)="openLedger(w)"
+                    class="text-xs text-slate-600 hover:text-slate-900 font-semibold px-2 py-1 rounded hover:bg-slate-100 transition"
+                    title="View Transaction History"
+                  >
+                    Ledger
+                  </button>
+                  <button
+                    (click)="openEditPercentage(w)"
+                    class="text-xs text-amber-600 hover:text-amber-800 font-semibold px-2 py-1 rounded hover:bg-amber-50 transition"
+                    title="Change Equity Share %"
+                  >
+                    Adjust %
+                  </button>
+                  <button
+                    (click)="removeShareholder(w)"
+                    class="text-xs text-rose-500 hover:text-rose-700 font-semibold px-2 py-1 rounded hover:bg-rose-50 transition"
+                    title="Deactivate Account"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="py-12 text-center text-slate-400">
+                <div class="max-w-sm mx-auto space-y-3">
+                  <p class="text-sm">No shareholder accounts registered yet.</p>
+                  <button
+                    (click)="openCreateModal()"
+                    class="px-4 py-2 rounded-xl bg-amber-500 text-white font-semibold text-xs hover:bg-amber-600 text-slate-900 font-bold shadow-xs"
+                  >
+                    + Register First Shareholder
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Create Shareholder Modal -->
+  @if (showCreateModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in zoom-in-95 duration-150">
+        <h3 class="text-lg font-bold text-slate-900 mb-1">Register Shareholder</h3>
+        <p class="text-xs text-slate-500 mb-4">Allocate equity share to an existing user or add a new partner account.</p>
+
+        <!-- Toggle Mode -->
+        <div class="flex rounded-xl bg-slate-100 p-1 mb-4 text-xs font-semibold">
+          <button
+            type="button"
+            (click)="newMode = 'new'"
+            [class.bg-white]="newMode === 'new'"
+            [class.shadow-xs]="newMode === 'new'"
+            [class.text-amber-600]="newMode === 'new'"
+            class="flex-1 py-1.5 rounded-lg text-slate-600 transition"
+          >
+            ＋ New Partner / External
+          </button>
+          <button
+            type="button"
+            (click)="newMode = 'existing'"
+            [class.bg-white]="newMode === 'existing'"
+            [class.shadow-xs]="newMode === 'existing'"
+            [class.text-amber-600]="newMode === 'existing'"
+            class="flex-1 py-1.5 rounded-lg text-slate-600 transition"
+          >
+            Select Existing Employee
+          </button>
+        </div>
+
+        <div class="space-y-4">
+          @if (newMode === 'existing') {
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Select User / Partner *</label>
+              @if (availableEmployees().length > 0) {
+                <select
+                  [(ngModel)]="newForm.shareholderId"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  @for (emp of availableEmployees(); track (emp.id || emp._id)) {
+                    <option [value]="(emp.id || emp._id)">
+                      {{ emp.name }} ({{ emp.email }} - {{ emp.designation || 'Partner' }})
+                    </option>
+                  }
+                </select>
+              } @else {
+                <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800">
+                  No unassigned registered users found. Switch to "New Partner" above.
+                </div>
+              }
+            </div>
+          } @else {
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Partner / Shareholder Name *</label>
+              <input
+                type="text"
+                [(ngModel)]="newForm.name"
+                placeholder="e.g. Director Kamal Hossain"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold"
+              />
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Phone</label>
+                <input
+                  type="text"
+                  [(ngModel)]="newForm.phone"
+                  placeholder="01XXXXXXXXX"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Email</label>
+                <input
+                  type="email"
+                  [(ngModel)]="newForm.email"
+                  placeholder="partner@interiorcounsel.com"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Designation / Role</label>
+              <input
+                type="text"
+                [(ngModel)]="newForm.designation"
+                placeholder="e.g. Managing Partner / Director"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+          }
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Equity Share (%) *</label>
+            <div class="relative">
+              <input
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                [(ngModel)]="newForm.sharePercentage"
+                placeholder="e.g. 50"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold"
+              />
+              <span class="absolute right-3.5 top-2.5 text-sm font-bold text-slate-400">%</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1">Currently allocated across all partners: {{ totalAllocatedPercentage }}%</p>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-6">
+          <button
+            type="button"
+            (click)="showCreateModal.set(false)"
+            class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            (click)="saveNewShareholder()"
+            [disabled]="!newForm.shareholderId || availableEmployees().length === 0"
+            class="px-4 py-2 rounded-xl bg-amber-500 text-sm font-semibold text-white hover:bg-amber-600 text-slate-900 font-bold shadow-xs disabled:opacity-50"
+          >
+            Register Shareholder
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Edit Share Percentage Modal -->
+  @if (showEditModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in zoom-in-95 duration-150">
+        <h3 class="text-lg font-bold text-slate-900 mb-1">Adjust Equity Share</h3>
+        <p class="text-xs text-slate-500 mb-4">Update ownership percentage for {{ editForm.shareholderName }}.</p>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Share Percentage (%)</label>
+            <div class="relative">
+              <input
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                [(ngModel)]="editForm.sharePercentage"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold"
+              />
+              <span class="absolute right-3.5 top-2.5 text-sm font-bold text-slate-400">%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-6">
+          <button
+            type="button"
+            (click)="showEditModal.set(false)"
+            class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            (click)="saveSharePercentage()"
+            class="px-4 py-2 rounded-xl bg-amber-500 text-sm font-semibold text-white hover:bg-amber-600 text-slate-900 font-bold shadow-xs"
+          >
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Transaction History Ledger Modal -->
+  @if (showLedgerModal() && activeWallet()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col p-6 animate-in zoom-in-95 duration-150">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div>
+            <h3 class="text-lg font-bold text-slate-900">{{ activeWallet().shareholderId?.name }} — Wallet Ledger</h3>
+            <p class="text-xs text-slate-500">
+              Equity Share: {{ activeWallet().sharePercentage }}% • Balance:
+              <span class="font-bold text-amber-600">৳{{ activeWallet().currentBalance | number:'1.2-2' }}</span>
+            </p>
+          </div>
+          <button (click)="showLedgerModal.set(false)" class="text-slate-400 hover:text-slate-600 text-lg font-bold">&times;</button>
+        </div>
+
+        <div class="overflow-y-auto flex-1 my-4 pr-1">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-50 text-[10px] uppercase font-bold text-slate-400 sticky top-0">
+              <tr>
+                <th class="py-2.5 px-3">Date</th>
+                <th class="py-2.5 px-3">Type</th>
+                <th class="py-2.5 px-3">Reference / Notes</th>
+                <th class="py-2.5 px-3 text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              @for (tx of (activeWallet().transactions || []); track $index) {
+                <tr class="hover:bg-slate-50/50">
+                  <td class="py-2.5 px-3 text-slate-500">{{ tx.date | date:'dd MMM yyyy, hh:mm a' }}</td>
+                  <td class="py-2.5 px-3">
+                    <span
+                      class="px-2 py-0.5 rounded-full font-semibold capitalize"
+                      [class.bg-emerald-50]="tx.type === 'distribution'"
+                      [class.text-emerald-700]="tx.type === 'distribution'"
+                      [class.bg-amber-50]="tx.type === 'withdrawal'"
+                      [class.text-amber-700]="tx.type === 'withdrawal'"
+                    >
+                      {{ tx.type }}
+                    </span>
+                  </td>
+                  <td class="py-2.5 px-3">
+                    <div class="font-medium text-slate-800">{{ tx.reference || '—' }}</div>
+                    <div class="text-[11px] text-slate-400">{{ tx.notes }}</div>
+                  </td>
+                  <td
+                    class="py-2.5 px-3 text-right font-bold"
+                    [class.text-emerald-600]="tx.type === 'distribution'"
+                    [class.text-rose-600]="tx.type === 'withdrawal'"
+                  >
+                    {{ tx.type === 'withdrawal' ? '-' : '+' }}৳{{ tx.amount | number:'1.2-2' }}
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4" class="py-8 text-center text-slate-400">
+                    No transactions recorded for this wallet yet.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="flex justify-end pt-3 border-t border-slate-100">
+          <button
+            type="button"
+            (click)="showLedgerModal.set(false)"
+            class="px-4 py-2 rounded-xl bg-slate-100 text-xs font-semibold text-slate-700 hover:bg-slate-200"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

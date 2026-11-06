@@ -39,11 +39,12 @@ export const routes: Routes = [
       },
       {
         path: 'leaves',
-        canActivate: [roleGuard('admin', 'hr')],
+        canActivate: [roleGuard('admin', 'hr', 'manager')],
         children: [
           {
             path: 'policies',
             title: 'Leave Policies',
+            canActivate: [roleGuard('admin', 'hr')],
             loadComponent: () =>
               import('./features/leaves/policies.component').then((m) => m.LeavePoliciesComponent),
           },
@@ -56,8 +57,16 @@ export const routes: Routes = [
           {
             path: 'balances',
             title: 'Leave Balances',
+            canActivate: [roleGuard('admin', 'hr')],
             loadComponent: () =>
               import('./features/leaves/balances.component').then((m) => m.LeaveBalancesComponent),
+          },
+          {
+            path: 'workflows',
+            title: 'Approval Workflows',
+            canActivate: [roleGuard('admin', 'hr')],
+            loadComponent: () =>
+              import('./features/leaves/settings/workflow-settings.component').then((m) => m.WorkflowSettingsComponent),
           },
         ],
       },
@@ -70,6 +79,7 @@ export const routes: Routes = [
             (m) => m.EmployeeListComponent,
           ),
       },
+
       {
         path: 'employees/new',
         title: 'New employee',
@@ -77,6 +87,15 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/employees/employee-form.component').then(
             (m) => m.EmployeeFormComponent,
+          ),
+      },
+      {
+        path: 'employees/:id/profile',
+        title: 'Employee Profile',
+        canActivate: [roleGuard('admin', 'hr', 'manager')],
+        loadComponent: () =>
+          import('./features/employees/employee-profile/employee-profile.component').then(
+            (m) => m.EmployeeProfileComponent,
           ),
       },
       {
@@ -102,6 +121,19 @@ export const routes: Routes = [
           import('./features/attendance/attendance-view.component').then(
             (m) => m.AttendanceViewComponent,
           ),
+      },
+      {
+        path: 'attendance/manual',
+        title: 'Manual Attendance',
+        loadComponent: () =>
+          import('./features/attendance/manual-attendance/manual-attendance.component').then(
+            (m) => m.ManualAttendanceComponent,
+          ),
+      },
+      {
+        path: 'manual-attendance',
+        redirectTo: 'attendance/manual',
+        pathMatch: 'full',
       },
       {
         path: 'reports',
@@ -131,6 +163,116 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/financial/financial.component').then((m) => m.FinancialComponent), // Force dev server resolution update
       },
+      {
+        path: 'commercial',
+        canActivate: [roleGuard('admin', 'hr', 'manager')],
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            redirectTo: 'dashboard',
+          },
+          {
+            path: 'dashboard',
+            title: 'Commercial Dashboard',
+            loadComponent: () =>
+              import('./features/commercial/dashboard/commercial-dashboard.component').then(
+                (m) => m.CommercialDashboardComponent,
+              ),
+          },
+          {
+            path: 'bills',
+            title: 'Project Billing',
+            loadComponent: () =>
+              import('./features/commercial/billing/billing.component').then((m) => m.BillingComponent),
+          },
+          {
+            path: 'vendor-bills',
+            title: 'Vendor Procurement',
+            loadComponent: () =>
+              import('./features/commercial/vendor-bills/vendor-bills.component').then(
+                (m) => m.VendorBillsComponent,
+              ),
+          },
+          {
+            path: 'cash-flow',
+            title: 'Cash Flow Ledger',
+            loadComponent: () =>
+              import('./features/commercial/cash-flow/cash-flow.component').then((m) => m.CashFlowComponent),
+          },
+          {
+            path: 'shareholders',
+            title: 'Shareholder Wallets',
+            canActivate: [roleGuard('admin')],
+            loadComponent: () =>
+              import('./features/commercial/shareholders/shareholders.component').then(
+                (m) => m.ShareholdersComponent,
+              ),
+          },
+          {
+            path: 'clients',
+            title: 'Clients Directory',
+            loadComponent: () =>
+              import('./features/commercial/clients/clients.component').then((m) => m.ClientsComponent),
+          },
+          {
+            path: 'vendors',
+            title: 'Vendors Directory',
+            loadComponent: () =>
+              import('./features/commercial/vendors/vendors.component').then((m) => m.VendorsComponent),
+          },
+          {
+            path: 'inventory',
+            title: 'Inventory & Materials',
+            loadComponent: () =>
+              import('./features/commercial/inventory/inventory.component').then((m) => m.InventoryComponent),
+          },
+          {
+            path: 'transfers',
+            title: 'Bank & Cash Transfers',
+            loadComponent: () =>
+              import('./features/commercial/transfers/transfers.component').then((m) => m.TransfersComponent),
+          },
+        ],
+      },
+      {
+        path: 'projects',
+        title: 'Projects & Quotations',
+        loadComponent: () =>
+          import('./features/commercial/projects/projects.component').then(
+            (m) => m.ProjectsComponent,
+          ),
+      },
+      {
+        path: 'shareholder/portal',
+        title: 'Shareholder & Investor Portal',
+        canActivate: [roleGuard('admin', 'shareholder', 'hr', 'manager')],
+        loadComponent: () =>
+          import('./features/shareholder-portal/shareholder-portal.component').then(
+            (m) => m.ShareholderPortalComponent,
+          ),
+      },
+      { path: 'shareholder-portal', redirectTo: 'shareholder/portal', pathMatch: 'full' },
+      {
+        path: 'access-control',
+        title: 'Access Control (RBAC)',
+        loadComponent: () =>
+          import('./features/access-control/access-control.component').then(
+            (m) => m.AccessControlComponent,
+          ),
+      },
+      { path: 'access', redirectTo: 'access-control', pathMatch: 'full' },
+      { path: 'billing', redirectTo: 'commercial/bills', pathMatch: 'full' },
+      { path: 'sales', redirectTo: 'commercial/bills', pathMatch: 'full' },
+      { path: 'customers', redirectTo: 'commercial/clients', pathMatch: 'full' },
+      { path: 'inventory', redirectTo: 'commercial/inventory', pathMatch: 'full' },
+      { path: 'purchase', redirectTo: 'commercial/vendor-bills', pathMatch: 'full' },
+      { path: 'suppliers', redirectTo: 'commercial/vendors', pathMatch: 'full' },
+      { path: 'vendor-bills', redirectTo: 'commercial/vendor-bills', pathMatch: 'full' },
+      { path: 'cash-flow', redirectTo: 'commercial/cash-flow', pathMatch: 'full' },
+      { path: 'cashflow', redirectTo: 'commercial/cash-flow', pathMatch: 'full' },
+      { path: 'transfers', redirectTo: 'commercial/transfers', pathMatch: 'full' },
+      { path: 'shareholders', redirectTo: 'commercial/shareholders', pathMatch: 'full' },
       {
         path: 'salary',
         canActivate: [roleGuard('admin', 'hr')],

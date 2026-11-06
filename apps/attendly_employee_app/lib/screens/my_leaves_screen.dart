@@ -125,6 +125,69 @@ class _MyLeavesScreenState extends State<MyLeavesScreen> {
                     ),
                   ),
 
+                  // Leave Breakdown
+                  if (balance != null && balance.list.isNotEmpty)
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                      sliver: SliverToBoxAdapter(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Breakdown',
+                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    color: AppTheme.textPrimary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                            const SizedBox(height: 12),
+                            ...balance.list.map((item) {
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.surface,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: AppTheme.border),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.circle,
+                                          size: 10,
+                                          color: AppTheme.primary,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          '${item.leaveType} Leave',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 15,
+                                            color: AppTheme.textPrimary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Text(
+                                      '${item.remaining} / ${item.allocated} Remaining',
+                                      style: const TextStyle(
+                                        color: AppTheme.textSecondary,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }),
+                          ],
+                        ),
+                      ),
+                    ),
+
                   // History Title
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
@@ -271,14 +334,34 @@ class _MyLeavesScreenState extends State<MyLeavesScreen> {
         statusColor = AppTheme.warning;
     }
 
-    final dateRangeStr = '${DateFormat('MMM d').format(request.startDate)} - ${DateFormat('MMM d, yyyy').format(request.endDate)}';
+    String displayStatus = request.status;
+    if (request.status == 'Pending' && request.approvalStages.isNotEmpty) {
+      try {
+        final activeStage = request.approvalStages.firstWhere((s) => s.status == 'Pending');
+        final role = activeStage.role.isNotEmpty
+            ? activeStage.role[0].toUpperCase() + activeStage.role.substring(1)
+            : '';
+        displayStatus = 'Pending $role';
+      } catch (e) {
+        // No pending stage found, keep default
+      }
+    }
+
+    final dateRangeStr = request.halfDay && request.startDate.isAtSameMomentAs(request.endDate)
+        ? DateFormat('MMM d, yyyy').format(request.startDate)
+        : '${DateFormat('MMM d').format(request.startDate)} - ${DateFormat('MMM d, yyyy').format(request.endDate)}';
+    
     final requestedOnStr = request.createdAt != null
         ? DateFormat('MMM d, yyyy hh:mm a').format(request.createdAt!.toLocal())
         : '-';
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        onTap: () => _openRequestDetails(context, request),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppTheme.surface,
         borderRadius: BorderRadius.circular(16),
@@ -331,7 +414,7 @@ class _MyLeavesScreenState extends State<MyLeavesScreen> {
                   border: Border.all(color: statusColor.withValues(alpha: 0.2)),
                 ),
                 child: Text(
-                  request.status,
+                  displayStatus,
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
@@ -356,7 +439,7 @@ class _MyLeavesScreenState extends State<MyLeavesScreen> {
                 ),
               ),
               Text(
-                '${request.requestedDays} ${request.requestedDays == 1 ? 'Day' : 'Days'}',
+                request.halfDay ? 'Half Day (0.5)' : '${request.requestedDays} ${request.requestedDays == 1 ? 'Day' : 'Days'}',
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
@@ -400,6 +483,170 @@ class _MyLeavesScreenState extends State<MyLeavesScreen> {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+        ),
+      ),
+    );
+  }
+
+  void _openRequestDetails(BuildContext context, LeaveRequest request) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _buildRequestDetailsSheet(context, request),
+    );
+  }
+
+  Widget _buildRequestDetailsSheet(BuildContext context, LeaveRequest request) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+      child: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Drag Handle
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppTheme.border,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Leave Request Details',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimary,
+                    ),
+              ),
+              const SizedBox(height: 24),
+              
+              // Basic details (Leave Type, Dates, Reason)
+              _buildDetailRow('Leave Type', '${request.leaveType} Leave'),
+              _buildDetailRow(
+                'Duration',
+                request.halfDay
+                    ? 'Half Day (0.5 Days)'
+                    : '${request.requestedDays} ${request.requestedDays == 1 ? 'Day' : 'Days'}',
+              ),
+              _buildDetailRow(
+                'Dates',
+                '${DateFormat('MMM d, yyyy').format(request.startDate)} - ${DateFormat('MMM d, yyyy').format(request.endDate)}',
+              ),
+              if (request.reason.isNotEmpty) _buildDetailRow('Reason', request.reason),
+              
+              const SizedBox(height: 16),
+              const Divider(color: AppTheme.border),
+              const SizedBox(height: 16),
+
+              Text(
+                'Approval Stages',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimary,
+                    ),
+              ),
+              const SizedBox(height: 12),
+              if (request.approvalStages.isEmpty)
+                const Text('No approval workflow defined for this request.', style: TextStyle(color: AppTheme.textSecondary))
+              else
+                ...request.approvalStages.map((stage) {
+                  Color stageColor;
+                  switch (stage.status) {
+                    case 'Approved':
+                      stageColor = AppTheme.success;
+                      break;
+                    case 'Rejected':
+                      stageColor = AppTheme.error;
+                      break;
+                    default:
+                      stageColor = AppTheme.warning;
+                  }
+
+                  final roleLabel = stage.role.isNotEmpty
+                      ? stage.role[0].toUpperCase() + stage.role.substring(1)
+                      : 'Unknown Role';
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppTheme.background,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppTheme.border),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              roleLabel,
+                              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: stageColor.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                stage.status,
+                                style: TextStyle(color: stageColor, fontSize: 12, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (stage.remarks.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            'Remarks: ${stage.remarks}',
+                            style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary, fontStyle: FontStyle.italic),
+                          ),
+                        ],
+                      ],
+                    ),
+                  );
+                }),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              label,
+              style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14, fontWeight: FontWeight.w500),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),

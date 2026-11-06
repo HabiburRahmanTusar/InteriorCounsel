@@ -76,10 +76,42 @@ function aggregateBalances(balances, leaveTypes) {
   return result;
 }
 
+async function resolveApprovalStagesForEmployee(employeeId) {
+  const user = await User.findById(employeeId);
+  if (!user) throw new Error('Employee not found');
+
+  const ApprovalWorkflow = require('../models/ApprovalWorkflow');
+  const workflow = await ApprovalWorkflow.findOne({
+    applicantRole: user.role.toLowerCase(),
+    isActive: true,
+  });
+
+  if (workflow && workflow.stages && workflow.stages.length > 0) {
+    const hasManagerStage = workflow.stages.some(stage => stage.role === 'manager');
+    if (hasManagerStage && !user.reportsTo) {
+      throw new Error('Direct manager is required for manager approval stage');
+    }
+    return workflow.stages.map((stage) => ({
+      sequence: stage.sequence,
+      role: stage.role,
+      status: 'Pending',
+    }));
+  }
+
+  // Fallback to default single-stage 'hr'
+  return [
+    {
+      sequence: 1,
+      role: 'hr',
+      status: 'Pending',
+    },
+  ];
+}
+
 exports.getRequests = async (req, res, next) => {
   try {
     const requests = await LeaveRequest.find()
-      .populate('employeeId', 'name employeeId designation email role')
+      .populate('employeeId', 'name employeeId designation email role reportsTo')
       .populate('leaveType')
       .sort({ createdAt: -1 });
     
@@ -91,8 +123,46 @@ exports.getRequests = async (req, res, next) => {
       }
       return obj;
     });
+
+    if (req.user.role === 'admin') {
+      return apiResponse.ok(res, formattedRequests);
+    }
+
+    const userRole = req.user.role.toLowerCase();
+    const userId = req.user.id.toString();
+
+    const filtered = formattedRequests.filter(reqObj => {
+      // 1. Is the user currently the active approver for this request?
+      const activeStage = reqObj.approvalStages && reqObj.approvalStages.length > 0
+        ? reqObj.approvalStages.find(s => s.status === 'Pending')
+        : null;
+
+      if (activeStage) {
+        const activeRole = activeStage.role.toLowerCase();
+        if (activeRole === userRole) {
+          if (activeRole === 'manager') {
+            const reportsTo = reqObj.employeeId && (reqObj.employeeId.reportsTo?._id || reqObj.employeeId.reportsTo);
+            return reportsTo && reportsTo.toString() === userId;
+          }
+          return true;
+        }
+      } else {
+        // Legacy requests (no approval stages) - fallback to HR
+        if (userRole === 'hr' && reqObj.status === 'Pending') {
+          return true;
+        }
+      }
+
+      // 2. Has the user already participated in the approval/rejection of this request?
+      const hasParticipated = reqObj.approvalStages && reqObj.approvalStages.some(s => s.approvedBy && s.approvedBy.toString() === userId);
+      if (hasParticipated) {
+        return true;
+      }
+
+      return false;
+    });
       
-    return apiResponse.ok(res, formattedRequests);
+    return apiResponse.ok(res, filtered);
   } catch (err) {
     return next(err);
   }
@@ -107,6 +177,13 @@ exports.createRequest = async (req, res, next) => {
       return apiResponse.badRequest(res, 'Invalid leave type');
     }
 
+    let approvalStages;
+    try {
+      approvalStages = await resolveApprovalStagesForEmployee(employeeId);
+    } catch (e) {
+      return apiResponse.badRequest(res, e.message);
+    }
+
     const request = new LeaveRequest({
       employeeId,
       startDate,
@@ -115,6 +192,7 @@ exports.createRequest = async (req, res, next) => {
       reason,
       requestedDays,
       status: 'Pending',
+      approvalStages,
     });
 
     await request.save();
@@ -134,36 +212,100 @@ exports.updateRequestStatus = async (req, res, next) => {
       return apiResponse.notFound(res, 'Leave request not found');
     }
 
-    if (request.leaveType && request.leaveType.deductsFromBalance) {
-      const year = dayjs(request.startDate).year();
+    if (request.status === 'Cancelled' || request.status === 'Rejected') {
+      return apiResponse.badRequest(res, `Cannot update a request that is already ${request.status.toLowerCase()}`);
+    }
 
-      if (status === 'Approved' && request.status !== 'Approved') {
-        // Deduct from balance
-        await LeaveBalance.findOneAndUpdate(
-          { employeeId: request.employeeId, year, leaveType: request.leaveType._id },
-          { $inc: { used: request.requestedDays } },
-          { upsert: true },
-        );
-      } else if (request.status === 'Approved' && status !== 'Approved') {
-        // Revert balance deduction
-        await LeaveBalance.findOneAndUpdate(
-          { employeeId: request.employeeId, year, leaveType: request.leaveType._id },
-          { $inc: { used: -request.requestedDays } },
+    const activeStage = request.approvalStages && request.approvalStages.length > 0
+      ? request.approvalStages.find(s => s.status === 'Pending')
+      : null;
+
+    if (activeStage) {
+      // Check authorization
+      const isAdmin = req.user.role === 'admin';
+      let isAuthorized = false;
+
+      if (isAdmin) {
+        isAuthorized = true;
+      } else if (activeStage.role === 'manager') {
+        const applicant = await User.findById(request.employeeId);
+        if (applicant && applicant.reportsTo && applicant.reportsTo.toString() === req.user.id.toString()) {
+          isAuthorized = true;
+        }
+      } else if (req.user.role.toLowerCase() === activeStage.role.toLowerCase()) {
+        isAuthorized = true;
+      }
+
+      if (!isAuthorized) {
+        return apiResponse.forbidden(
+          res,
+          `You are not authorized to approve the current stage: ${activeStage.label || activeStage.role}`
         );
       }
-    }
 
-    if (status === 'Approved' || status === 'Rejected') {
+      // Process status update
+      if (status === 'Rejected') {
+        activeStage.status = 'Rejected';
+        activeStage.approvedBy = req.user.id;
+        activeStage.approvalDate = new Date();
+        activeStage.remarks = approverRemarks || '';
+
+        request.status = 'Rejected';
+        request.approvedBy = req.user.id;
+        request.approvalDate = new Date();
+        request.approverRemarks = approverRemarks || '';
+      } else if (status === 'Approved') {
+        activeStage.status = 'Approved';
+        activeStage.approvedBy = req.user.id;
+        activeStage.approvalDate = new Date();
+        activeStage.remarks = approverRemarks || '';
+
+        // Check if there are further pending stages
+        const hasNextStage = request.approvalStages.some(s => s.status === 'Pending');
+        if (!hasNextStage) {
+          // Final approval
+          request.status = 'Approved';
+          request.approvedBy = req.user.id;
+          request.approvalDate = new Date();
+          request.approverRemarks = approverRemarks || '';
+
+          // Deduct from balance
+          if (request.leaveType && request.leaveType.deductsFromBalance) {
+            const year = dayjs(request.startDate).year();
+            await LeaveBalance.findOneAndUpdate(
+              { employeeId: request.employeeId, year, leaveType: request.leaveType._id },
+              { $inc: { used: request.requestedDays } },
+              { upsert: true }
+            );
+          }
+        }
+      }
+    } else {
+      // Legacy request fallback
+      if (status === 'Approved' && request.status !== 'Approved') {
+        if (request.leaveType && request.leaveType.deductsFromBalance) {
+          const year = dayjs(request.startDate).year();
+          await LeaveBalance.findOneAndUpdate(
+            { employeeId: request.employeeId, year, leaveType: request.leaveType._id },
+            { $inc: { used: request.requestedDays } },
+            { upsert: true }
+          );
+        }
+      } else if (request.status === 'Approved' && status !== 'Approved') {
+        if (request.leaveType && request.leaveType.deductsFromBalance) {
+          const year = dayjs(request.startDate).year();
+          await LeaveBalance.findOneAndUpdate(
+            { employeeId: request.employeeId, year, leaveType: request.leaveType._id },
+            { $inc: { used: -request.requestedDays } }
+          );
+        }
+      }
+      request.status = status;
       request.approvedBy = req.user.id;
       request.approvalDate = new Date();
-    } else {
-      request.approvedBy = undefined;
-      request.approvalDate = undefined;
-    }
-
-    request.status = status;
-    if (approverRemarks !== undefined) {
-      request.approverRemarks = approverRemarks;
+      if (approverRemarks !== undefined) {
+        request.approverRemarks = approverRemarks;
+      }
     }
 
     await request.save();
@@ -171,12 +313,14 @@ exports.updateRequestStatus = async (req, res, next) => {
     const populated = await LeaveRequest.findById(id)
       .populate('employeeId', 'name employeeId designation email')
       .populate('leaveType');
-      
+
     const formattedRequest = populated.toObject();
     if (formattedRequest.leaveType && formattedRequest.leaveType.code) {
-      formattedRequest.leaveType = formattedRequest.leaveType.code.charAt(0).toUpperCase() + formattedRequest.leaveType.code.slice(1);
+      formattedRequest.leaveType =
+        formattedRequest.leaveType.code.charAt(0).toUpperCase() +
+        formattedRequest.leaveType.code.slice(1);
     }
-      
+
     return apiResponse.ok(res, formattedRequest, `Leave request ${status.toLowerCase()}`);
   } catch (err) {
     return next(err);
@@ -398,6 +542,13 @@ exports.submitMyRequest = async (req, res, next) => {
       );
     }
 
+    let approvalStages;
+    try {
+      approvalStages = await resolveApprovalStagesForEmployee(employeeId);
+    } catch (e) {
+      return apiResponse.badRequest(res, e.message);
+    }
+
     const request = new LeaveRequest({
       employeeId,
       startDate: start.toDate(),
@@ -407,6 +558,7 @@ exports.submitMyRequest = async (req, res, next) => {
       requestedDays,
       halfDay: !!halfDay,
       status: 'Pending',
+      approvalStages,
     });
 
     await request.save();
