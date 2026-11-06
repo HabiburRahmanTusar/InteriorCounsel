@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface BillItem {
   description: string;
@@ -113,7 +114,7 @@ export interface ShareholderWallet {
 })
 export class CommercialService {
   private http = inject(HttpClient);
-  private baseUrl = '/api';
+  private readonly baseUrl = environment.apiBaseUrl;
 
   // ---------------- Bills ----------------
   getBills(params?: any): Observable<any> {
