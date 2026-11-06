@@ -63,10 +63,14 @@ exports.registerShareholder = async ({ shareholderId, name, email, phone, design
         email: cleanEmail,
         phone: phone || '',
         designation: designation || 'Shareholder / Partner',
-        role: 'employee',
+        role: 'shareholder',
         status: 'active',
         password: empId,
       });
+      await user.save();
+    }
+    if (user && user.role === 'employee') {
+      user.role = 'shareholder';
       await user.save();
     }
     targetUserId = user._id;
@@ -338,4 +342,134 @@ exports.processOwnerWithdrawal = async (cashOutRecord) => {
 
   await wallet.save();
   return wallet;
+};
+
+
+exports.getPortalSummary = async (targetUserId, currentUser) => {
+  let shareholderId = targetUserId;
+  const isShareholderRole = currentUser && currentUser.role === 'shareholder';
+
+  if (isShareholderRole || !shareholderId) {
+    if (isShareholderRole) {
+      shareholderId = currentUser._id || currentUser.id;
+    } else {
+      const firstWallet = await ShareholderWallet.findOne({ status: 'active' });
+      shareholderId = firstWallet ? firstWallet.shareholderId : (currentUser?._id || currentUser?.id);
+    }
+  }
+
+  // Get Wallet for target shareholder
+  const wallet = await exports.getWallet(shareholderId);
+
+  // Load company-wide metrics
+  const [allWallets, monthlySummaries, confirmedBills, allCashOuts] = await Promise.all([
+    ShareholderWallet.find({ status: 'active' }).populate('shareholderId', 'name email employeeId designation phone role'),
+    MonthlyProfitSummary.find().sort({ month: -1 }).limit(12),
+    Bill.find({ status: { $in: ['Confirmed', 'Completed'] } }),
+    CashOut.find(),
+  ]);
+
+  const totalConfirmedSales = Number(confirmedBills.reduce((acc, b) => acc + (b.totalAmount || 0), 0).toFixed(2));
+  const totalDistributedProfit = Number(allWallets.reduce((acc, w) => acc + (w.totalDistributed || 0), 0).toFixed(2));
+  const totalWithdrawnAll = Number(allWallets.reduce((acc, w) => acc + (w.totalWithdrawn || 0), 0).toFixed(2));
+  const totalCapitalPool = Number(allWallets.reduce((acc, w) => acc + (w.currentBalance || 0), 0).toFixed(2));
+
+  // Cap table breakdown
+  const capTable = allWallets.map((w) => ({
+    id: w._id,
+    shareholderId: w.shareholderId?._id || w.shareholderId,
+    name: w.shareholderId?.name || 'Partner',
+    email: w.shareholderId?.email || '',
+    employeeId: w.shareholderId?.employeeId || '',
+    designation: w.shareholderId?.designation || 'Partner / Investor',
+    sharePercentage: w.sharePercentage || 0,
+    totalDistributed: w.totalDistributed || 0,
+    totalWithdrawn: w.totalWithdrawn || 0,
+    currentBalance: w.currentBalance || 0,
+    status: w.status,
+  }));
+
+  const totalPoolPercentage = capTable.reduce((acc, c) => acc + (c.sharePercentage || 0), 0);
+
+  return {
+    shareholder: wallet.shareholderId,
+    wallet: {
+      _id: wallet._id,
+      shareholderId: wallet.shareholderId,
+      sharePercentage: wallet.sharePercentage,
+      totalDistributed: wallet.totalDistributed,
+      totalWithdrawn: wallet.totalWithdrawn,
+      currentBalance: wallet.currentBalance,
+      status: wallet.status,
+      transactions: (wallet.transactions || []).sort((a, b) => new Date(b.date) - new Date(a.date)),
+    },
+    companyMetrics: {
+      totalConfirmedSales,
+      totalDistributedProfit,
+      totalWithdrawnAll,
+      totalCapitalPool,
+      totalShareholders: capTable.length,
+      totalPoolPercentage: Number(totalPoolPercentage.toFixed(2)),
+    },
+    monthlySummaries,
+    capTable,
+    shareholdersList: capTable.map((c) => ({
+      shareholderId: c.shareholderId,
+      name: c.name,
+      designation: c.designation,
+      sharePercentage: c.sharePercentage,
+      currentBalance: c.currentBalance,
+    })),
+  };
+};
+
+exports.requestWithdrawal = async ({ shareholderId, amount, paymentMethod, bankName, chequeNumber, notes, userId }) => {
+  if (!shareholderId) {
+    const err = new Error('Shareholder ID is required');
+    err.statusCode = 400;
+    throw err;
+  }
+  const amt = Number(amount);
+  if (!amt || amt <= 0) {
+    const err = new Error('Withdrawal amount must be greater than zero');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const wallet = await ShareholderWallet.findOne({ shareholderId });
+  if (!wallet) {
+    const err = new Error('Shareholder wallet not found');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  if (amt > wallet.currentBalance) {
+    const err = new Error(
+      'Withdrawal amount (৳' + amt.toLocaleString() + ') exceeds current wallet balance (৳' + (wallet.currentBalance || 0).toLocaleString() + ')'
+    );
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const user = await User.findById(shareholderId);
+  const recipientName = user ? user.name : 'Shareholder Partner';
+
+  const cashFlowService = require('./cashFlow.service');
+  const cashOut = await cashFlowService.recordCashOut(
+    {
+      type: 'withdraw_profit',
+      amount: amt,
+      paymentMethod: paymentMethod || 'bank',
+      bankName: bankName || '',
+      chequeNumber: chequeNumber || '',
+      recipientName,
+      shareholderId,
+      notes: notes || ('Shareholder profit withdrawal / drawing by ' + recipientName),
+      date: new Date(),
+    },
+    userId || shareholderId
+  );
+
+  const updatedWallet = await exports.getWallet(shareholderId);
+  return { cashOut, wallet: updatedWallet };
 };

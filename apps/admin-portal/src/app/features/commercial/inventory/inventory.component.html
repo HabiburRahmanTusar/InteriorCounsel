@@ -7,14 +7,39 @@
         <span>/</span>
         <span>Inventory & Materials</span>
       </div>
-      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Products & Stock Inventory</h1>
+      <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Products & Stock Inventory</h1>
       <p class="text-xs text-slate-500 mt-0.5">Manage materials, storable items, standard rates, and inventory levels</p>
     </div>
 
-    <button
-      type="button"
-      (click)="openNewModal()"
-      class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition"
+    
+    <div class="flex items-center gap-2">
+      <button
+        (click)="exportExcel()"
+        type="button"
+        title="Download Excel Spreadsheet (.xlsx)"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-emerald-600/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-bold text-xs transition shadow-sm"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <span>Excel</span>
+      </button>
+
+      <button
+        (click)="exportPdf()"
+        type="button"
+        title="Download Official PDF (.pdf)"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-rose-600/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 font-bold text-xs transition shadow-sm"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+        <span>PDF</span>
+      </button>
+    </div>
+
+    <button type="button" (click)="openNewModal()"
+      class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-white text-xs font-bold shadow-xs transition"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4" />
@@ -25,15 +50,15 @@
 
   <!-- KPI Overview Cards -->
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-1">
+    <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs space-y-1">
       <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Products</span>
       <div class="flex items-baseline justify-between">
-        <span class="text-2xl font-black text-slate-900">{{ totalProducts() }}</span>
-        <span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-semibold">Active Catalog</span>
+        <span class="text-2xl font-black text-slate-900 dark:text-white">{{ totalProducts() }}</span>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-semibold">Active Catalog</span>
       </div>
     </div>
 
-    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-1">
+    <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs space-y-1">
       <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Low Stock Warnings</span>
       <div class="flex items-baseline justify-between">
         <span class="text-2xl font-black text-amber-600">{{ lowStockCount() }}</span>
@@ -41,7 +66,7 @@
       </div>
     </div>
 
-    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-1">
+    <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs space-y-1">
       <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Estimated Valuation</span>
       <div class="flex items-baseline justify-between">
         <span class="text-2xl font-black text-emerald-600">৳ {{ totalStockValue() | number:'1.2-2' }}</span>
@@ -60,7 +85,7 @@
           [(ngModel)]="searchQuery"
           (input)="loadProducts()"
           placeholder="Search product or ref..."
-          class="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
         />
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -71,7 +96,7 @@
       <select
         [(ngModel)]="selectedCategory"
         (change)="loadProducts()"
-        class="px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        class="px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
       >
         @for (c of categories; track c) {
           <option [value]="c">{{ c }}</option>
@@ -82,7 +107,7 @@
       <select
         [(ngModel)]="selectedType"
         (change)="loadProducts()"
-        class="px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        class="px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
       >
         <option value="">All Types</option>
         <option value="Storable Product">Storable Product</option>
@@ -95,7 +120,7 @@
   </div>
 
   <!-- Products Table -->
-  <div class="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+  <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs overflow-hidden">
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs border-collapse">
         <thead>
@@ -123,7 +148,7 @@
             @for (p of filteredProducts(); track p._id || p.name) {
               <tr class="hover:bg-slate-50/70 transition">
                 <td class="py-3 px-4">
-                  <div class="font-bold text-slate-900">{{ p.name }}</div>
+                  <div class="font-bold text-slate-900 dark:text-white">{{ p.name }}</div>
                   @if (p.internalRef) {
                     <span class="text-[11px] text-slate-400">Ref: {{ p.internalRef }}</span>
                   }
@@ -132,7 +157,7 @@
                   <span
                     class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
                     [ngClass]="{
-                      'bg-indigo-50 text-indigo-700': p.productType === 'Storable Product',
+                      'bg-amber-500/10 text-amber-600 dark:text-amber-400': p.productType === 'Storable Product',
                       'bg-emerald-50 text-emerald-700': p.productType === 'Consumable',
                       'bg-amber-50 text-amber-700': p.productType === 'Service'
                     }"
@@ -141,7 +166,7 @@
                   </span>
                 </td>
                 <td class="py-3 px-4 text-slate-600 font-medium">{{ p.category }}</td>
-                <td class="py-3 px-4 text-right font-bold text-slate-900">৳ {{ p.salesPrice | number:'1.2-2' }}</td>
+                <td class="py-3 px-4 text-right font-bold text-slate-900 dark:text-white">৳ {{ p.salesPrice | number:'1.2-2' }}</td>
                 <td class="py-3 px-4 text-right text-slate-500">৳ {{ p.cost | number:'1.2-2' }}</td>
                 <td class="py-3 px-4 text-center">
                   <span
@@ -184,7 +209,7 @@
     <div class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
       <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-150 border border-slate-200 max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h3 class="text-base font-bold text-slate-900">
+          <h3 class="text-base font-bold text-slate-900 dark:text-white">
             {{ isEditing() ? 'Edit Product' : 'Create New Product' }}
           </h3>
           <button
@@ -203,7 +228,7 @@
               type="text"
               [(ngModel)]="formProduct.name"
               placeholder="e.g. Gypsum Board 9mm Elephant Brand"
-              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-semibold"
             />
           </div>
 
@@ -212,7 +237,7 @@
               <label class="block font-bold text-slate-800 mb-1">Product Type</label>
               <select
                 [(ngModel)]="formProduct.productType"
-                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
               >
                 <option value="Storable Product">Storable Product</option>
                 <option value="Consumable">Consumable</option>
@@ -224,7 +249,7 @@
               <label class="block font-bold text-slate-800 mb-1">Category</label>
               <select
                 [(ngModel)]="formProduct.category"
-                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
               >
                 @for (c of categories; track c) {
                   @if (c !== 'All') {
@@ -242,7 +267,7 @@
                 type="number"
                 [(ngModel)]="formProduct.salesPrice"
                 min="0"
-                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 font-bold"
               />
               <span class="block text-[10px] text-slate-400 mt-1">
                 Incl. 15% VAT: ৳ {{ (formProduct.salesPrice * 1.15) | number:'1.2-2' }}
@@ -255,7 +280,7 @@
                 type="number"
                 [(ngModel)]="formProduct.cost"
                 min="0"
-                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
 
@@ -265,7 +290,7 @@
                 type="text"
                 [(ngModel)]="formProduct.unit"
                 placeholder="sft, rft, nos..."
-                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
           </div>
@@ -276,7 +301,7 @@
               <input
                 type="number"
                 [(ngModel)]="formProduct.stockQuantity"
-                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
 
@@ -285,7 +310,7 @@
               <input
                 type="number"
                 [(ngModel)]="formProduct.minStockAlert"
-                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
           </div>
@@ -297,7 +322,7 @@
                 type="text"
                 [(ngModel)]="formProduct.internalRef"
                 placeholder="e.g. PRD-1002"
-                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
 
@@ -307,7 +332,7 @@
                 type="text"
                 [(ngModel)]="formProduct.barcode"
                 placeholder="Barcode"
-                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
           </div>
@@ -318,7 +343,7 @@
               [(ngModel)]="formProduct.notes"
               rows="2"
               placeholder="Notes on supplier, specifications, technical details..."
-              class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
             ></textarea>
           </div>
         </div>
@@ -334,7 +359,7 @@
           <button
             type="button"
             (click)="saveProduct()"
-            class="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-xs transition"
+            class="px-4 py-2 rounded-xl bg-amber-500 text-white text-xs font-bold hover:bg-amber-600 text-slate-950 font-bold shadow-xs transition"
           >
             {{ isEditing() ? 'Update Product' : 'Create Product' }}
           </button>

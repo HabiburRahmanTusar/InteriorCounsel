@@ -49,7 +49,7 @@
         <div class="flex flex-wrap items-center gap-2">
           <!-- DRAFT / CONFIRMED Step Pills -->
           <div class="inline-flex rounded-lg overflow-hidden border border-slate-200 shadow-2xs">
-            <span class="px-4 py-1.5 text-xs font-bold bg-blue-600 text-white select-none">
+            <span class="px-4 py-1.5 text-xs font-bold bg-amber-500 text-white select-none">
               DRAFT
             </span>
             <span
@@ -60,7 +60,7 @@
 
           <!-- POST Button -->
           <button type="button" (click)="submitBill(true)"
-            class="px-4 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-2xs transition">
+            class="px-4 py-1.5 rounded-lg bg-amber-500 text-white text-xs font-bold hover:bg-amber-600 shadow-2xs transition">
             POST
           </button>
 
@@ -105,7 +105,7 @@
             </label>
             <div class="relative max-w-md">
               <input type="date" [(ngModel)]="formBill.date"
-                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium" />
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium" />
             </div>
           </div>
 
@@ -116,7 +116,7 @@
             </label>
             <div class="max-w-md">
               <input type="text" [(ngModel)]="formBill.billNumber" placeholder="e.g. A747"
-                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold" />
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-semibold" />
             </div>
           </div>
 
@@ -130,10 +130,10 @@
                 <input type="text" id="bf-sp" autocomplete="off" [(ngModel)]="formBill.salesperson"
                   (focus)="showSpDropdown.set(true)" (input)="onSalespersonInput()" (blur)="onSalespersonBlur()"
                   (keydown)="onSalespersonKeydown($event)" placeholder="Select or type to search…"
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium" />
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium" />
                 @if (canCreateNewSalesperson()) {
                 <button type="button" (mousedown)="createSalesperson(formBill.salesperson)"
-                  class="shrink-0 px-2.5 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs border border-blue-200 transition flex items-center gap-1 shadow-sm"
+                  class="shrink-0 px-2.5 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 font-bold text-xs border border-amber-200 dark:border-amber-800 transition flex items-center gap-1 shadow-sm"
                   title="Create this salesperson">
                   <span>＋</span> Create
                 </button>
@@ -150,7 +150,7 @@
                 }
                 @if (canCreateNewSalesperson()) {
                 <div (mousedown)="createSalesperson(formBill.salesperson)"
-                  class="px-3.5 py-2 hover:bg-blue-50 cursor-pointer font-bold text-blue-600 transition flex items-center gap-1.5">
+                  class="px-3.5 py-2 hover:bg-amber-50 dark:bg-amber-950/40 cursor-pointer font-bold text-amber-600 transition flex items-center gap-1.5">
                   <span>＋</span> Create salesperson "{{ formBill.salesperson }}"
                 </div>
                 }
@@ -172,7 +172,7 @@
                 <input type="text" id="bf-cu" autocomplete="off" [(ngModel)]="formBill.customerName"
                   (focus)="showCustDropdown.set(true)" (input)="onCustomerInput()" (blur)="onCustomerBlur()"
                   (keydown)="onCustomerKeydown($event)" placeholder="Select or type to search…"
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold" />
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-semibold" />
                 @if (canCreateNewCustomer()) {
                 <button type="button" (mousedown)="createCustomer(formBill.customerName)"
                   class="shrink-0 px-2.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold text-xs border border-amber-200 transition flex items-center gap-1 shadow-sm"
@@ -220,7 +220,7 @@
             <label class="font-bold text-slate-800">Customer Mobile</label>
             <div class="max-w-md">
               <input type="text" id="bf-mob" [(ngModel)]="formBill.customerMobile" placeholder="01XXX-XXXXXX"
-                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500" />
             </div>
           </div>
 
@@ -229,7 +229,7 @@
             <label class="font-bold text-slate-800">Address</label>
             <div class="max-w-md">
               <input type="text" id="bf-ad" [(ngModel)]="formBill.address" placeholder="Customer address"
-                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500" />
             </div>
           </div>
         </div>
@@ -255,7 +255,7 @@
                       <input type="text" autocomplete="off" [(ngModel)]="it.description"
                         (focus)="onProductFocus($index)" (input)="onProductInput($index)" (blur)="onProductBlur($index)"
                         (keydown)="onProductKeydown($event, $index, it)" placeholder="Select or type product…"
-                        class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium" />
+                        class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium" />
                       @if (canCreateNewProduct(it.description)) {
                       <button type="button" (mousedown)="createProductForLine($index, it.description)"
                         class="shrink-0 px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[11px] border border-emerald-200 transition flex items-center gap-1 shadow-2xs"
@@ -310,12 +310,12 @@
                   </td>
                   <td class="py-2.5 px-3">
                     <input type="number" [(ngModel)]="it.quantity" (ngModelChange)="calcBillItem(it)" min="0.01"
-                      class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-center font-semibold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                      class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-center font-semibold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500" />
                   </td>
                   <td class="py-2.5 px-3">
                     <input type="number" [(ngModel)]="it.unitPrice" (ngModelChange)="calcBillItem(it)" min="0"
                       placeholder="0.00"
-                      class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold" />
+                      class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-semibold" />
                   </td>
                   <td class="py-2.5 px-3 text-right font-bold text-slate-900 text-xs">
                     {{ it.amount | number:'1.2-2' }}
@@ -339,7 +339,7 @@
           <!-- Add product line link -->
           <div class="pt-2">
             <button type="button" (click)="addBillItem()"
-              class="text-blue-600 hover:text-blue-800 text-xs font-semibold inline-flex items-center gap-1 transition">
+              class="text-amber-600 hover:text-amber-800 text-xs font-semibold inline-flex items-center gap-1 transition">
               <span>Add a product line</span>
             </button>
           </div>
@@ -370,11 +370,11 @@
                     <tr>
                       <td class="py-1.5 px-2">
                         <input type="text" [(ngModel)]="c.name" placeholder="e.g. Transport Charge, Fitting..."
-                          class="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium" />
+                          class="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium" />
                       </td>
                       <td class="py-1.5 px-2">
                         <input type="number" [(ngModel)]="c.amount" min="0" placeholder="0.00"
-                          class="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-right text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold" />
+                          class="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-right text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-semibold" />
                       </td>
                       <td class="py-1.5 px-2 text-center">
                         <button type="button" (click)="removeOtherCharge($index)"
@@ -390,7 +390,7 @@
 
               <div>
                 <button type="button" (click)="addOtherCharge()"
-                  class="text-blue-600 hover:text-blue-800 text-xs font-semibold inline-flex items-center gap-1 transition">
+                  class="text-amber-600 hover:text-amber-800 text-xs font-semibold inline-flex items-center gap-1 transition">
                   <span>Add other charge</span>
                 </button>
               </div>
@@ -417,7 +417,7 @@
                 <span>Discount Amount</span>
                 <div class="w-32">
                   <input type="number" [(ngModel)]="formBill.discountAmount" min="0" placeholder="0"
-                    class="w-full px-3 py-1 rounded-lg border border-slate-200 text-xs text-right font-semibold text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    class="w-full px-3 py-1 rounded-lg border border-slate-200 text-xs text-right font-semibold text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500" />
                 </div>
               </div>
 
@@ -442,7 +442,7 @@
         <!-- =========================================================================
                SUPPLIER INFORMATION (MATCHING SCREENSHOT)
                ========================================================================= -->
-        <div class="pt-6 border-t border-slate-100 space-y-3">
+        <div class="pt-6 border-t border-slate-100 space-y-3 supplier-confidential-section" data-confidential="true">
           <div class="text-[11px] font-bold text-slate-900 uppercase tracking-wider">
             SUPPLIER INFORMATION
           </div>
@@ -477,7 +477,7 @@
                     <div class="space-y-1">
                       <input type="text" list="sup-dl" [(ngModel)]="it.supplierName"
                         placeholder="Select or type supplie..."
-                        class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                        class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500" />
                       @if (it.supplierName) {
                       <div>
                         @if (isExistingSupplier(it.supplierName)) {
@@ -493,7 +493,7 @@
                           New
                         </span>
                         <a (click)="quickCreateSupplier(it.supplierName)"
-                          class="text-blue-600 font-bold hover:underline cursor-pointer text-[11px] ml-1.5">
+                          class="text-amber-600 font-bold hover:underline cursor-pointer text-[11px] ml-1.5">
                           ＋ Create
                         </a>
                         }
@@ -503,12 +503,12 @@
                   </td>
                   <td class="py-2.5 px-3">
                     <input type="text" [(ngModel)]="it.supplierInvoiceNo" placeholder="Invoice no."
-                      class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                      class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500" />
                   </td>
                   <td class="py-2.5 px-3">
                     <input type="number" [(ngModel)]="it.purchaseAmount" (ngModelChange)="calcSupplierRow(it)" min="0"
                       step="0.01" placeholder="0.00"
-                      class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-right font-semibold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                      class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-right font-semibold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500" />
                   </td>
                   <td class="py-2.5 px-3 text-center">
                     @if (it.supplierDiscount > 0) {
@@ -560,7 +560,7 @@
         <!-- =========================================================================
                SUMMARY (5 KPI BOXES MATCHING SCREENSHOT)
                ========================================================================= -->
-        <div class="pt-6 border-t border-slate-100 space-y-3">
+        <div class="pt-6 border-t border-slate-100 space-y-3 supplier-confidential-section" data-confidential="true">
           <div class="text-[11px] font-bold text-slate-900 uppercase tracking-wider">
             SUMMARY
           </div>
@@ -603,30 +603,30 @@
         <!-- =========================================================================
                BOTTOM TABS (PAYMENTS RECEIVED | CASH OUT | VENDOR INFO)
                ========================================================================= -->
-        <div class="pt-6 border-t border-slate-100 space-y-3">
+        <div class="pt-6 border-t border-slate-100 space-y-3 supplier-confidential-section" data-confidential="true">
           <div class="flex items-center gap-4 border-b border-slate-100 text-xs">
             <button type="button" (click)="activeBillSubTab.set('payments')"
-              [class.text-blue-600]="activeBillSubTab() === 'payments'"
+              [class.text-amber-600]="activeBillSubTab() === 'payments'"
               [class.font-bold]="activeBillSubTab() === 'payments'"
               [class.border-b-2]="activeBillSubTab() === 'payments'"
-              [class.border-blue-600]="activeBillSubTab() === 'payments'"
+              [class.border-amber-500]="activeBillSubTab() === 'payments'"
               class="pb-2 text-slate-600 hover:text-slate-900 transition">
               Payments Received
             </button>
 
             <button type="button" (click)="activeBillSubTab.set('cashout')"
-              [class.text-blue-600]="activeBillSubTab() === 'cashout'"
+              [class.text-amber-600]="activeBillSubTab() === 'cashout'"
               [class.font-bold]="activeBillSubTab() === 'cashout'" [class.border-b-2]="activeBillSubTab() === 'cashout'"
-              [class.border-blue-600]="activeBillSubTab() === 'cashout'"
+              [class.border-amber-500]="activeBillSubTab() === 'cashout'"
               class="pb-2 text-slate-600 hover:text-slate-900 transition">
               Cash Out
             </button>
 
             <button type="button" (click)="activeBillSubTab.set('vendorinfo')"
-              [class.text-blue-600]="activeBillSubTab() === 'vendorinfo'"
+              [class.text-amber-600]="activeBillSubTab() === 'vendorinfo'"
               [class.font-bold]="activeBillSubTab() === 'vendorinfo'"
               [class.border-b-2]="activeBillSubTab() === 'vendorinfo'"
-              [class.border-blue-600]="activeBillSubTab() === 'vendorinfo'"
+              [class.border-amber-500]="activeBillSubTab() === 'vendorinfo'"
               class="pb-2 text-slate-600 hover:text-slate-900 transition">
               Vendor Info
             </button>
@@ -735,7 +735,7 @@
         </button>
 
         <button type="button" (click)="submitBill(true)"
-          class="px-5 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-2xs inline-flex items-center gap-1.5 transition">
+          class="px-5 py-2 rounded-xl bg-amber-500 text-white text-xs font-bold hover:bg-amber-600 shadow-2xs inline-flex items-center gap-1.5 transition">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
           </svg>
@@ -756,7 +756,7 @@
       <div class="flex items-center gap-2 text-xs font-semibold text-slate-400 mb-1">
         <span>Interior Operations</span>
         <span>/</span>
-        <span class="text-indigo-600 font-bold">Sales & Invoicing</span>
+        <span class="text-amber-600 font-bold">Sales & Invoicing</span>
       </div>
       <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Sales Bills & Quotations</h1>
       <p class="text-sm text-slate-500 mt-1">
@@ -769,21 +769,48 @@
       <div class="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner">
         <button (click)="activeTab.set('bills')" [class.bg-white]="activeTab() === 'bills'"
           [class.shadow-xs]="activeTab() === 'bills'" [class.font-bold]="activeTab() === 'bills'"
-          [class.text-indigo-600]="activeTab() === 'bills'"
+          [class.text-amber-600]="activeTab() === 'bills'"
           class="px-4 py-2 text-xs rounded-lg transition text-slate-600 font-medium">
           Bills & Invoices ({{ bills().length }})
         </button>
         <button (click)="activeTab.set('quotations')" [class.bg-white]="activeTab() === 'quotations'"
           [class.shadow-xs]="activeTab() === 'quotations'" [class.font-bold]="activeTab() === 'quotations'"
-          [class.text-indigo-600]="activeTab() === 'quotations'"
+          [class.text-amber-600]="activeTab() === 'quotations'"
           class="px-4 py-2 text-xs rounded-lg transition text-slate-600 font-medium">
           Quotations ({{ quotations().length }})
         </button>
       </div>
 
+      
+      <div class="flex items-center gap-2">
+        <button
+          (click)="activeTab() === 'bills' ? exportBillsExcel() : exportQuotationsExcel()"
+          type="button"
+          title="Download Excel Spreadsheet (.xlsx)"
+          class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-emerald-600/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-bold text-xs transition shadow-sm"
+        >
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <span>Excel</span>
+        </button>
+
+        <button
+          (click)="activeTab() === 'bills' ? exportBillsPdf() : exportQuotationsPdf()"
+          type="button"
+          title="Download Official PDF (.pdf)"
+          class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-rose-600/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 font-bold text-xs transition shadow-sm"
+        >
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+          <span>PDF</span>
+        </button>
+      </div>
+
       @if (activeTab() === 'bills') {
       <button (click)="openNewBill()"
-        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 shadow-xs transition">
+        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 text-white font-semibold text-sm hover:bg-amber-600 shadow-xs transition">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
@@ -791,7 +818,7 @@
       </button>
       } @else {
       <button (click)="openNewQuotationModal()"
-        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 shadow-xs transition">
+        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 text-white font-semibold text-sm hover:bg-amber-600 shadow-xs transition">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
@@ -848,7 +875,7 @@
       <div class="relative flex-1 max-w-md">
         <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="loadBills()"
           placeholder="Search bill number, customer, project, salesperson..."
-          class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500" />
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-2.5 text-slate-400" fill="none"
           viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -858,7 +885,7 @@
 
       <div class="flex items-center gap-2">
         <select [(ngModel)]="paymentFilter" (change)="loadBills()"
-          class="px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
+          class="px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium text-slate-700">
           <option value="">All Payment States</option>
           <option value="not_paid">Due / Not Paid</option>
           <option value="partial">Partial Payment</option>
@@ -995,7 +1022,7 @@
         <tbody class="divide-y divide-slate-100">
           @for (q of quotations(); track q._id) {
           <tr class="hover:bg-slate-50/60 transition">
-            <td class="py-3 px-4 font-bold text-blue-600 whitespace-nowrap">
+            <td class="py-3 px-4 font-bold text-amber-600 whitespace-nowrap">
               {{ q.quotationNumber }}
             </td>
             <td class="py-3 px-4 text-slate-500 whitespace-nowrap">
@@ -1016,8 +1043,8 @@
             </td>
             <td class="py-3 px-4 text-center">
               <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold" [class.bg-slate-100]="q.status === 'Draft'"
-                [class.text-slate-600]="q.status === 'Draft'" [class.bg-blue-50]="q.status === 'Sent'"
-                [class.text-blue-700]="q.status === 'Sent'" [class.bg-emerald-50]="q.status === 'Approved'"
+                [class.text-slate-600]="q.status === 'Draft'" [class.bg-amber-100]="q.status === 'Sent'"
+                [class.text-amber-700]="q.status === 'Sent'" [class.bg-emerald-50]="q.status === 'Approved'"
                 [class.text-emerald-700]="q.status === 'Approved'"
                 [class.bg-purple-50]="q.status === 'Converted to Bill'"
                 [class.text-purple-700]="q.status === 'Converted to Bill'">
@@ -1089,7 +1116,7 @@
           <span>Print / Save PDF</span>
         </button>
         <button type="button" (click)="editBill(activeInvoice())"
-          class="px-4 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-2xs inline-flex items-center gap-1.5 transition">
+          class="px-4 py-1.5 rounded-xl bg-amber-500 text-white text-xs font-bold hover:bg-amber-600 shadow-2xs inline-flex items-center gap-1.5 transition">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
             stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -1469,7 +1496,7 @@
           <span>Print</span>
         </button>
         <button type="button" (click)="editBill(activeInvoice())"
-          class="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-xs inline-flex items-center gap-1.5 transition">
+          class="px-4 py-2 rounded-xl bg-amber-500 text-white text-xs font-bold hover:bg-amber-600 shadow-xs inline-flex items-center gap-1.5 transition">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
             stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -1503,7 +1530,7 @@
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Select Client *</label>
             <select [(ngModel)]="formQuotation.customerId"
-              class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+              class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500">
               @for (c of clients(); track c._id) {
               <option [value]="c._id">{{ c.name }} ({{ c.company || 'Individual' }})</option>
               }
@@ -1512,12 +1539,12 @@
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Project Name *</label>
             <input type="text" [(ngModel)]="formQuotation.projectName" placeholder="e.g. Modern Duplex Renovation"
-              class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Valid Until Date</label>
             <input type="date" [(ngModel)]="formQuotation.validUntil"
-              class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500" />
           </div>
         </div>
 
@@ -1525,7 +1552,7 @@
           <label class="block text-xs font-semibold text-slate-600 mb-1">Subject / Scope Summary</label>
           <input type="text" [(ngModel)]="formQuotation.subject"
             placeholder="e.g. Architectural Renovation & Interior Fit-out Proposal"
-            class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500" />
         </div>
 
         <!-- Quotation Items Table -->
@@ -1533,7 +1560,7 @@
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold text-slate-900 uppercase tracking-wide">Quoted Items</span>
             <button type="button" (click)="addQuotationItem()"
-              class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs font-semibold hover:bg-blue-100 transition">
+              class="px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-700 text-xs font-semibold hover:bg-amber-100 transition">
               + Add Item
             </button>
           </div>
@@ -1618,7 +1645,7 @@
           Cancel
         </button>
         <button type="button" (click)="submitQuotation()"
-          class="px-4 py-2 rounded-xl bg-blue-600 text-xs font-semibold text-white hover:bg-blue-700 shadow-xs">
+          class="px-4 py-2 rounded-xl bg-amber-500 text-xs font-semibold text-white hover:bg-amber-600 shadow-xs">
           Save Quotation
         </button>
       </div>
@@ -1643,7 +1670,7 @@
         <label
           class="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 cursor-pointer border border-slate-100 transition">
           <input type="checkbox" [(ngModel)]="billConfig.allowNewSales"
-            class="mt-0.5 rounded text-blue-600 focus:ring-blue-500" />
+            class="mt-0.5 rounded text-amber-600 focus:ring-amber-500" />
           <div>
             <span class="font-bold text-slate-800">Allow creating new Salesperson from the bill form</span>
             <p class="text-[11px] text-slate-500 mt-0.5">When the typed name is not found, a "Create" option appears in
@@ -1654,7 +1681,7 @@
         <label
           class="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 cursor-pointer border border-slate-100 transition">
           <input type="checkbox" [(ngModel)]="billConfig.allowNewCust"
-            class="mt-0.5 rounded text-blue-600 focus:ring-blue-500" />
+            class="mt-0.5 rounded text-amber-600 focus:ring-amber-500" />
           <div>
             <span class="font-bold text-slate-800">Allow creating new Customer from the bill form</span>
             <p class="text-[11px] text-slate-500 mt-0.5">New customers are saved with their mobile & address when the
@@ -1665,7 +1692,7 @@
         <label
           class="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 cursor-pointer border border-slate-100 transition">
           <input type="checkbox" [(ngModel)]="billConfig.allowNewProd"
-            class="mt-0.5 rounded text-blue-600 focus:ring-blue-500" />
+            class="mt-0.5 rounded text-amber-600 focus:ring-amber-500" />
           <div>
             <span class="font-bold text-slate-800">Allow creating new Products from the bill form</span>
             <p class="text-[11px] text-slate-500 mt-0.5">When the typed product is not found, a "Create" option appears
@@ -1676,7 +1703,7 @@
         <label
           class="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 cursor-pointer border border-slate-100 transition">
           <input type="checkbox" [(ngModel)]="billConfig.includeEmployees"
-            class="mt-0.5 rounded text-blue-600 focus:ring-blue-500" />
+            class="mt-0.5 rounded text-amber-600 focus:ring-amber-500" />
           <div>
             <span class="font-bold text-slate-800">Also list Sales & Marketing employees</span>
             <p class="text-[11px] text-slate-500 mt-0.5">Adds employees from HR department to the salesperson dropdown
@@ -1691,7 +1718,7 @@
           Cancel
         </button>
         <button type="button" (click)="saveBillConfig()"
-          class="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-xs transition">
+          class="px-4 py-2 rounded-xl bg-amber-500 text-white text-xs font-bold hover:bg-amber-600 shadow-xs transition">
           Save Settings
         </button>
       </div>

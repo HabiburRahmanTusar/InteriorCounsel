@@ -12,6 +12,7 @@ import { catchError, finalize, of, tap } from 'rxjs';
 
 import { AttendanceService } from '../../core/services/attendance.service';
 import { AuthService } from '../../core/services/auth.service';
+import { ExportService } from '../../core/services/export.service';
 import { ToastrService } from 'ngx-toastr';
 import {
   DailyAttendanceRow,
@@ -29,6 +30,7 @@ import {
 export class AttendanceViewComponent implements OnDestroy {
   private attendanceService = inject(AttendanceService);
   private authService = inject(AuthService);
+  private exportService = inject(ExportService);
   private toastr = inject(ToastrService);
   private destroy$ = new Subject<void>();
 
@@ -338,5 +340,103 @@ export class AttendanceViewComponent implements OnDestroy {
     hour = hour ? hour : 12;
     const strHour = hour < 10 ? `0${hour}` : `${hour}`;
     return `${strHour}:${minute} ${ampm}`;
+  }
+
+  exportExcel() {
+    if (this.currentRole() === 'employee') {
+      const history = this.historyItems();
+      if (!history || history.length === 0) {
+        this.toastr.warning('No attendance history to export', 'Export Warning');
+        return;
+      }
+      const rows = history.map((item) => [
+        item.attendanceDate ? new Date(item.attendanceDate).toISOString().slice(0, 10) : '—',
+        item.checkIn?.time ? new Date(item.checkIn.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
+        item.checkIn?.status || 'Absent',
+        item.checkOut?.time ? new Date(item.checkOut.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
+        item.checkOut?.status || '—',
+        item.workingMinutes ? (item.workingMinutes / 60).toFixed(1) + ' hrs' : '0 hrs',
+      ]);
+      this.exportService.exportToExcel({
+        filename: `InteriorCounsel_My_Attendance_${this.getToday()}`,
+        title: 'Personal Attendance Log',
+        subtitle: `Generated: ${new Date().toLocaleDateString()}`,
+        headers: ['Date', 'Check-In', 'In Status', 'Check-Out', 'Out Status', 'Work Duration'],
+        rows,
+      });
+      this.toastr.success('Attendance history exported to Excel', 'Export Complete');
+    } else {
+      const rows = this.rows();
+      if (!rows || rows.length === 0) {
+        this.toastr.warning('No daily attendance records to export', 'Export Warning');
+        return;
+      }
+      const dataRows = rows.map((r) => [
+        r.employeeCode || r.employeeId || '—',
+        r.employeeName || '—',
+        r.checkIn?.time ? new Date(r.checkIn.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
+        r.checkIn?.status || (r.checkIn ? 'On Time' : 'Absent'),
+        r.checkOut?.time ? new Date(r.checkOut.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
+        r.workingMinutes ? (r.workingMinutes / 60).toFixed(1) + ' hrs' : '0 hrs',
+        r.status || (r.checkIn ? 'Present' : 'Absent'),
+      ]);
+      this.exportService.exportToExcel({
+        filename: `InteriorCounsel_Daily_Attendance_${this.date()}`,
+        title: `Daily Attendance Log — ${this.date()}`,
+        subtitle: `Total Staff: ${rows.length} | Present: ${this.totalPresent()} | Late: ${this.totalLate()} | Absent: ${this.totalAbsent()}`,
+        headers: ['Emp ID', 'Employee Name', 'Check In', 'In Status', 'Check Out', 'Work Hours', 'Status'],
+        rows: dataRows,
+      });
+      this.toastr.success('Daily attendance sheet exported to Excel', 'Export Complete');
+    }
+  }
+
+  exportPdf() {
+    if (this.currentRole() === 'employee') {
+      const history = this.historyItems();
+      if (!history || history.length === 0) {
+        this.toastr.warning('No attendance history to export', 'Export Warning');
+        return;
+      }
+      const rows = history.map((item) => [
+        item.attendanceDate ? new Date(item.attendanceDate).toISOString().slice(0, 10) : '—',
+        item.checkIn?.time ? new Date(item.checkIn.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
+        item.checkIn?.status || 'Absent',
+        item.checkOut?.time ? new Date(item.checkOut.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
+        item.checkOut?.status || '—',
+        item.workingMinutes ? (item.workingMinutes / 60).toFixed(1) + ' hrs' : '0 hrs',
+      ]);
+      this.exportService.exportToPdf({
+        filename: `InteriorCounsel_My_Attendance_${this.getToday()}`,
+        title: 'Personal Attendance Audit Log',
+        subtitle: `Generated: ${new Date().toLocaleDateString()}`,
+        headers: ['Date', 'Check-In', 'In Status', 'Check-Out', 'Out Status', 'Work Duration'],
+        rows,
+      });
+      this.toastr.success('Attendance history exported to PDF', 'Export Complete');
+    } else {
+      const rows = this.rows();
+      if (!rows || rows.length === 0) {
+        this.toastr.warning('No daily attendance records to export', 'Export Warning');
+        return;
+      }
+      const dataRows = rows.map((r) => [
+        r.employeeCode || r.employeeId || '—',
+        r.employeeName || '—',
+        r.checkIn?.time ? new Date(r.checkIn.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
+        r.checkOut?.time ? new Date(r.checkOut.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
+        r.workingMinutes ? (r.workingMinutes / 60).toFixed(1) + ' hrs' : '0 hrs',
+        r.status || (r.checkIn ? 'Present' : 'Absent'),
+      ]);
+      this.exportService.exportToPdf({
+        filename: `InteriorCounsel_Daily_Attendance_${this.date()}`,
+        title: `Daily Attendance Sheet — ${this.date()}`,
+        subtitle: `Total Staff: ${rows.length} | Present: ${this.totalPresent()} | Late: ${this.totalLate()} | Absent: ${this.totalAbsent()}`,
+        headers: ['Emp ID', 'Employee Name', 'Check In', 'Check Out', 'Hours', 'Status'],
+        rows: dataRows,
+        orientation: 'landscape',
+      });
+      this.toastr.success('Daily attendance sheet exported to PDF', 'Export Complete');
+    }
   }
 }

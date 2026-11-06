@@ -75,3 +75,28 @@ exports.distributeProfit = async (req, res, next) => {
     return next(err);
   }
 };
+
+
+exports.getPortalSummary = async (req, res, next) => {
+  try {
+    const targetUserId = req.query.shareholderId || (req.user.role === 'shareholder' ? req.user.id : null);
+    const summary = await shareholderService.getPortalSummary(targetUserId, req.user);
+    return apiResponse.ok(res, summary, 'Shareholder portal summary loaded');
+  } catch (err) {
+    return next(err);
+  }
+};
+
+exports.requestWithdrawal = async (req, res, next) => {
+  try {
+    const shareholderId = req.user.role === 'shareholder' ? req.user.id : (req.body.shareholderId || req.user.id);
+    const result = await shareholderService.requestWithdrawal({
+      ...req.body,
+      shareholderId,
+      userId: req.user.id,
+    });
+    return apiResponse.ok(res, result, 'Withdrawal processed successfully');
+  } catch (err) {
+    return next(err);
+  }
+};

@@ -7,6 +7,7 @@ import { ToastrService } from 'ngx-toastr';
 import { CommercialService, CashInRecord, CashOutRecord, Bill } from '../../../core/services/commercial.service';
 import { EmployeeService } from '../../../core/services/employee.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ExportService } from '../../../core/services/export.service';
 
 @Component({
   selector: 'wfm-cash-flow',
@@ -18,6 +19,7 @@ export class CashFlowComponent implements OnInit {
   private commercialService = inject(CommercialService);
   private employeeService = inject(EmployeeService);
   private authService = inject(AuthService);
+  private exportService = inject(ExportService);
   private toastr = inject(ToastrService);
   private route = inject(ActivatedRoute);
 
@@ -321,4 +323,107 @@ export class CashFlowComponent implements OnInit {
       },
     });
   }
+
+  exportCashInExcel() {
+    const list = this.cashInList();
+    if (!list || list.length === 0) {
+      this.toastr.warning('No cash-in records to export');
+      return;
+    }
+    const rows = list.map((c: any) => [
+      c.date ? new Date(c.date).toISOString().slice(0, 10) : '—',
+      c.billId?.billNumber || c.billNumber || '—',
+      c.customerId?.name || c.customerName || 'Customer',
+      c.amount || 0,
+      (c.paymentMethod || 'cash').toUpperCase(),
+      c.bankName || c.mfsProvider || '—',
+      c.transactionRef || c.chequeNumber || '—',
+      c.note || '—',
+    ]);
+    this.exportService.exportToExcel({
+      filename: 'InteriorCounsel_CashIn_Receipts',
+      title: 'Commercial Inflows & Customer Receipts Ledger',
+      subtitle: 'Total Receipts: ' + rows.length,
+      headers: ['Receipt Date', 'Master Bill #', 'Customer Name', 'Amount (BDT)', 'Payment Mode', 'Bank / Gateway', 'Reference #', 'Remarks'],
+      rows,
+    });
+    this.toastr.success('Cash-in records exported to Excel');
+  }
+
+  exportCashInPdf() {
+    const list = this.cashInList();
+    if (!list || list.length === 0) {
+      this.toastr.warning('No cash-in records to export');
+      return;
+    }
+    const rows = list.map((c: any) => [
+      c.date ? new Date(c.date).toISOString().slice(0, 10) : '—',
+      c.billId?.billNumber || c.billNumber || '—',
+      c.customerId?.name || c.customerName || 'Customer',
+      (c.amount || 0).toLocaleString(),
+      (c.paymentMethod || 'cash').toUpperCase(),
+      c.transactionRef || c.chequeNumber || '—',
+    ]);
+    this.exportService.exportToPdf({
+      filename: 'InteriorCounsel_CashIn_Receipts',
+      title: 'Commercial Inflows & Customer Receipts Ledger',
+      subtitle: 'Total Receipts: ' + rows.length,
+      headers: ['Date', 'Bill #', 'Customer', 'Amount (Tk)', 'Method', 'Reference'],
+      rows,
+      orientation: 'landscape',
+    });
+    this.toastr.success('Cash-in records exported to PDF');
+  }
+
+  exportCashOutExcel() {
+    const list = this.cashOutList();
+    if (!list || list.length === 0) {
+      this.toastr.warning('No cash-out records to export');
+      return;
+    }
+    const rows = list.map((c: any) => [
+      c.date ? new Date(c.date).toISOString().slice(0, 10) : '—',
+      c.expenseCategory || c.type || 'Operational',
+      c.vendorId?.name || c.vendorName || c.recipient || '—',
+      c.amount || 0,
+      (c.paymentMethod || 'cash').toUpperCase(),
+      c.bankName || c.mfsProvider || '—',
+      c.transactionRef || c.voucherNumber || '—',
+      c.note || '—',
+    ]);
+    this.exportService.exportToExcel({
+      filename: 'InteriorCounsel_CashOut_Payments',
+      title: 'Expenses & Vendor Disbursements Ledger',
+      subtitle: 'Total Payments: ' + rows.length,
+      headers: ['Payment Date', 'Expense Category', 'Vendor / Recipient', 'Amount (BDT)', 'Mode', 'Bank / Gateway', 'Voucher / Ref', 'Remarks'],
+      rows,
+    });
+    this.toastr.success('Cash-out records exported to Excel');
+  }
+
+  exportCashOutPdf() {
+    const list = this.cashOutList();
+    if (!list || list.length === 0) {
+      this.toastr.warning('No cash-out records to export');
+      return;
+    }
+    const rows = list.map((c: any) => [
+      c.date ? new Date(c.date).toISOString().slice(0, 10) : '—',
+      c.expenseCategory || c.type || 'Expense',
+      c.vendorId?.name || c.vendorName || c.recipient || '—',
+      (c.amount || 0).toLocaleString(),
+      (c.paymentMethod || 'cash').toUpperCase(),
+      c.transactionRef || c.voucherNumber || '—',
+    ]);
+    this.exportService.exportToPdf({
+      filename: 'InteriorCounsel_CashOut_Payments',
+      title: 'Expenses & Vendor Disbursements Ledger',
+      subtitle: 'Total Disbursements: ' + rows.length,
+      headers: ['Date', 'Category', 'Vendor / Payee', 'Amount (Tk)', 'Method', 'Ref #'],
+      rows,
+      orientation: 'landscape',
+    });
+    this.toastr.success('Cash-out records exported to PDF');
+  }
+
 }

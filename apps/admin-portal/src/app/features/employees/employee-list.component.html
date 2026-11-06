@@ -1,27 +1,53 @@
 <div class="space-y-6">
   <div class="flex justify-between items-center">
     <div class="space-y-1">
-      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Employees</h1>
-      <p class="text-sm text-slate-500">Manage workforce directory and shift schedules</p>
+      <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Employees</h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400">Manage workforce directory and shift schedules</p>
     </div>
-    <button routerLink="/employees/new" class="btn btn-primary">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-4 w-4"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
+    <div class="flex items-center gap-2.5">
+      <button
+        (click)="exportExcel()"
+        type="button"
+        title="Download Excel Spreadsheet (.xlsx)"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl border border-emerald-600/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 transition shadow-sm"
       >
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-      </svg>
-      <span>Add employee</span>
-    </button>
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <span>Excel</span>
+      </button>
+
+      <button
+        (click)="exportPdf()"
+        type="button"
+        title="Download Official PDF (.pdf)"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl border border-rose-600/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 transition shadow-sm"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+        <span>PDF</span>
+      </button>
+
+      <button routerLink="/employees/new" class="btn btn-primary">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-4 w-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        <span>Add employee</span>
+      </button>
+    </div>
   </div>
 
   <!-- Filters -->
-  <div class="bg-white border border-slate-200/80 rounded-2xl p-5 flex flex-col sm:flex-row gap-4">
+  <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 flex flex-col sm:flex-row gap-4">
     <div class="flex-1">
-      <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5"
+      <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5"
         >Search directory</label
       >
       <input
@@ -29,25 +55,25 @@
         [value]="search()"
         (input)="onSearch($event)"
         placeholder="Search by name, email or employee ID"
-        class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all"
+        class="w-full border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all placeholder:text-slate-400"
       />
     </div>
     <div class="w-full sm:w-48">
-      <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5"
+      <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5"
         >Status</label
       >
       <div class="relative">
         <select
           [value]="status()"
           (change)="onStatusChange($event)"
-          class="w-full border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all appearance-none cursor-pointer pr-10"
+          class="w-full border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all appearance-none cursor-pointer pr-10"
         >
           <option value="">All</option>
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
         </select>
         <div
-          class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500"
+          class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 dark:text-slate-500"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -69,37 +95,37 @@
   </div>
 
   <!-- Table Card -->
-  <div class="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-sm">
+  <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
     <div class="overflow-x-auto">
       <table class="w-full text-left border-collapse">
-        <thead>
-          <tr class="border-b border-slate-100 bg-slate-50/70">
-            <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
+        <thead class="bg-slate-100/90 dark:bg-slate-800/95 border-b border-slate-200 dark:border-slate-700">
+          <tr class="bg-slate-100/90 dark:bg-slate-800/95 border-b border-slate-200 dark:border-slate-700">
+            <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4">
               Employee ID
             </th>
-            <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
+            <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4">
               Name
             </th>
-            <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
+            <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4">
               Email
             </th>
-            <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
+            <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4">
               Designation
             </th>
-            <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
+            <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4">
               Role
             </th>
-            <th class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
+            <th class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4">
               Status
             </th>
             <th
-              class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4 text-right"
+              class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-6 py-4 text-right"
             >
               Actions
             </th>
           </tr>
         </thead>
-        <tbody>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
           @if (loading()) {
             <tr>
               <td colspan="7" class="px-6 py-12 text-center text-slate-400">
@@ -112,7 +138,7 @@
                 <div class="flex flex-col items-center gap-2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    class="h-8 w-8 text-slate-300"
+                    class="h-8 w-8 text-slate-300 dark:text-slate-600"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -130,19 +156,19 @@
             </tr>
           } @else {
             @for (employee of employees(); track employee.id) {
-              <tr class="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
-                <td class="px-6 py-4 text-sm font-medium text-slate-900">
-                  <a [routerLink]="['/employees', employee.id, 'profile']" class="hover:text-indigo-600 transition-colors">
+              <tr class="border-b border-slate-100 dark:border-slate-800/80 hover:bg-slate-50/80 dark:hover:bg-slate-800/60 transition-colors">
+                <td class="px-6 py-4 text-sm font-medium text-slate-900 dark:text-slate-100">
+                  <a [routerLink]="['/employees', employee.id, 'profile']" class="hover:text-amber-500 dark:hover:text-amber-400 transition-colors font-semibold">
                     {{ employee.employeeId }}
                   </a>
                 </td>
-                <td class="px-6 py-4 text-sm font-semibold text-slate-900">
-                  <a [routerLink]="['/employees', employee.id, 'profile']" class="text-indigo-600 hover:text-indigo-900 transition-colors hover:underline">
+                <td class="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                  <a [routerLink]="['/employees', employee.id, 'profile']" class="text-slate-900 dark:text-slate-100 hover:text-amber-500 dark:hover:text-amber-400 transition-colors font-bold hover:underline">
                     {{ employee.name }}
                   </a>
                 </td>
-                <td class="px-6 py-4 text-sm text-slate-700">{{ employee.email }}</td>
-                <td class="px-6 py-4 text-sm text-slate-700">
+                <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">{{ employee.email }}</td>
+                <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
                   {{ employee.designation || '—' }}
                 </td>
                 <td class="px-6 py-4 text-sm">
@@ -150,12 +176,12 @@
                     class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider"
                     [class]="
                       employee.role === 'admin'
-                        ? 'bg-indigo-50 text-indigo-700 border border-indigo-100'
+                        ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/80'
                         : employee.role === 'hr'
-                          ? 'bg-purple-50 text-purple-700 border border-purple-100'
+                          ? 'bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60'
                           : employee.role === 'manager'
-                            ? 'bg-sky-50 text-sky-700 border border-sky-100'
-                            : 'bg-slate-50 text-slate-600 border border-slate-200/60'
+                            ? 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
                     "
                   >
                     {{ employee.role }}
@@ -163,27 +189,27 @@
                 </td>
                 <td class="px-6 py-4 text-sm">
                   <span
-                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold"
                     [class]="
                       employee.status === 'active'
-                        ? 'bg-emerald-50 text-emerald-700'
-                        : 'bg-rose-50 text-rose-700'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60'
+                        : 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800/60'
                     "
                   >
                     {{ employee.status }}
                   </span>
                 </td>
-                <td class="px-6 py-4 text-right text-sm space-x-3">
+                <td class="px-6 py-4 text-right text-sm space-x-2">
                   <a
                     [routerLink]="['/employees', employee.id, 'profile']"
-                    class="btn-link-outline btn-link-outline-indigo"
+                    class="btn-link-outline btn-link-outline-slate"
                   >
                     View Profile
                   </a>
                   @if (isAdminOrHr()) {
                     <a
                       [routerLink]="['/employees', employee.id]"
-                      class="btn-link-outline btn-link-outline-indigo"
+                      class="btn-link-outline btn-link-outline-slate"
                       >Edit</a
                     >
 
@@ -215,9 +241,9 @@
 
     <!-- Paginator -->
     <div
-      class="border-t border-slate-100 px-6 py-4 flex items-center justify-between bg-slate-50/50"
+      class="border-t border-slate-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between bg-slate-50/80 dark:bg-slate-900"
     >
-      <span class="text-xs text-slate-500"
+      <span class="text-xs font-medium text-slate-600 dark:text-slate-300"
         >Showing {{ pagination().data.length }} of
         {{ pagination().pagination.total }} employees</span
       >
@@ -225,14 +251,14 @@
         <button
           (click)="prevPage()"
           [disabled]="pagination().pagination.page <= 1"
-          class="border border-slate-200/80 bg-white hover:bg-slate-50 disabled:opacity-50 text-slate-600 rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors"
+          class="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 text-slate-700 dark:text-slate-200 rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-colors cursor-pointer"
         >
           Previous
         </button>
         <button
           (click)="nextPage()"
           [disabled]="pagination().pagination.page >= pagination().pagination.totalPages"
-          class="border border-slate-200/80 bg-white hover:bg-slate-50 disabled:opacity-50 text-slate-600 rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors"
+          class="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 text-slate-700 dark:text-slate-200 rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-colors cursor-pointer"
         >
           Next
         </button>
@@ -244,22 +270,22 @@
 <!-- Modal Backdrop -->
 @if (selectedEmployee()) {
   <div
-    class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200"
+    class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200"
     (click)="closeModal()"
   >
     <!-- Modal Card -->
     <div
-      class="bg-white border border-slate-200/80 w-full max-w-lg rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200"
+      class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 w-full max-w-lg rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200"
       (click)="$event.stopPropagation()"
     >
       <!-- Modal Header -->
       <div
-        class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between"
+        class="px-6 py-4 bg-slate-50 dark:bg-slate-800/80 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between"
       >
-        <h2 class="text-base font-bold text-slate-900">Employee Details</h2>
+        <h2 class="text-base font-bold text-slate-900 dark:text-white">Employee Details</h2>
         <button
           (click)="closeModal()"
-          class="text-slate-400 hover:text-slate-600 rounded-lg p-1 hover:bg-slate-100 transition-colors"
+          class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg p-1 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -279,15 +305,15 @@
       <!-- Modal Content -->
       <div class="p-6 space-y-6">
         <!-- Identity block -->
-        <div class="flex items-center gap-4 pb-5 border-b border-slate-100">
+        <div class="flex items-center gap-4 pb-5 border-b border-slate-100 dark:border-slate-800">
           <div
-            class="w-14 h-14 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xl"
+            class="w-14 h-14 rounded-xl bg-amber-100 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 flex items-center justify-center text-amber-700 dark:text-amber-400 font-bold text-xl"
           >
             {{ getInitials(selectedEmployee()?.name) }}
           </div>
           <div>
-            <h3 class="text-base font-bold text-slate-900">{{ selectedEmployee()?.name }}</h3>
-            <p class="text-xs text-slate-500">
+            <h3 class="text-base font-bold text-slate-900 dark:text-white">{{ selectedEmployee()?.name }}</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">
               {{ selectedEmployee()?.designation || 'Staff Member' }}
             </p>
           </div>
@@ -299,7 +325,7 @@
             <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider"
               >Employee ID</span
             >
-            <span class="font-semibold text-slate-800">{{ selectedEmployee()?.employeeId }}</span>
+            <span class="font-semibold text-slate-800 dark:text-slate-200">{{ selectedEmployee()?.employeeId }}</span>
           </div>
 
           <div class="space-y-1">
@@ -307,7 +333,7 @@
               >Role</span
             >
             <span
-              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-100"
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/80"
             >
               {{ selectedEmployee()?.role }}
             </span>
@@ -317,7 +343,7 @@
             <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider"
               >Employee Type</span
             >
-            <span class="font-medium text-slate-800">
+            <span class="font-medium text-slate-800 dark:text-slate-200">
               {{ getEmployeeTypeLabel(selectedEmployee()?.employeeType) || '—' }}
             </span>
           </div>
@@ -326,21 +352,21 @@
             <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider"
               >Email Address</span
             >
-            <span class="font-medium text-slate-800">{{ selectedEmployee()?.email }}</span>
+            <span class="font-medium text-slate-800 dark:text-slate-200">{{ selectedEmployee()?.email }}</span>
           </div>
 
           <div class="space-y-1">
             <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider"
               >Phone</span
             >
-            <span class="font-medium text-slate-800">{{ selectedEmployee()?.phone || '—' }}</span>
+            <span class="font-medium text-slate-800 dark:text-slate-200">{{ selectedEmployee()?.phone || '—' }}</span>
           </div>
 
           <div class="space-y-1">
             <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider"
               >Salary</span
             >
-            <p class="font-medium text-slate-900 mt-0.5">
+            <p class="font-medium text-slate-900 dark:text-slate-100 mt-0.5">
               {{
                 selectedEmployee()?.salary
                   ? '৳' + selectedEmployee()?.salary?.toLocaleString('en-US')
@@ -357,8 +383,8 @@
               class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
               [class]="
                 selectedEmployee()?.status === 'active'
-                  ? 'bg-emerald-50 text-emerald-700'
-                  : 'bg-rose-50 text-rose-700'
+                  ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60'
+                  : 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800/60'
               "
             >
               {{ selectedEmployee()?.status }}
@@ -367,40 +393,40 @@
         </div>
 
         <!-- Shift Block -->
-        <div class="border-t border-slate-100 pt-5 space-y-3">
+        <div class="border-t border-slate-100 dark:border-slate-800 pt-5 space-y-3">
           <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider"
             >Shift Assignment</span
           >
           @if (selectedEmployee()?.shiftId) {
             <div
-              class="bg-slate-50 border border-slate-100/80 rounded-xl p-3 flex justify-between items-center text-xs"
+              class="bg-slate-50 dark:bg-slate-800/70 border border-slate-100/80 dark:border-slate-700/80 rounded-xl p-3 flex justify-between items-center text-xs"
             >
               <div>
-                <span class="font-bold text-slate-800 block">{{
+                <span class="font-bold text-slate-800 dark:text-slate-200 block">{{
                   getShift(selectedEmployee())?.name
                 }}</span>
-                <span class="text-slate-500"
+                <span class="text-slate-500 dark:text-slate-400"
                   >Grace period: {{ getShift(selectedEmployee())?.gracePeriod }} mins</span
                 >
               </div>
               <span
-                class="font-semibold text-slate-700 bg-white border border-slate-200/80 rounded-lg px-2 py-1"
+                class="font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-lg px-2 py-1"
               >
                 {{ formatTime(getShift(selectedEmployee())?.startTime) }} -
                 {{ formatTime(getShift(selectedEmployee())?.endTime) }}
               </span>
             </div>
           } @else {
-            <span class="text-xs text-slate-500">No shift assigned</span>
+            <span class="text-xs text-slate-500 dark:text-slate-400">No shift assigned</span>
           }
         </div>
       </div>
 
       <!-- Modal Footer -->
-      <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+      <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-100 dark:border-slate-800 flex justify-end">
         <button
           (click)="closeModal()"
-          class="border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-600 rounded-xl px-4 py-2 text-sm font-semibold transition-colors"
+          class="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl px-4 py-2 text-sm font-semibold transition-colors cursor-pointer"
         >
           Close
         </button>

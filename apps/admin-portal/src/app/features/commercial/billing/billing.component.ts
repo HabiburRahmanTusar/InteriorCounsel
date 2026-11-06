@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { CommercialService, Bill, BillItem } from '../../../core/services/commercial.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { EmployeeService } from '../../../core/services/employee.service';
+import { ExportService } from '../../../core/services/export.service';
 
 export function takaInWords(n: number): string {
   n = Math.round(Math.abs(n || 0));
@@ -39,6 +40,7 @@ export class BillingComponent implements OnInit {
   private commercialService = inject(CommercialService);
   private authService = inject(AuthService);
   private employeeService = inject(EmployeeService);
+  private exportService = inject(ExportService);
   private eRef = inject(ElementRef);
 
   readonly currentUser = this.authService.currentUser;
@@ -1121,4 +1123,114 @@ export class BillingComponent implements OnInit {
     }
     return 'In-House';
   }
+
+  exportBillsExcel() {
+    const list = this.bills();
+    if (!list || list.length === 0) {
+      this.showToast('No bills to export');
+      return;
+    }
+    const rows = list.map((b) => [
+      b.billNumber || '—',
+      b.date ? new Date(b.date).toISOString().slice(0, 10) : '—',
+      this.getInvoiceCustomerName(b) || 'Customer',
+      b.projectName || '—',
+      this.getInvoiceSalesperson(b) || '—',
+      b.totalAmount || 0,
+      b.totalCashIn || 0,
+      b.customerDue || 0,
+      b.directCosts || 0,
+      b.vendorTotalPurchase || 0,
+      b.billProfit || 0,
+      b.status || 'Draft',
+    ]);
+    this.exportService.exportToExcel({
+      filename: 'InteriorCounsel_Sales_Invoices',
+      title: 'Commercial Sales & Invoice Register',
+      subtitle: 'Total Invoices: ' + rows.length,
+      headers: [
+        'Bill No', 'Date', 'Customer', 'Project', 'Salesperson',
+        'Total Billed (BDT)', 'Collected (BDT)', 'Customer Due (BDT)', 'Direct Costs (BDT)', 'Vendor Bills (BDT)', 'Gross Profit (BDT)', 'Status'
+      ],
+      rows,
+    });
+    this.showToast('Sales invoices exported to Excel');
+  }
+
+  exportBillsPdf() {
+    const list = this.bills();
+    if (!list || list.length === 0) {
+      this.showToast('No bills to export');
+      return;
+    }
+    const rows = list.map((b) => [
+      b.billNumber || '—',
+      b.date ? new Date(b.date).toISOString().slice(0, 10) : '—',
+      this.getInvoiceCustomerName(b) || 'Customer',
+      (b.totalAmount || 0).toLocaleString(),
+      (b.totalCashIn || 0).toLocaleString(),
+      (b.customerDue || 0).toLocaleString(),
+      (b.billProfit || 0).toLocaleString(),
+      b.status || 'Draft',
+    ]);
+    this.exportService.exportToPdf({
+      filename: 'InteriorCounsel_Sales_Invoices',
+      title: 'Commercial Sales & Invoice Register',
+      subtitle: 'Total Invoices: ' + rows.length,
+      headers: ['Bill No', 'Date', 'Customer', 'Billed (Tk)', 'Paid (Tk)', 'Due (Tk)', 'Profit (Tk)', 'Status'],
+      rows,
+      orientation: 'landscape',
+    });
+    this.showToast('Sales invoices exported to PDF');
+  }
+
+  exportQuotationsExcel() {
+    const list = this.quotations();
+    if (!list || list.length === 0) {
+      this.showToast('No quotations to export');
+      return;
+    }
+    const rows = list.map((q) => [
+      q.quoteNumber || q.quotationNumber || '—',
+      q.date || '—',
+      q.clientName || q.customerName || '—',
+      q.salesperson || '—',
+      q.grandTotal || q.total || 0,
+      q.status || 'Draft',
+    ]);
+    this.exportService.exportToExcel({
+      filename: 'InteriorCounsel_Quotations',
+      title: 'Sales Quotations Register',
+      subtitle: 'Total Quotations: ' + rows.length,
+      headers: ['Quotation No', 'Date', 'Client Name', 'Salesperson', 'Estimated Total (BDT)', 'Status'],
+      rows,
+    });
+    this.showToast('Quotations exported to Excel');
+  }
+
+  exportQuotationsPdf() {
+    const list = this.quotations();
+    if (!list || list.length === 0) {
+      this.showToast('No quotations to export');
+      return;
+    }
+    const rows = list.map((q) => [
+      q.quoteNumber || q.quotationNumber || '—',
+      q.date || '—',
+      q.clientName || q.customerName || '—',
+      q.salesperson || '—',
+      (q.grandTotal || q.total || 0).toLocaleString(),
+      q.status || 'Draft',
+    ]);
+    this.exportService.exportToPdf({
+      filename: 'InteriorCounsel_Quotations',
+      title: 'Sales Quotations Register',
+      subtitle: 'Total Quotations: ' + rows.length,
+      headers: ['Quotation No', 'Date', 'Client', 'Salesperson', 'Total (Tk)', 'Status'],
+      rows,
+      orientation: 'portrait',
+    });
+    this.showToast('Quotations exported to PDF');
+  }
+
 }

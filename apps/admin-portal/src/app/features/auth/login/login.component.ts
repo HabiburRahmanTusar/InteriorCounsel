@@ -36,6 +36,14 @@ export class LoginComponent {
     });
   }
 
+  fillShareholderDemo() {
+    this.form.patchValue({
+      email: 'partner@interiorcounsel.com',
+      password: 'password123',
+      rememberMe: true,
+    });
+  }
+
   private handleError(error: any): void {
     console.error('Login failed', error);
   }
@@ -52,7 +60,14 @@ export class LoginComponent {
       .login({ email, password, rememberMe })
       .pipe(
         tap(() => {
-          this.router.navigate(['/dashboard']);
+          const role = this.auth.currentRole();
+          if (role === 'shareholder') {
+            this.router.navigate(['/shareholder/portal']);
+          } else if (role === 'employee') {
+            this.router.navigate(['/attendance']);
+          } else {
+            this.router.navigate(['/dashboard']);
+          }
         }),
         catchError((err) => {
           this.errorMessage.set(err.error?.message || 'Invalid email or password.');

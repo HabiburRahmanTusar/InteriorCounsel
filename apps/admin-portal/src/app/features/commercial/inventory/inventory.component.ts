@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommercialService } from '../../../core/services/commercial.service';
+import { ExportService } from '../../../core/services/export.service';
 
 @Component({
   selector: 'wfm-inventory',
@@ -11,6 +12,7 @@ import { CommercialService } from '../../../core/services/commercial.service';
 })
 export class InventoryComponent implements OnInit {
   private commercialService = inject(CommercialService);
+  private exportService = inject(ExportService);
 
   readonly products = signal<any[]>([]);
   readonly loading = signal(false);
@@ -168,4 +170,56 @@ export class InventoryComponent implements OnInit {
       });
     }
   }
+
+  exportExcel() {
+    const list = this.filteredProducts();
+    if (!list || list.length === 0) {
+      alert('No inventory products to export');
+      return;
+    }
+    const rows = list.map((p) => [
+      p.internalRef || '—',
+      p.name || '—',
+      p.category || 'General',
+      p.productType || 'Storable',
+      p.stockQuantity !== undefined ? p.stockQuantity : 0,
+      p.unit || 'pcs',
+      p.cost || 0,
+      p.salesPrice || 0,
+      (p.cost || p.salesPrice || 0) * (p.stockQuantity || 0),
+    ]);
+    this.exportService.exportToExcel({
+      filename: 'InteriorCounsel_Inventory_Stock',
+      title: 'Products & Materials Inventory Stock List',
+      subtitle: 'Category: ' + this.selectedCategory + ' | Total Items: ' + rows.length,
+      headers: ['Ref Code', 'Product / Material Name', 'Category', 'Type', 'In Stock', 'Unit', 'Unit Cost (BDT)', 'Sales Price (BDT)', 'Total Valuation (BDT)'],
+      rows,
+    });
+  }
+
+  exportPdf() {
+    const list = this.filteredProducts();
+    if (!list || list.length === 0) {
+      alert('No inventory products to export');
+      return;
+    }
+    const rows = list.map((p) => [
+      p.internalRef || '—',
+      p.name || '—',
+      p.category || 'General',
+      (p.stockQuantity || 0) + ' ' + (p.unit || 'pcs'),
+      (p.cost || 0).toLocaleString(),
+      (p.salesPrice || 0).toLocaleString(),
+      ((p.cost || p.salesPrice || 0) * (p.stockQuantity || 0)).toLocaleString(),
+    ]);
+    this.exportService.exportToPdf({
+      filename: 'InteriorCounsel_Inventory_Stock',
+      title: 'Materials & Products Inventory Stock',
+      subtitle: 'Total Items: ' + rows.length + ' | Valuation: Tk ' + this.totalStockValue().toLocaleString(),
+      headers: ['Ref', 'Product Name', 'Category', 'Stock Qty', 'Cost (Tk)', 'Price (Tk)', 'Valuation (Tk)'],
+      rows,
+      orientation: 'landscape',
+    });
+  }
+
 }

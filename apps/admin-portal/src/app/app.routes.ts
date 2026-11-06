@@ -244,6 +244,16 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'shareholder/portal',
+        title: 'Shareholder & Investor Portal',
+        canActivate: [roleGuard('admin', 'shareholder', 'hr', 'manager')],
+        loadComponent: () =>
+          import('./features/shareholder-portal/shareholder-portal.component').then(
+            (m) => m.ShareholderPortalComponent,
+          ),
+      },
+      { path: 'shareholder-portal', redirectTo: 'shareholder/portal', pathMatch: 'full' },
+      {
         path: 'access-control',
         title: 'Access Control (RBAC)',
         loadComponent: () =>

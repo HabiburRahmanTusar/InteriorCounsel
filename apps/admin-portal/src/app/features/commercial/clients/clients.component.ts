@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommercialService } from '../../../core/services/commercial.service';
+import { ExportService } from '../../../core/services/export.service';
 
 @Component({
   selector: 'wfm-clients',
@@ -11,6 +12,7 @@ import { CommercialService } from '../../../core/services/commercial.service';
 })
 export class ClientsComponent implements OnInit {
   private commercialService = inject(CommercialService);
+  private exportService = inject(ExportService);
 
   readonly clients = signal<any[]>([]);
   readonly loading = signal(false);
@@ -71,6 +73,55 @@ export class ClientsComponent implements OnInit {
         this.loadClients();
       },
       error: (err) => alert(err?.error?.message || 'Failed to save client'),
+    });
+  }
+
+  exportExcel() {
+    const list = this.clients();
+    if (!list || list.length === 0) {
+      alert('No clients to export');
+      return;
+    }
+    const rows = list.map((c) => [
+      c.name || '—',
+      c.phone || '—',
+      c.email || '—',
+      c.companyName || c.company || 'Individual',
+      c.address || '—',
+      c.totalBilled || 0,
+      c.totalPaid || 0,
+      c.outstandingDue || (c.totalBilled - (c.totalPaid || 0)) || 0,
+    ]);
+    this.exportService.exportToExcel({
+      filename: 'InteriorCounsel_Clients_Directory',
+      title: 'Customers & Clients Register',
+      subtitle: `Total Clients: ${rows.length}`,
+      headers: ['Client Name', 'Phone', 'Email', 'Company', 'Address', 'Total Billed (BDT)', 'Total Paid (BDT)', 'Outstanding Due (BDT)'],
+      rows,
+    });
+  }
+
+  exportPdf() {
+    const list = this.clients();
+    if (!list || list.length === 0) {
+      alert('No clients to export');
+      return;
+    }
+    const rows = list.map((c) => [
+      c.name || '—',
+      c.phone || '—',
+      c.companyName || c.company || 'Individual',
+      (c.totalBilled || 0).toLocaleString(),
+      (c.totalPaid || 0).toLocaleString(),
+      ((c.totalBilled || 0) - (c.totalPaid || 0)).toLocaleString(),
+    ]);
+    this.exportService.exportToPdf({
+      filename: 'InteriorCounsel_Clients_Directory',
+      title: 'Interior Counsel — Customers CRM Directory',
+      subtitle: `Total Active Clients: ${rows.length}`,
+      headers: ['Client Name', 'Phone', 'Company', 'Billed (Tk)', 'Paid (Tk)', 'Due (Tk)'],
+      rows,
+      orientation: 'landscape',
     });
   }
 }
