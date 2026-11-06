@@ -26,6 +26,7 @@ const allowedOrigins = [
   'http://localhost:58922',
   'https://arafatdesign.netlify.app',
   'https://attendlysoft.netlify.app',
+  'https://ornate-kashata-11c0d9.netlify.app',
 ];
 
 if (config.corsOrigin) {
@@ -35,7 +36,19 @@ if (config.corsOrigin) {
 
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.endsWith('.netlify.app') ||
+        origin.endsWith('.onrender.com') ||
+        origin.includes('localhost') ||
+        origin.includes('127.0.0.1')
+      ) {
+        return callback(null, true);
+      }
+      return callback(null, true);
+    },
     credentials: true,
   }),
 );
