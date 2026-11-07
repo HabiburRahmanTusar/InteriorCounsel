@@ -51,20 +51,8 @@ async function syncBillAfterCashOut(billId) {
   await Bill.findByIdAndUpdate(billId, {
     totalCashOut: Number(totalCashOut.toFixed(2)),
   });
-}
-
-  // Sync customer
-  if (bill.customerId) {
-    const customerPayments = await CashIn.find({ customerId: bill.customerId });
-    const totalPaid = customerPayments.reduce((acc, p) => acc + (p.amount || 0), 0);
-    const customer = await Customer.findById(bill.customerId);
-    if (customer) {
-      await Customer.findByIdAndUpdate(bill.customerId, {
-        totalPaid: Number(totalPaid.toFixed(2)),
-        dueBalance: Number(((customer.totalBilled || 0) - totalPaid).toFixed(2)),
-      });
-    }
-  }
+  const billingService = require('./billing.service');
+  await billingService.recalculateBillProfit(billId);
 }
 
 // Helper to update VendorBill after Cash Out
@@ -76,9 +64,12 @@ async function syncVendorBillAfterCashOut(vendorBillId) {
   const vBill = await VendorBill.findById(vendorBillId);
   if (!vBill) return;
 
-  const vendorDue = Number(((vBill.totalAmount || 0) - paidAmount).toFixed(2));
+  const net = vBill.netAmount !== undefined && vBill.netAmount !== null
+    ? vBill.netAmount
+    : Math.max(0, (vBill.totalAmount || 0) - (vBill.discountAmount || 0));
+  const vendorDue = Math.max(0, Number((net - paidAmount).toFixed(2)));
   let paymentState = 'not_paid';
-  if (paidAmount >= (vBill.totalAmount || 0) && (vBill.totalAmount || 0) > 0) {
+  if (paidAmount >= net && net > 0) {
     paymentState = 'paid';
   } else if (paidAmount > 0) {
     paymentState = 'partial';
@@ -90,17 +81,16 @@ async function syncVendorBillAfterCashOut(vendorBillId) {
     paymentState,
   });
 
-  // Sync vendor
+  // Sync vendor financials
   if (vBill.vendorId) {
-    const vendorPayments = await CashOut.find({ vendorId: vBill.vendorId, type: 'purchase' });
-    const totalPaid = vendorPayments.reduce((acc, p) => acc + (p.amount || 0), 0);
-    const vendor = await Vendor.findById(vBill.vendorId);
-    if (vendor) {
-      await Vendor.findByIdAndUpdate(vBill.vendorId, {
-        totalPaid: Number(totalPaid.toFixed(2)),
-        dueBalance: Number(((vendor.totalPurchased || 0) - totalPaid).toFixed(2)),
-      });
-    }
+    const vendorBillService = require('./vendorBill.service');
+    await vendorBillService.updateVendorFinancials(vBill.vendorId);
+  }
+
+  // Sync master bill profitability
+  if (vBill.mainBillId) {
+    const billingService = require('./billing.service');
+    await billingService.recalculateBillProfit(vBill.mainBillId);
   }
 }
 
@@ -297,31 +287,38 @@ exports.recordCashOut = async (data, userId) => {
     data.voucherNumber = `EXP-${year}-${String(count + 1).padStart(5, '0')}`;
   }
 
-  // Odoo Verification: Check that Vendor Bill strictly belongs to Master Bill
-  if (data.billId && data.vendorBillId) {
-    const vBill = await VendorBill.findById(data.vendorBillId);
-    if (!vBill || !vBill.mainBillId || vBill.mainBillId.toString() !== data.billId.toString()) {
-      const err = new Error(
-        `Cross-verification failed: The selected vendor bill does not belong to Master Bill ID ${data.billId}.`
-      );
-      err.statusCode = 400;
-      throw err;
-    }
-  }
-
-  // Odoo Validation: Vendor payment cannot exceed vendor due
-  if (data.vendorBillId) {
-    const vBill = await VendorBill.findById(data.vendorBillId);
-    if (vBill && data.amount > (vBill.vendorDue || 0)) {
-      const err = new Error(
-        `Disbursement (৳${data.amount}) exceeds outstanding vendor due (৳${vBill.vendorDue}).`
-      );
-      err.statusCode = 400;
-      throw err;
-    }
-  }
-
   const payload = { ...data };
+
+  // If vendor bill is selected, resolve vendor and main bill
+  if (payload.vendorBillId) {
+    const vBill = await VendorBill.findById(payload.vendorBillId);
+    if (vBill) {
+      if (!payload.vendorId && vBill.vendorId) {
+        payload.vendorId = vBill.vendorId._id || vBill.vendorId;
+      }
+      if (!payload.billId && vBill.mainBillId) {
+        payload.billId = vBill.mainBillId._id || vBill.mainBillId;
+      }
+      // If vendor bill didn't have mainBillId but user linked one, link it!
+      if (payload.billId && !vBill.mainBillId) {
+        vBill.mainBillId = payload.billId;
+        await vBill.save();
+      }
+      // Due validation: cannot pay more than remaining vendor due
+      const net = (vBill.netAmount !== undefined && vBill.netAmount !== null)
+        ? vBill.netAmount
+        : Math.max(0, (vBill.totalAmount || 0) - (vBill.discountAmount || 0));
+      const currentDue = Math.max(0, Number((net - (vBill.paidAmount || 0)).toFixed(2)));
+      if (Number(payload.amount) > currentDue && currentDue > 0) {
+        const err = new Error(
+          `Disbursement (৳${payload.amount}) exceeds outstanding vendor due (৳${currentDue}).`
+        );
+        err.statusCode = 400;
+        throw err;
+      }
+    }
+  }
+
   if (!payload.billId) delete payload.billId;
   if (!payload.vendorBillId) delete payload.vendorBillId;
   if (!payload.vendorId) delete payload.vendorId;
