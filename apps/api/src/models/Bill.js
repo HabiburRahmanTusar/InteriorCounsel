@@ -14,6 +14,11 @@ const billItemSchema = new mongoose.Schema({
   vendorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Vendor' },
 });
 
+const otherChargeSchema = new mongoose.Schema({
+  name: { type: String, trim: true, default: '' },
+  amount: { type: Number, default: 0, min: 0 },
+});
+
 const billSchema = new mongoose.Schema(
   {
     billNumber: { type: String, required: true, unique: true, uppercase: true, trim: true },
@@ -26,6 +31,7 @@ const billSchema = new mongoose.Schema(
     projectName: { type: String, required: true, trim: true },
     siteLocation: { type: String, trim: true },
     items: [billItemSchema],
+    otherCharges: [otherChargeSchema],
     subtotal: { type: Number, default: 0, min: 0 },
     discountType: { type: String, enum: ['percent', 'fixed', 'none'], default: 'none' },
     discountValue: { type: Number, default: 0, min: 0 },

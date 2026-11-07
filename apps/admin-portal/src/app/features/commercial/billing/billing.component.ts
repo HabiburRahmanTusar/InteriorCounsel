@@ -705,6 +705,10 @@ export class BillingComponent implements OnInit {
       return;
     }
 
+    const cleanOtherCharges = (this.formBill.otherCharges || [])
+      .map((c: any) => ({ name: (c.name || '').trim(), amount: Number(c.amount) || 0 }))
+      .filter((c: any) => c.name || c.amount > 0);
+
     const payload: any = {
       billNumber: this.formBill.billNumber,
       date: this.formBill.date,
@@ -726,11 +730,12 @@ export class BillingComponent implements OnInit {
         supplierDiscount: Number(it.supplierDiscount) || 0,
         netPurchase: Number(it.netPurchase) || Math.max(0, (Number(it.purchaseAmount) || 0) - (Number(it.supplierDiscount) || 0)),
       })),
-      transportCharge: this.formBill.otherCharges.find((c: any) => /transport/i.test(c.name))?.amount || 0,
-      fittingCharge: this.formBill.otherCharges.find((c: any) => /fitting|labor/i.test(c.name))?.amount || 0,
-      salesCommission: this.formBill.otherCharges.find((c: any) => /commission/i.test(c.name))?.amount || 0,
-      pattyBoxCharge: this.formBill.otherCharges.find((c: any) => /patty|hpl/i.test(c.name))?.amount || 0,
-      salesReturn: this.formBill.otherCharges.find((c: any) => /return/i.test(c.name))?.amount || 0,
+      otherCharges: cleanOtherCharges,
+      transportCharge: cleanOtherCharges.find((c: any) => /transport/i.test(c.name))?.amount || 0,
+      fittingCharge: cleanOtherCharges.find((c: any) => /fitting|labor/i.test(c.name))?.amount || 0,
+      salesCommission: cleanOtherCharges.find((c: any) => /commission/i.test(c.name))?.amount || 0,
+      pattyBoxCharge: cleanOtherCharges.find((c: any) => /patty|box|hpl/i.test(c.name))?.amount || 0,
+      salesReturn: cleanOtherCharges.find((c: any) => /return/i.test(c.name))?.amount || 0,
       discountType: this.formBill.discountAmount > 0 ? 'fixed' : 'none',
       discountValue: this.formBill.discountAmount || 0,
       discountAmount: this.formBill.discountAmount || 0,
@@ -748,7 +753,7 @@ export class BillingComponent implements OnInit {
           this.loadBills();
           this.loadClients();
           this.loadSuppliers();
-          this.viewInvoice(updated);
+          this.viewInvoice({ ...payload, ...updated, otherCharges: cleanOtherCharges });
         },
         error: (err) => alert(err?.error?.message || 'Failed to update bill'),
       });
@@ -760,7 +765,7 @@ export class BillingComponent implements OnInit {
           this.loadBills();
           this.loadClients();
           this.loadSuppliers();
-          this.viewInvoice(created);
+          this.viewInvoice({ ...payload, ...created, otherCharges: cleanOtherCharges });
         },
         error: (err) => alert(err?.error?.message || 'Failed to save bill'),
       });
@@ -905,6 +910,9 @@ export class BillingComponent implements OnInit {
             this.activeInvoice.set({
               ...b,
               ...fullBill,
+              otherCharges: (Array.isArray(fullBill?.otherCharges) && fullBill.otherCharges.length > 0)
+                ? fullBill.otherCharges
+                : (Array.isArray(b.otherCharges) && b.otherCharges.length > 0 ? b.otherCharges : fullBill?.otherCharges),
               payments: payload?.payments || fullBill?.payments || b.payments,
               vendorBills: payload?.vendorBills || fullBill?.vendorBills || b.vendorBills,
               directExpenses: payload?.directExpenses || fullBill?.directExpenses || b.directExpenses,
@@ -938,24 +946,28 @@ export class BillingComponent implements OnInit {
       status: b.status || 'Draft',
       items: (b.items && b.items.length)
         ? b.items.map((it: any) => ({
-            description: it.description || '',
-            unit: it.unit || 'sft',
-            quantity: it.quantity || 1,
-            unitPrice: it.unitPrice || 0,
-            amount: it.amount || ((it.quantity || 1) * (it.unitPrice || 0)),
-            hint: '',
-            hintCls: '',
-            supplierName: it.supplierName || '',
-            supplierInvoiceNo: it.supplierInvoiceNo || '',
-            purchaseAmount: it.purchaseAmount || 0,
-            supplierDiscount: it.supplierDiscount || 0,
-            netPurchase: it.netPurchase || 0,
-          }))
+          description: it.description || '',
+          unit: it.unit || 'sft',
+          quantity: it.quantity || 1,
+          unitPrice: it.unitPrice || 0,
+          amount: it.amount || ((it.quantity || 1) * (it.unitPrice || 0)),
+          hint: '',
+          hintCls: '',
+          supplierName: it.supplierName || '',
+          supplierInvoiceNo: it.supplierInvoiceNo || '',
+          purchaseAmount: it.purchaseAmount || 0,
+          supplierDiscount: it.supplierDiscount || 0,
+          netPurchase: it.netPurchase || 0,
+        }))
         : [{ description: '', unit: 'sft', quantity: 1, unitPrice: 0, amount: 0, hint: '', hintCls: '', supplierName: '', supplierInvoiceNo: '', purchaseAmount: 0, supplierDiscount: 0, netPurchase: 0 }],
-      otherCharges: [
-        { name: 'Transport Charge', amount: b.transportCharge || 0 },
-        { name: 'Fitting & Labor', amount: b.fittingCharge || 0 },
-      ],
+      otherCharges: (Array.isArray(b.otherCharges) && b.otherCharges.length > 0)
+        ? b.otherCharges.map((c: any) => ({ name: c.name || '', amount: Number(c.amount) || 0 }))
+        : [
+            { name: 'Transport Charge', amount: Number(b.transportCharge) || 0 },
+            { name: 'Fitting & Labor', amount: Number(b.fittingCharge) || 0 },
+            ...(b.pattyBoxCharge ? [{ name: 'Patty / Box', amount: Number(b.pattyBoxCharge) }] : []),
+            ...(b.salesCommission ? [{ name: 'Sales Commission', amount: Number(b.salesCommission) }] : []),
+          ],
       discountAmount: b.discountAmount || 0,
       paidAmount: b.paidAmount || b.totalCashIn || 0,
     };
@@ -968,23 +980,70 @@ export class BillingComponent implements OnInit {
     if (!invoice) return [];
     const items = (invoice.items || []).filter((it: any) => it.description || it.amount);
     const charges: any[] = [];
-    if (invoice.transportCharge > 0) {
-      charges.push({
-        description: 'Transport & Logistics Charges',
-        quantity: null,
-        unitPrice: null,
-        amount: invoice.transportCharge,
-        isCharge: true,
-      });
-    }
-    if (invoice.fittingCharge > 0) {
-      charges.push({
-        description: 'Fitting & Installation Charges',
-        quantity: null,
-        unitPrice: null,
-        amount: invoice.fittingCharge,
-        isCharge: true,
-      });
+
+    const hasDynamicCharges = Array.isArray(invoice.otherCharges) &&
+      invoice.otherCharges.some((c: any) => (Number(c.amount) > 0) || (c.name && c.name.trim()));
+
+    if (hasDynamicCharges) {
+      for (const c of invoice.otherCharges) {
+        const amt = Number(c.amount) || 0;
+        const name = (c.name || '').trim();
+        if (amt > 0 || name) {
+          charges.push({
+            description: name || 'Other Charge',
+            quantity: null,
+            unitPrice: null,
+            amount: amt > 0 ? amt : null,
+            isCharge: true,
+          });
+        }
+      }
+    } else {
+      if (Number(invoice.transportCharge) > 0) {
+        charges.push({
+          description: 'Transport & Logistics Charges',
+          quantity: null,
+          unitPrice: null,
+          amount: Number(invoice.transportCharge),
+          isCharge: true,
+        });
+      }
+      if (Number(invoice.fittingCharge) > 0) {
+        charges.push({
+          description: 'Fitting & Installation Charges',
+          quantity: null,
+          unitPrice: null,
+          amount: Number(invoice.fittingCharge),
+          isCharge: true,
+        });
+      }
+      if (Number(invoice.pattyBoxCharge) > 0) {
+        charges.push({
+          description: 'Patty / Box Charges',
+          quantity: null,
+          unitPrice: null,
+          amount: Number(invoice.pattyBoxCharge),
+          isCharge: true,
+        });
+      }
+      if (Number(invoice.salesCommission) > 0) {
+        charges.push({
+          description: 'Sales Commission / Charges',
+          quantity: null,
+          unitPrice: null,
+          amount: Number(invoice.salesCommission),
+          isCharge: true,
+        });
+      }
+      if (Number(invoice.salesReturn) > 0) {
+        charges.push({
+          description: 'Sales Return / Adjustment',
+          quantity: null,
+          unitPrice: null,
+          amount: Number(invoice.salesReturn),
+          isCharge: true,
+        });
+      }
     }
     const allLines = [...items, ...charges];
     const totalRowCount = Math.max(16, allLines.length);
@@ -1012,6 +1071,22 @@ export class BillingComponent implements OnInit {
     return rows;
   }
 
+  formatReceivedBy(p: any): string {
+    if (!p) return 'Admin';
+    if (typeof p.receivedByName === 'string' && p.receivedByName.trim()) return p.receivedByName.trim();
+    if (typeof p.receivedBy === 'string' && p.receivedBy.trim()) return p.receivedBy.trim();
+    if (p.receivedBy && typeof p.receivedBy === 'object') {
+      return p.receivedBy.name || p.receivedBy.fullName || p.receivedBy.username || p.receivedBy.email || 'Admin';
+    }
+    if (p.salesperson) {
+      if (typeof p.salesperson === 'string' && p.salesperson.trim()) return p.salesperson.trim();
+      if (typeof p.salesperson === 'object') {
+        return p.salesperson.name || p.salesperson.fullName || p.salesperson.username || 'Admin';
+      }
+    }
+    return 'Admin';
+  }
+
   getPaymentsForActiveInvoice(): any[] {
     const inv = this.activeInvoice();
     if (!inv) return [];
@@ -1023,7 +1098,7 @@ export class BillingComponent implements OnInit {
         date: inv.date,
         amount: inv.totalCashIn,
         journal: 'Cash',
-        receivedBy: inv.salesperson || 'Admin',
+        receivedBy: this.formatReceivedBy(inv),
         note: 'Customer Payment',
       }];
     }
@@ -1066,6 +1141,10 @@ export class BillingComponent implements OnInit {
 
   getInvoiceDirectCosts(invoice: any): number {
     if (!invoice) return 0;
+    const otherCharges = (invoice.otherCharges || []).reduce((acc: number, c: any) => acc + (Number(c.amount) || 0), 0);
+    if (otherCharges > 0) {
+      return Number(otherCharges.toFixed(2));
+    }
     const directCosts = Number(invoice.directCosts);
     if (!isNaN(directCosts) && directCosts > 0) {
       return Number(directCosts.toFixed(2));
@@ -1075,8 +1154,7 @@ export class BillingComponent implements OnInit {
     const patty = Number(invoice.pattyBoxCharge) || 0;
     const commission = Number(invoice.salesCommission) || 0;
     const salesReturn = Number(invoice.salesReturn) || 0;
-    const otherCharges = (invoice.otherCharges || []).reduce((acc: number, c: any) => acc + (Number(c.amount) || 0), 0);
-    const sum = transport + fitting + patty + commission + salesReturn || otherCharges;
+    const sum = transport + fitting + patty + commission + salesReturn;
     return Number(sum.toFixed(2));
   }
 
@@ -1334,14 +1412,14 @@ export class BillingComponent implements OnInit {
       headers: [
         'Date',
         'Bill No',
-        'Customer',
+        'Client / Project Name',
         'Total Amount',
         'Received',
         'Due',
-        'Purchase',
-        'Direct Cost',
-        'Cashout',
-        'Vendor Due',
+        'Total Purchase',
+        'Others Cost = Direct Cost',
+        'Total Cashout',
+        'Vendor/Supplier Due',
         'Profit',
         'Status',
       ],

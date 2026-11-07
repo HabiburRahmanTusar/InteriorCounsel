@@ -32,13 +32,24 @@ function calculateBillTotals(data) {
 
   const itemsSubtotal = Number(subtotal.toFixed(2));
 
+  // Dynamic other charges
+  const rawOtherCharges = Array.isArray(data.otherCharges) ? data.otherCharges : [];
+  const otherCharges = rawOtherCharges
+    .map((c) => ({ name: (c.name || '').trim(), amount: Number(c.amount) || 0 }))
+    .filter((c) => c.name || c.amount > 0);
+
+  const otherChargesTotal = otherCharges.reduce((acc, c) => acc + (Number(c.amount) || 0), 0);
+
   // Billable client charges
-  const transportCharge = Number(data.transportCharge) || 0;
-  const fittingCharge = Number(data.fittingCharge) || 0;
-  const salesCommission = Number(data.salesCommission) || 0;
-  const pattyBoxCharge = Number(data.pattyBoxCharge) || 0;
-  const salesReturn = Number(data.salesReturn) || 0;
-  const billableCharges = Number((transportCharge + fittingCharge + pattyBoxCharge).toFixed(2));
+  const transportCharge = Number(data.transportCharge) || otherCharges.find((c) => /transport/i.test(c.name))?.amount || 0;
+  const fittingCharge = Number(data.fittingCharge) || otherCharges.find((c) => /fitting|labor/i.test(c.name))?.amount || 0;
+  const salesCommission = Number(data.salesCommission) || otherCharges.find((c) => /commission/i.test(c.name))?.amount || 0;
+  const pattyBoxCharge = Number(data.pattyBoxCharge) || otherCharges.find((c) => /patty|box/i.test(c.name))?.amount || 0;
+  const salesReturn = Number(data.salesReturn) || otherCharges.find((c) => /return/i.test(c.name))?.amount || 0;
+
+  const billableCharges = otherCharges.length > 0
+    ? otherChargesTotal
+    : Number((transportCharge + fittingCharge + pattyBoxCharge).toFixed(2));
 
   // Subtotal = item sales + billable customer charges (Transport, Fitting, etc.)
   subtotal = Number((itemsSubtotal + billableCharges).toFixed(2));
@@ -64,6 +75,7 @@ function calculateBillTotals(data) {
 
   return {
     items,
+    otherCharges,
     subtotal,
     discountType,
     discountValue,
@@ -415,6 +427,7 @@ exports.updateBill = async (id, data) => {
 
   const totals = calculateBillTotals({
     items: data.items !== undefined ? data.items : existing.items,
+    otherCharges: data.otherCharges !== undefined ? data.otherCharges : existing.otherCharges,
     discountType: data.discountType !== undefined ? data.discountType : existing.discountType,
     discountValue: data.discountValue !== undefined ? data.discountValue : existing.discountValue,
     vatPercent: data.vatPercent !== undefined ? data.vatPercent : existing.vatPercent,
