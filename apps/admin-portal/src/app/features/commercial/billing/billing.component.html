@@ -1287,11 +1287,11 @@
 
           <!-- Official Totals Box matching screenshot -->
           <div class="w-56 border-l border-b border-slate-800 text-xs font-semibold divide-y divide-slate-800">
-            @if (getInvoiceDiscount(activeInvoice()) > 0) {
             <div class="flex justify-between px-3 py-1.5 bg-white">
               <span class="text-slate-600 font-bold">SUBTOTAL</span>
               <span class="font-bold text-slate-900">{{ getInvoiceSubtotal(activeInvoice()) | number:'1.2-2' }}</span>
             </div>
+            @if (getInvoiceDiscount(activeInvoice()) > 0) {
             <div class="flex justify-between px-3 py-1.5 text-rose-600 bg-white font-bold">
               <span class="text-slate-600 font-bold">DISCOUNT</span>
               <span class="text-rose-600">- {{ getInvoiceDiscount(activeInvoice()) | number:'1.2-2' }}</span>

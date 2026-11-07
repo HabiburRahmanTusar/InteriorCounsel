@@ -1012,14 +1012,16 @@ export class BillingComponent implements OnInit {
 
   getInvoiceSubtotal(invoice: any): number {
     if (!invoice) return 0;
+    const rows = this.getInvoiceTableRows(invoice);
+    const sum = rows.reduce((acc: number, r: any) => acc + (Number(r.amount) || 0), 0);
+    if (sum > 0) return Number(sum.toFixed(2));
     const itemsTotal = (invoice.items || []).reduce((acc: number, it: any) => acc + (Number(it.amount) || 0), 0);
     const transport = Number(invoice.transportCharge) || 0;
     const fitting = Number(invoice.fittingCharge) || 0;
     const patty = Number(invoice.pattyBoxCharge) || 0;
     const otherCharges = (invoice.otherCharges || []).reduce((acc: number, c: any) => acc + (Number(c.amount) || 0), 0);
     const totalCharges = (transport + fitting + patty) || otherCharges;
-    const sum = itemsTotal + totalCharges;
-    if (sum > 0) return Number(sum.toFixed(2));
+    if (itemsTotal + totalCharges > 0) return Number((itemsTotal + totalCharges).toFixed(2));
     return Number(((Number(invoice.totalAmount) || 0) + (Number(invoice.discountAmount) || 0)).toFixed(2));
   }
 
