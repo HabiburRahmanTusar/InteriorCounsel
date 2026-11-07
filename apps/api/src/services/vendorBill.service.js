@@ -112,11 +112,15 @@ exports.createVendorBill = async (data) => {
   }
 
   const totals = calculateVendorBillTotals(data);
+  const discountAmount = Number(data.discountAmount) || 0;
+  const netAmount = Math.max(0, Number((totals.totalAmount - discountAmount).toFixed(2)));
   const vendorBill = new VendorBill({
     ...data,
     ...totals,
+    discountAmount,
+    netAmount,
     paidAmount: 0,
-    vendorDue: totals.totalAmount,
+    vendorDue: netAmount,
     paymentState: 'not_paid',
   });
 
@@ -143,9 +147,11 @@ exports.updateVendorBill = async (id, data) => {
     items: data.items !== undefined ? data.items : existing.items,
   });
 
-  const vendorDue = Number((totals.totalAmount - (existing.paidAmount || 0)).toFixed(2));
+  const discountAmount = data.discountAmount !== undefined ? (Number(data.discountAmount) || 0) : (existing.discountAmount || 0);
+  const netAmount = Math.max(0, Number((totals.totalAmount - discountAmount).toFixed(2)));
+  const vendorDue = Math.max(0, Number((netAmount - (existing.paidAmount || 0)).toFixed(2)));
   let paymentState = 'not_paid';
-  if (existing.paidAmount >= totals.totalAmount && totals.totalAmount > 0) {
+  if (existing.paidAmount >= netAmount && netAmount > 0) {
     paymentState = 'paid';
   } else if (existing.paidAmount > 0) {
     paymentState = 'partial';
@@ -156,6 +162,8 @@ exports.updateVendorBill = async (id, data) => {
     {
       ...data,
       ...totals,
+      discountAmount,
+      netAmount,
       vendorDue,
       paymentState,
     },

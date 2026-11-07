@@ -21,6 +21,7 @@ export interface Bill {
   projectName: string;
   siteLocation?: string;
   items: BillItem[];
+  otherCharges?: Array<{ name: string; amount: number }>;
   subtotal: number;
   discountType: 'percent' | 'fixed' | 'none';
   discountValue: number;
@@ -54,6 +55,8 @@ export interface VendorBill {
   category: string;
   items: BillItem[];
   totalAmount: number;
+  discountAmount?: number;
+  netAmount?: number;
   paidAmount: number;
   vendorDue: number;
   paymentState: 'not_paid' | 'partial' | 'paid';

@@ -97,7 +97,7 @@ async function recalculateBillProfit(billId) {
   if (!bill) return;
 
   const vendorBills = await VendorBill.find({ mainBillId: billId, status: { $ne: 'Cancelled' } });
-  const vendorTotalPurchase = vendorBills.reduce((acc, vb) => acc + (vb.totalAmount || 0), 0);
+  const vendorTotalPurchase = vendorBills.reduce((acc, vb) => acc + (vb.netAmount !== undefined ? vb.netAmount : Math.max(0, (vb.totalAmount || 0) - (vb.discountAmount || 0))), 0);
 
   // Direct Real-Time Bill Profitability: Total Sale - (Direct Costs + Vendor Total Purchase)
   const billProfit = Number(((bill.totalAmount || 0) - ((bill.directCosts || 0) + vendorTotalPurchase)).toFixed(2));
@@ -176,7 +176,7 @@ exports.getBillById = async (id) => {
     CashOut.find({ billId: id }).populate('paidBy', 'name').sort({ date: -1 }),
   ]);
 
-  const materialCost = vendorBills.reduce((acc, vb) => acc + (vb.totalAmount || 0), 0);
+  const materialCost = vendorBills.reduce((acc, vb) => acc + (vb.netAmount !== undefined ? vb.netAmount : Math.max(0, (vb.totalAmount || 0) - (vb.discountAmount || 0))), 0);
   const directExpenseCost = directExpenses.reduce((acc, exp) => acc + (exp.amount || 0), 0);
   const totalProjectCost = Number((materialCost + (bill.directCosts || 0) + directExpenseCost).toFixed(2));
   const projectGrossProfit = Number(((bill.totalAmount || 0) - totalProjectCost).toFixed(2));

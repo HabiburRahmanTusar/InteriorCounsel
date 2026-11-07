@@ -30,7 +30,23 @@ export class VendorBillsComponent implements OnInit {
     vendorId: '',
     mainBillId: '',
     category: 'wood_board',
+    discountAmount: 0,
     items: [],
+  };
+
+  // Quick Vendor Modal
+  readonly showVendorModal = signal(false);
+  quickVendor: any = {
+    name: '',
+    category: 'wood_board',
+    phone: '',
+    email: '',
+    address: '',
+    bankName: '',
+    bankAccountName: '',
+    bankAccountNumber: '',
+    branch: '',
+    notes: '',
   };
 
   ngOnInit() {
@@ -163,6 +179,10 @@ export class VendorBillsComponent implements OnInit {
       .reduce((acc: number, item: any) => acc + (item.amount || 0), 0);
   }
 
+  get formNetAmount(): number {
+    return Math.max(0, Number((this.formTotal - (Number(this.formBill.discountAmount) || 0)).toFixed(2)));
+  }
+
   openCreateModal() {
     this.billSearch = '';
     this.matchingBills.set([]);
@@ -173,6 +193,7 @@ export class VendorBillsComponent implements OnInit {
       vendorId: this.vendors()[0]?._id || '',
       mainBillId: '',
       category: 'wood_board',
+      discountAmount: 0,
       items: [
         { description: '18mm Gorjan Ply Board', unit: 'sheets', quantity: 20, unitPrice: 2200, amount: 44000, isSelected: true },
       ],
@@ -184,13 +205,75 @@ export class VendorBillsComponent implements OnInit {
     this.showModal.set(false);
   }
 
+  openQuickVendorModal() {
+    this.quickVendor = {
+      name: '',
+      category: this.formBill.category || 'wood_board',
+      phone: '',
+      email: '',
+      address: '',
+      bankName: '',
+      bankAccountName: '',
+      bankAccountNumber: '',
+      branch: '',
+      notes: '',
+    };
+    this.showVendorModal.set(true);
+  }
+
+  saveQuickVendor() {
+    if (!this.quickVendor.name || !this.quickVendor.name.trim()) {
+      alert('Please enter Vendor / Supplier Name');
+      return;
+    }
+    if (!this.quickVendor.phone || !this.quickVendor.phone.trim()) {
+      alert('Please enter Contact Phone Number');
+      return;
+    }
+
+    const payload = {
+      name: this.quickVendor.name.trim(),
+      category: this.quickVendor.category || 'general_supply',
+      phone: this.quickVendor.phone.trim(),
+      email: (this.quickVendor.email || '').trim(),
+      address: (this.quickVendor.address || '').trim(),
+      bankDetails: {
+        bankName: (this.quickVendor.bankName || '').trim(),
+        accountName: (this.quickVendor.bankAccountName || '').trim(),
+        accountNumber: (this.quickVendor.bankAccountNumber || '').trim(),
+        branch: (this.quickVendor.branch || '').trim(),
+      },
+      notes: (this.quickVendor.notes || '').trim(),
+    };
+
+    this.commercialService.createVendor(payload).subscribe({
+      next: (res: any) => {
+        const created = res.data || res;
+        this.loadVendors();
+        if (created?._id) {
+          this.formBill.vendorId = created._id;
+        }
+        this.showVendorModal.set(false);
+      },
+      error: (err) => alert(err?.error?.message || 'Failed to save vendor'),
+    });
+  }
+
   submitVendorBill() {
     if (!this.formBill.vendorId || !this.formBill.billNumber) {
       alert('Please fill in Vendor and Bill Number');
       return;
     }
 
-    this.commercialService.createVendorBill(this.formBill).subscribe({
+    const payload = {
+      ...this.formBill,
+      totalAmount: this.formTotal,
+      discountAmount: Number(this.formBill.discountAmount) || 0,
+      netAmount: this.formNetAmount,
+      vendorDue: this.formNetAmount,
+    };
+
+    this.commercialService.createVendorBill(payload).subscribe({
       next: () => {
         this.closeModal();
         this.loadVendorBills();
@@ -220,15 +303,17 @@ export class VendorBillsComponent implements OnInit {
       vb.vendorId?.name || vb.vendorName || 'Supplier',
       vb.category || 'General',
       vb.totalAmount || 0,
+      vb.discountAmount || 0,
+      vb.netAmount !== undefined ? vb.netAmount : Math.max(0, (vb.totalAmount || 0) - (vb.discountAmount || 0)),
       vb.paidAmount || 0,
-      vb.dueAmount || ((vb.totalAmount || 0) - (vb.paidAmount || 0)) || 0,
-      vb.paymentStatus || 'Pending',
+      vb.vendorDue !== undefined ? vb.vendorDue : Math.max(0, (vb.totalAmount || 0) - (vb.discountAmount || 0) - (vb.paidAmount || 0)),
+      vb.paymentState || 'not_paid',
     ]);
     this.exportService.exportToExcel({
       filename: 'InteriorCounsel_Vendor_Purchase_Bills',
       title: 'Supplier Purchase & Vendor Bills Register',
       subtitle: 'Total Bills: ' + rows.length,
-      headers: ['Bill Number', 'Date', 'Supplier / Vendor', 'Category', 'Total Billed (BDT)', 'Paid (BDT)', 'Due (BDT)', 'Status'],
+      headers: ['Bill Number', 'Date', 'Supplier / Vendor', 'Category', 'Purchase Amount', 'Discount', 'Net Amount', 'Paid', 'Vendor Due', 'Status'],
       rows,
     });
   }

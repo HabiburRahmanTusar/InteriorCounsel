@@ -85,22 +85,18 @@ export class VendorsComponent implements OnInit {
   }
 
   openCreateModal() {
-    this.vendorMode = 'new';
-    this.selectedExistingVendorId = this.vendors()[0]?._id || '';
-    this.selectedMasterBillId = '';
-    this.billSearch = '';
-    this.matchingBills.set([]);
-    this.selectedMasterBill.set(null);
-    this.billItems = [];
-    this.billRef = '';
     this.newVendor = {
       name: '',
       category: 'wood_board',
+      contactPerson: '',
       phone: '',
       email: '',
+      address: '',
+      tradeLicense: '',
+      bankName: '',
       bankAccountName: '',
       bankAccountNumber: '',
-      bankName: '',
+      branch: '',
       notes: '',
     };
     this.showModal.set(true);
@@ -231,68 +227,48 @@ export class VendorsComponent implements OnInit {
     return (this.billItems || []).filter((i) => i.isSelected !== false).length;
   }
 
-  saveVendorAndProcurement() {
-    // If adding a new vendor, validate vendor details
-    if (this.vendorMode === 'new') {
-      if (!this.newVendor.name || !this.newVendor.name.trim()) {
-        this.toastr.warning('Please enter Vendor / Supplier Name', 'Warning');
-        return;
-      }
-
-      const payload = {
-        ...this.newVendor,
-        name: this.newVendor.name.trim(),
-        phone: (this.newVendor.phone || '').trim() || '01XXXXXXXXX',
-        category: this.newVendor.category || 'general_supply',
-        bankDetails: {
-          bankName: this.newVendor.bankName || '',
-          accountName: this.newVendor.bankAccountName || '',
-          accountNumber: this.newVendor.bankAccountNumber || '',
-        },
-      };
-
-      this.commercialService.createVendor(payload).subscribe({
-        next: (res: any) => {
-          const created = res.data || res;
-          const vendorId = created?._id || created?.id;
-          this.toastr.success(`Vendor "${payload.name}" registered successfully`, 'Success');
-
-          // If master sales bill or items exist, create vendor procurement bill
-          const activeItems = this.billItems.filter((i) => i.isSelected !== false);
-          if (this.selectedMasterBill() || activeItems.length > 0) {
-            this.createProcurementBill(vendorId, payload.category);
-          } else {
-            this.showModal.set(false);
-            this.loadVendors();
-          }
-        },
-        error: (err) => {
-          console.error(err);
-          this.toastr.error(err?.error?.message || 'Failed to save vendor', 'Error');
-        },
-      });
-    } else {
-      // Existing vendor mode
-      if (!this.selectedExistingVendorId) {
-        this.toastr.warning('Please select an existing vendor', 'Warning');
-        return;
-      }
-
-      const vendor = this.vendors().find((v) => v._id === this.selectedExistingVendorId);
-      const category = vendor?.category || 'general_supply';
-
-      const activeItems = this.billItems.filter((i) => i.isSelected !== false);
-      if (this.selectedMasterBill() || activeItems.length > 0) {
-        this.createProcurementBill(this.selectedExistingVendorId, category);
-      } else {
-        this.toastr.info('Existing vendor selected with no procurement bill created', 'Info');
-        this.showModal.set(false);
-      }
+  saveVendor() {
+    if (!this.newVendor.name || !this.newVendor.name.trim()) {
+      this.toastr.warning('Please enter Vendor / Supplier Name', 'Warning');
+      return;
     }
+    if (!this.newVendor.phone || !this.newVendor.phone.trim()) {
+      this.toastr.warning('Please enter Contact Phone Number', 'Warning');
+      return;
+    }
+
+    const payload = {
+      name: this.newVendor.name.trim(),
+      category: this.newVendor.category || 'general_supply',
+      contactPerson: (this.newVendor.contactPerson || '').trim(),
+      phone: this.newVendor.phone.trim(),
+      email: (this.newVendor.email || '').trim(),
+      address: (this.newVendor.address || '').trim(),
+      tradeLicense: (this.newVendor.tradeLicense || '').trim(),
+      bankDetails: {
+        bankName: (this.newVendor.bankName || '').trim(),
+        accountName: (this.newVendor.bankAccountName || '').trim(),
+        accountNumber: (this.newVendor.bankAccountNumber || '').trim(),
+        branch: (this.newVendor.branch || '').trim(),
+      },
+      notes: (this.newVendor.notes || '').trim(),
+    };
+
+    this.commercialService.createVendor(payload).subscribe({
+      next: () => {
+        this.toastr.success(`Supplier "${payload.name}" saved successfully`, 'Success');
+        this.showModal.set(false);
+        this.loadVendors();
+      },
+      error: (err) => {
+        console.error(err);
+        this.toastr.error(err?.error?.message || 'Failed to save vendor', 'Error');
+      },
+    });
   }
 
-  saveVendor() {
-    this.saveVendorAndProcurement();
+  saveVendorAndProcurement() {
+    this.saveVendor();
   }
 
   private createProcurementBill(vendorId: string, category: string) {
@@ -427,7 +403,6 @@ export class VendorsComponent implements OnInit {
     }
     const rows = list.map((v) => [
       v.name || '—',
-      v.category || 'General',
       v.phone || '—',
       v.email || '—',
       v.bankAccountName || '—',
@@ -441,7 +416,7 @@ export class VendorsComponent implements OnInit {
       filename: 'InteriorCounsel_Suppliers_Directory',
       title: 'Suppliers & Vendors Directory',
       subtitle: 'Total Suppliers: ' + rows.length,
-      headers: ['Supplier Name', 'Trade Category', 'Phone', 'Email', 'Account Name', 'Account No', 'Bank Name', 'Total Purchases (BDT)', 'Total Paid (BDT)', 'Outstanding Due (BDT)'],
+      headers: ['Supplier Name', 'Phone', 'Email', 'Account Name', 'Account No', 'Bank Name', 'Total Purchases (BDT)', 'Total Paid (BDT)', 'Outstanding Due (BDT)'],
       rows,
     });
     this.toastr.success('Suppliers directory exported to Excel');
@@ -455,7 +430,6 @@ export class VendorsComponent implements OnInit {
     }
     const rows = list.map((v) => [
       v.name || '—',
-      v.category || 'General',
       v.phone || '—',
       (v.totalPurchased || 0).toLocaleString(),
       (v.totalPaid || 0).toLocaleString(),
@@ -465,7 +439,7 @@ export class VendorsComponent implements OnInit {
       filename: 'InteriorCounsel_Suppliers_Directory',
       title: 'Suppliers & Trade Vendors Directory',
       subtitle: 'Total Registered Suppliers: ' + rows.length,
-      headers: ['Supplier Name', 'Category', 'Contact Phone', 'Purchased (Tk)', 'Paid (Tk)', 'Due (Tk)'],
+      headers: ['Supplier Name', 'Contact Phone', 'Purchased (Tk)', 'Paid (Tk)', 'Due (Tk)'],
       rows,
       orientation: 'landscape',
     });
