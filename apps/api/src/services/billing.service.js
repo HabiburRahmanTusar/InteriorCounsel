@@ -30,7 +30,18 @@ function calculateBillTotals(data) {
     };
   });
 
-  subtotal = Number(subtotal.toFixed(2));
+  const itemsSubtotal = Number(subtotal.toFixed(2));
+
+  // Billable client charges
+  const transportCharge = Number(data.transportCharge) || 0;
+  const fittingCharge = Number(data.fittingCharge) || 0;
+  const salesCommission = Number(data.salesCommission) || 0;
+  const pattyBoxCharge = Number(data.pattyBoxCharge) || 0;
+  const salesReturn = Number(data.salesReturn) || 0;
+  const billableCharges = Number((transportCharge + fittingCharge + pattyBoxCharge).toFixed(2));
+
+  // Subtotal = item sales + billable customer charges (Transport, Fitting, etc.)
+  subtotal = Number((itemsSubtotal + billableCharges).toFixed(2));
 
   let discountAmount = 0;
   const discountType = data.discountType || 'none';
@@ -49,11 +60,6 @@ function calculateBillTotals(data) {
   const totalAmount = Number((taxableAmount + vatAmount).toFixed(2));
 
   // Direct Costs / Sales Expenses per Bill (from Odoo BillProfitBill)
-  const transportCharge = Number(data.transportCharge) || 0;
-  const fittingCharge = Number(data.fittingCharge) || 0;
-  const salesCommission = Number(data.salesCommission) || 0;
-  const pattyBoxCharge = Number(data.pattyBoxCharge) || 0;
-  const salesReturn = Number(data.salesReturn) || 0;
   const directCosts = Number((transportCharge + fittingCharge + salesCommission + pattyBoxCharge + salesReturn).toFixed(2));
 
   return {

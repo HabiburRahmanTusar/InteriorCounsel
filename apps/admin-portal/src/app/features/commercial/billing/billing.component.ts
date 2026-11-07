@@ -1010,6 +1010,38 @@ export class BillingComponent implements OnInit {
     return [];
   }
 
+  getInvoiceSubtotal(invoice: any): number {
+    if (!invoice) return 0;
+    const itemsTotal = (invoice.items || []).reduce((acc: number, it: any) => acc + (Number(it.amount) || 0), 0);
+    const transport = Number(invoice.transportCharge) || 0;
+    const fitting = Number(invoice.fittingCharge) || 0;
+    const patty = Number(invoice.pattyBoxCharge) || 0;
+    const otherCharges = (invoice.otherCharges || []).reduce((acc: number, c: any) => acc + (Number(c.amount) || 0), 0);
+    const totalCharges = (transport + fitting + patty) || otherCharges;
+    const sum = itemsTotal + totalCharges;
+    if (sum > 0) return Number(sum.toFixed(2));
+    return Number(((Number(invoice.totalAmount) || 0) + (Number(invoice.discountAmount) || 0)).toFixed(2));
+  }
+
+  getInvoiceDiscount(invoice: any): number {
+    if (!invoice) return 0;
+    return Number(invoice.discountAmount) || 0;
+  }
+
+  getInvoiceGrandTotal(invoice: any): number {
+    if (!invoice) return 0;
+    const subtotal = this.getInvoiceSubtotal(invoice);
+    const discount = this.getInvoiceDiscount(invoice);
+    return Number(Math.max(0, subtotal - discount).toFixed(2));
+  }
+
+  getInvoiceDue(invoice: any): number {
+    if (!invoice) return 0;
+    const total = this.getInvoiceGrandTotal(invoice);
+    const paid = Number(invoice.totalCashIn) || 0;
+    return Number(Math.max(0, total - paid).toFixed(2));
+  }
+
   printInvoice() {
     window.print();
   }
