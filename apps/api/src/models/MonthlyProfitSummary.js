@@ -8,7 +8,10 @@ const distributionLineSchema = new mongoose.Schema({
 
 const monthlyProfitSummarySchema = new mongoose.Schema(
   {
-    month: { type: String, required: true, unique: true }, // Format "YYYY-MM"
+    month: { type: String, required: true, unique: true }, // Format "YYYY-MM" or "YYYY-MM_to_YYYY-MM"
+    fromMonth: { type: String }, // Format "YYYY-MM"
+    toMonth: { type: String }, // Format "YYYY-MM"
+    periodLabel: { type: String }, // e.g. "October 2026" or "October 2026 – November 2026"
     totalConfirmedSales: { type: Number, default: 0 }, // 1. Product Calculation (Gross Sales)
     // 2. Sales Expenses Breakdown
     salesExpenses: {

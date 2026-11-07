@@ -116,28 +116,45 @@ exports.removeShareholder = async (shareholderId) => {
   return wallet;
 };
 
-exports.calculateMonthlyProfit = async (monthStr) => {
-  const targetMonth = monthStr || dayjs().tz('Asia/Dhaka').format('YYYY-MM');
-  const start = dayjs(targetMonth).tz('Asia/Dhaka').startOf('month').toDate();
-  const end = dayjs(targetMonth).tz('Asia/Dhaka').endOf('month').toDate();
+exports.calculateProfitRange = async (fromMonthStr, toMonthStr) => {
+  const currentMonth = dayjs().tz('Asia/Dhaka').format('YYYY-MM');
+  let targetFrom = (fromMonthStr || currentMonth).toString().trim();
+  let targetTo = (toMonthStr || targetFrom).toString().trim();
+
+  if (targetFrom > targetTo) {
+    const tmp = targetFrom;
+    targetFrom = targetTo;
+    targetTo = tmp;
+  }
+
+  const start = dayjs(targetFrom).tz('Asia/Dhaka').startOf('month').toDate();
+  const end = dayjs(targetTo).tz('Asia/Dhaka').endOf('month').toDate();
   const dateFilter = { date: { $gte: start, $lte: end } };
 
-  const [bills, vendorBills, cashIn, cashOut] = await Promise.all([
+  const [bills, vendorBills, cashIn, cashOut, wallets] = await Promise.all([
     Bill.find({ ...dateFilter, status: { $in: ['Confirmed', 'Completed'] } }),
     VendorBill.find({ ...dateFilter, status: { $in: ['Confirmed', 'Paid'] } }),
     CashIn.find(dateFilter),
     CashOut.find(dateFilter),
+    ShareholderWallet.find({ status: 'active' }).populate('shareholderId', 'name email employeeId phone designation'),
   ]);
 
   // 1. Product Calculation (Total Confirmed Sales Revenue)
   const totalConfirmedSales = Number(bills.reduce((acc, b) => acc + (b.totalAmount || 0), 0).toFixed(2));
 
-  // 2. Sales Expenses (Deducted from Product Calculation to get Profit)
-  // -------------------------------------------------------------
-  // a) Purchase Payment (Vendor Procurement Bills / Purchase Vouchers)
-  const vendorBillPurchases = vendorBills.reduce((acc, vb) => acc + (vb.totalAmount || 0), 0);
+  // 2. Sales Expenses (Deducted from Product Calculation to get Operating Profit)
+  // a) Purchase Payment (Vendor Procurement Bills net of supplier discount / Purchase Vouchers)
+  const vendorBillPurchases = vendorBills.reduce(
+    (acc, vb) => acc + (vb.netAmount !== undefined ? vb.netAmount : (vb.totalAmount || 0)),
+    0
+  );
+  const billItemPurchases = bills.reduce(
+    (acc, b) => acc + (b.vendorTotalPurchase || b.items?.reduce((iAcc, it) => iAcc + (it.netPurchase || it.purchaseAmount || 0), 0) || 0),
+    0
+  );
   const purchaseCashOut = cashOut.filter((c) => c.type === 'purchase').reduce((acc, c) => acc + c.amount, 0);
-  const purchasePayment = Number((vendorBillPurchases > 0 ? vendorBillPurchases : purchaseCashOut).toFixed(2));
+  const purchasesFromRecords = Math.max(vendorBillPurchases, billItemPurchases);
+  const purchasePayment = Number((purchasesFromRecords > 0 ? purchasesFromRecords : purchaseCashOut).toFixed(2));
 
   // b) HPL Carrying / Petty Box
   const hplFromBills = bills.reduce((acc, b) => acc + (b.pattyBoxCharge || 0), 0);
@@ -172,7 +189,6 @@ exports.calculateMonthlyProfit = async (monthStr) => {
   const profit = Number((totalConfirmedSales - totalSalesExpenses).toFixed(2));
 
   // 4. Office Expenses (Deducted from Profit to get Net Profit)
-  // -------------------------------------------------------------
   const rent = Number(cashOut.filter((c) => ['showroom_rent', 'office_rent'].includes(c.type)).reduce((acc, c) => acc + c.amount, 0).toFixed(2));
   const salaries = Number(cashOut.filter((c) => c.type === 'salary').reduce((acc, c) => acc + c.amount, 0).toFixed(2));
   const electricity = Number(cashOut.filter((c) => c.type === 'electricity_bill').reduce((acc, c) => acc + c.amount, 0).toFixed(2));
@@ -218,10 +234,18 @@ exports.calculateMonthlyProfit = async (monthStr) => {
     totalOfficeExpenses,
   };
 
-  let summary = await MonthlyProfitSummary.findOne({ month: targetMonth });
+  const fromFormatted = dayjs(targetFrom).tz('Asia/Dhaka').format('MMMM YYYY');
+  const toFormatted = dayjs(targetTo).tz('Asia/Dhaka').format('MMMM YYYY');
+  const periodLabel = targetFrom === targetTo ? fromFormatted : `${fromFormatted} – ${toFormatted}`;
+  const periodKey = targetFrom === targetTo ? targetFrom : `${targetFrom}_to_${targetTo}`;
+
+  let summary = await MonthlyProfitSummary.findOne({ month: periodKey });
   if (!summary) {
     summary = new MonthlyProfitSummary({
-      month: targetMonth,
+      month: periodKey,
+      fromMonth: targetFrom,
+      toMonth: targetTo,
+      periodLabel,
       totalConfirmedSales,
       salesExpenses: salesExpensesObj,
       profit,
@@ -234,7 +258,11 @@ exports.calculateMonthlyProfit = async (monthStr) => {
       isDistributed: false,
       status: 'draft',
     });
+    await summary.save();
   } else if (!summary.isDistributed) {
+    summary.fromMonth = targetFrom;
+    summary.toMonth = targetTo;
+    summary.periodLabel = periodLabel;
     summary.totalConfirmedSales = totalConfirmedSales;
     summary.salesExpenses = salesExpensesObj;
     summary.profit = profit;
@@ -244,38 +272,115 @@ exports.calculateMonthlyProfit = async (monthStr) => {
     summary.investments = investments;
     summary.operationalExpenses = totalOfficeExpenses;
     summary.netProfit = netProfit;
+    await summary.save();
   }
 
-  await summary.save();
-  return summary;
+  const isDistributed = !!summary.isDistributed;
+  const distributableNetProfit = Math.max(0, netProfit);
+  const totalAllocatedPercentage = Number(wallets.reduce((acc, w) => acc + (w.sharePercentage || 0), 0).toFixed(2));
+  const unallocatedPercentage = Math.max(0, Number((100 - totalAllocatedPercentage).toFixed(2)));
+
+  // Percentage-wise draft calculation per active shareholder
+  const draftAllocations = wallets.map((w) => {
+    const sp = w.sharePercentage || 0;
+    const draftAmount = Number(((distributableNetProfit * sp) / 100).toFixed(2));
+    const currBalance = w.currentBalance || 0;
+    const projectedBalance = Number((currBalance + draftAmount).toFixed(2));
+    return {
+      walletId: w._id,
+      shareholderId: w.shareholderId?._id || w.shareholderId,
+      name: w.shareholderId?.name || 'Shareholder',
+      email: w.shareholderId?.email || '',
+      phone: w.shareholderId?.phone || '',
+      employeeId: w.shareholderId?.employeeId || '',
+      designation: w.shareholderId?.designation || 'Partner',
+      sharePercentage: sp,
+      draftShareAmount: draftAmount,
+      currentBalance: currBalance,
+      projectedBalance,
+      totalDistributed: w.totalDistributed || 0,
+      totalWithdrawn: w.totalWithdrawn || 0,
+      status: isDistributed ? 'finalized' : 'draft',
+    };
+  });
+
+  return {
+    _id: summary._id,
+    month: periodKey,
+    fromMonth: targetFrom,
+    toMonth: targetTo,
+    periodKey,
+    periodLabel,
+    totalConfirmedSales,
+    salesExpenses: salesExpensesObj,
+    profit,
+    officeExpenses: officeExpensesObj,
+    totalPurchases: purchasePayment,
+    directCosts: Number((totalSalesExpenses - purchasePayment).toFixed(2)),
+    investments,
+    operationalExpenses: totalOfficeExpenses,
+    netProfit,
+    distributableAmount: distributableNetProfit,
+    isDistributed,
+    distributionDate: summary.distributionDate || null,
+    distributionLines: summary.distributionLines || [],
+    status: isDistributed ? 'finalized' : 'draft',
+    totalAllocatedPercentage,
+    unallocatedPercentage,
+    draftAllocations,
+  };
 };
 
-exports.distributeMonthlyProfit = async (monthStr) => {
-  const summary = await exports.calculateMonthlyProfit(monthStr);
+exports.calculateMonthlyProfit = async (monthStr) => {
+  return exports.calculateProfitRange(monthStr, monthStr);
+};
 
-  if (summary.isDistributed) {
-    const err = new Error(`Monthly profit for ${summary.month} has already been distributed.`);
+exports.disburseProfitRange = async ({ fromMonth, toMonth, distributableAmount, notes, reference }) => {
+  const currentMonth = dayjs().tz('Asia/Dhaka').format('YYYY-MM');
+  let targetFrom = (fromMonth || currentMonth).toString().trim();
+  let targetTo = (toMonth || targetFrom).toString().trim();
+
+  if (targetFrom > targetTo) {
+    const tmp = targetFrom;
+    targetFrom = targetTo;
+    targetTo = tmp;
+  }
+
+  // Calculate live financial numbers
+  const draftSummary = await exports.calculateProfitRange(targetFrom, targetTo);
+  const periodKey = draftSummary.periodKey;
+  const periodLabel = draftSummary.periodLabel;
+
+  if (draftSummary.isDistributed) {
+    const err = new Error(`Profit for ${periodLabel} has already been disbursed on ${dayjs(draftSummary.distributionDate).format('YYYY-MM-DD')}.`);
     err.statusCode = 400;
     throw err;
   }
 
-  if (summary.netProfit <= 0) {
-    const err = new Error(`Net profit for ${summary.month} is ${summary.netProfit}. Cannot distribute negative or zero profit.`);
+  const finalDistributableAmount = Number(
+    (distributableAmount !== undefined && Number(distributableAmount) > 0
+      ? Number(distributableAmount)
+      : draftSummary.netProfit).toFixed(2)
+  );
+
+  if (finalDistributableAmount <= 0) {
+    const err = new Error(`Distributable net profit for ${periodLabel} is ৳${finalDistributableAmount}. Cannot disburse zero or negative profit.`);
     err.statusCode = 400;
     throw err;
   }
 
-  const wallets = await ShareholderWallet.find({ status: 'active', sharePercentage: { $gt: 0 } });
+  const wallets = await ShareholderWallet.find({ status: 'active', sharePercentage: { $gt: 0 } }).populate('shareholderId', 'name email employeeId designation');
   if (wallets.length === 0) {
     const err = new Error('No active shareholders with share percentage > 0 found.');
     err.statusCode = 400;
     throw err;
   }
 
+  const distributionRef = reference || `DIST-${targetFrom === targetTo ? targetFrom : `${targetFrom}-${targetTo}`}-${Date.now().toString().slice(-4)}`;
   const distributionLines = [];
 
   for (const wallet of wallets) {
-    const shareAmount = Number(((summary.netProfit * wallet.sharePercentage) / 100).toFixed(2));
+    const shareAmount = Number(((finalDistributableAmount * (wallet.sharePercentage || 0)) / 100).toFixed(2));
     if (shareAmount > 0) {
       wallet.totalDistributed = Number(((wallet.totalDistributed || 0) + shareAmount).toFixed(2));
       wallet.currentBalance = Number(((wallet.totalDistributed) - (wallet.totalWithdrawn || 0)).toFixed(2));
@@ -283,27 +388,59 @@ exports.distributeMonthlyProfit = async (monthStr) => {
         date: new Date(),
         type: 'distribution',
         amount: shareAmount,
-        month: summary.month,
-        reference: `DIST-${summary.month}`,
-        notes: `Profit distribution for ${summary.month} (${wallet.sharePercentage}%)`,
+        month: periodLabel,
+        reference: distributionRef,
+        notes: notes || `Final profit disbursement for ${periodLabel} (${wallet.sharePercentage}%)`,
       });
       await wallet.save();
 
       distributionLines.push({
-        shareholderId: wallet.shareholderId,
+        shareholderId: wallet.shareholderId?._id || wallet.shareholderId,
         sharePercentage: wallet.sharePercentage,
         amount: shareAmount,
       });
     }
   }
 
-  summary.distributionLines = distributionLines;
+  let summary = await MonthlyProfitSummary.findOne({ month: periodKey });
+  if (!summary) {
+    summary = new MonthlyProfitSummary({
+      month: periodKey,
+      fromMonth: targetFrom,
+      toMonth: targetTo,
+      periodLabel,
+      totalConfirmedSales: draftSummary.totalConfirmedSales,
+      salesExpenses: draftSummary.salesExpenses,
+      profit: draftSummary.profit,
+      officeExpenses: draftSummary.officeExpenses,
+      totalPurchases: draftSummary.totalPurchases,
+      directCosts: draftSummary.directCosts,
+      investments: draftSummary.investments,
+      operationalExpenses: draftSummary.operationalExpenses,
+      netProfit: draftSummary.netProfit,
+    });
+  }
+
+  summary.fromMonth = targetFrom;
+  summary.toMonth = targetTo;
+  summary.periodLabel = periodLabel;
   summary.isDistributed = true;
   summary.distributionDate = new Date();
+  summary.distributionLines = distributionLines;
   summary.status = 'finalized';
   await summary.save();
 
-  return summary;
+  return {
+    summary,
+    periodLabel,
+    distributionRef,
+    disbursedAmount: finalDistributableAmount,
+    distributionLines,
+  };
+};
+
+exports.distributeMonthlyProfit = async (monthStr) => {
+  return exports.disburseProfitRange({ fromMonth: monthStr, toMonth: monthStr });
 };
 
 exports.processOwnerWithdrawal = async (cashOutRecord) => {
@@ -343,7 +480,6 @@ exports.processOwnerWithdrawal = async (cashOutRecord) => {
   await wallet.save();
   return wallet;
 };
-
 
 exports.getPortalSummary = async (targetUserId, currentUser) => {
   let shareholderId = targetUserId;

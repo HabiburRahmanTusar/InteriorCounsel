@@ -58,9 +58,10 @@ exports.remove = async (req, res, next) => {
 
 exports.calculateProfit = async (req, res, next) => {
   try {
-    const { month } = req.query;
-    const summary = await shareholderService.calculateMonthlyProfit(month);
-    return apiResponse.ok(res, summary, 'Monthly profit summary computed');
+    const fromMonth = req.query.fromMonth || req.query.from || req.query.month;
+    const toMonth = req.query.toMonth || req.query.to || fromMonth;
+    const summary = await shareholderService.calculateProfitRange(fromMonth, toMonth);
+    return apiResponse.ok(res, summary, `Profit summary for ${summary.periodLabel} computed`);
   } catch (err) {
     return next(err);
   }
@@ -68,14 +69,21 @@ exports.calculateProfit = async (req, res, next) => {
 
 exports.distributeProfit = async (req, res, next) => {
   try {
-    const { month } = req.body;
-    const summary = await shareholderService.distributeMonthlyProfit(month);
-    return apiResponse.ok(res, summary, `Profit for ${summary.month} distributed successfully to shareholder wallets`);
+    const fromMonth = req.body.fromMonth || req.body.from || req.body.month;
+    const toMonth = req.body.toMonth || req.body.to || fromMonth;
+    const { distributableAmount, notes, reference } = req.body;
+    const result = await shareholderService.disburseProfitRange({
+      fromMonth,
+      toMonth,
+      distributableAmount,
+      notes,
+      reference,
+    });
+    return apiResponse.ok(res, result, `Net profit for ${result.periodLabel} disbursed successfully to shareholder wallets`);
   } catch (err) {
     return next(err);
   }
 };
-
 
 exports.getPortalSummary = async (req, res, next) => {
   try {

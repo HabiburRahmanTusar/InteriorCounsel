@@ -232,14 +232,21 @@ export class CommercialService {
     return this.http.put<any>(`${this.baseUrl}/shareholders/percentage/${shareholderId}`, { sharePercentage });
   }
 
-  getMonthlyProfit(month?: string): Observable<any> {
+  getMonthlyProfit(fromMonth?: string, toMonth?: string): Observable<any> {
     let params = new HttpParams();
-    if (month) params = params.set('month', month);
+    if (fromMonth) params = params.set('fromMonth', fromMonth);
+    if (toMonth) params = params.set('toMonth', toMonth);
     return this.http.get<any>(`${this.baseUrl}/shareholders/monthly-profit`, { params });
   }
 
-  distributeProfit(month: string): Observable<any> {
-    return this.http.post<any>(`${this.baseUrl}/shareholders/distribute-profit`, { month });
+  getProfitDraft(fromMonth: string, toMonth: string): Observable<any> {
+    let params = new HttpParams().set('fromMonth', fromMonth).set('toMonth', toMonth);
+    return this.http.get<any>(`${this.baseUrl}/shareholders/monthly-profit`, { params });
+  }
+
+  distributeProfit(payload: string | { month?: string; fromMonth?: string; toMonth?: string; distributableAmount?: number; notes?: string; reference?: string }): Observable<any> {
+    const body = typeof payload === 'string' ? { month: payload } : payload;
+    return this.http.post<any>(`${this.baseUrl}/shareholders/distribute-profit`, body);
   }
 
   getShareholderPortalSummary(shareholderId?: string): Observable<any> {

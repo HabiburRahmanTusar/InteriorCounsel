@@ -4,23 +4,64 @@
     <div>
       <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Shareholder Equity & Wallets</h1>
       <p class="text-sm text-slate-500 mt-1">
-        Two-tier profit distribution, individual owner equity accounts, and ledger balance tracking.
+        Month-to-month net profit calculation, draft percentage sharing, and final shareholder disbursement.
       </p>
     </div>
     <div class="flex flex-wrap items-center gap-3">
-      <div class="flex items-center gap-2 bg-white px-3 py-1.5 border border-slate-200 rounded-xl shadow-xs">
-        <span class="text-xs font-semibold text-slate-500">Period:</span>
+      <!-- Month to Month Range Selector -->
+      <div class="flex items-center gap-2 bg-white px-3.5 py-2 border border-slate-200 rounded-xl shadow-xs">
+        <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">From:</span>
         <input
           type="month"
-          [(ngModel)]="selectedMonth"
-          (change)="onMonthChange()"
-          class="text-xs font-bold text-slate-800 bg-transparent border-none outline-none focus:ring-0 cursor-pointer"
+          [(ngModel)]="fromMonth"
+          (change)="onPeriodChange()"
+          class="text-xs font-bold text-slate-900 bg-transparent border-none outline-none focus:ring-0 cursor-pointer"
         />
+        <span class="text-xs font-bold text-slate-400">→</span>
+        <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">To:</span>
+        <input
+          type="month"
+          [(ngModel)]="toMonth"
+          (change)="onPeriodChange()"
+          class="text-xs font-bold text-slate-900 bg-transparent border-none outline-none focus:ring-0 cursor-pointer"
+        />
+      </div>
+
+      <!-- Quick Period Presets -->
+      <div class="inline-flex rounded-xl bg-slate-100 p-1 text-xs font-semibold">
+        <button
+          type="button"
+          (click)="setQuickPeriod('this_month')"
+          class="px-2.5 py-1.5 rounded-lg text-slate-700 hover:text-slate-900 hover:bg-white transition"
+        >
+          This Month
+        </button>
+        <button
+          type="button"
+          (click)="setQuickPeriod('last_month')"
+          class="px-2.5 py-1.5 rounded-lg text-slate-700 hover:text-slate-900 hover:bg-white transition"
+        >
+          Last Month
+        </button>
+        <button
+          type="button"
+          (click)="setQuickPeriod('last_3_months')"
+          class="px-2.5 py-1.5 rounded-lg text-slate-700 hover:text-slate-900 hover:bg-white transition"
+        >
+          Last 3 Mo
+        </button>
+        <button
+          type="button"
+          (click)="setQuickPeriod('ytd')"
+          class="px-2.5 py-1.5 rounded-lg text-slate-700 hover:text-slate-900 hover:bg-white transition"
+        >
+          YTD
+        </button>
       </div>
 
       <button
         (click)="openCreateModal()"
-        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 text-white font-semibold text-sm hover:bg-slate-800 shadow-xs transition"
+        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 text-white font-semibold text-sm hover:bg-slate-800 shadow-xs transition cursor-pointer"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -28,18 +69,39 @@
         <span>Add Shareholder</span>
       </button>
 
-      <button
-        (click)="triggerDistributeProfit()"
-        [disabled]="distributing() || !monthlyProfit()"
-        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 text-white font-semibold text-sm hover:bg-amber-600 text-slate-900 font-bold shadow-xs transition disabled:opacity-50"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .8-3 1.8 0 .9 1.343 1.2 3 1.5s3 .6 3 1.5c0 .9-1.343 1.8-3 1.8m0-5.4v-1.8m0 5.4v1.8M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
-        </svg>
-        <span>{{ distributing() ? 'Distributing...' : 'Distribute Monthly Profit' }}</span>
-      </button>
+      <!-- Excel / PDF Export -->
+      <div class="inline-flex rounded-xl bg-white border border-slate-200 p-1 shadow-xs">
+        <button
+          (click)="exportWalletsExcel()"
+          class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition"
+          title="Export Wallets to Excel"
+        >
+          Excel
+        </button>
+        <button
+          (click)="exportWalletsPdf()"
+          class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition"
+          title="Export Wallets to PDF"
+        >
+          PDF
+        </button>
+      </div>
     </div>
   </div>
+
+  <!-- Success Notification Banner -->
+  @if (disburseSuccess()) {
+    <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center justify-between text-sm shadow-xs animate-in fade-in">
+      <div class="flex items-center gap-3">
+        <span class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold">✓</span>
+        <div>
+          <div class="font-bold text-emerald-900">Profit Disbursement Executed!</div>
+          <div class="text-xs text-emerald-800 mt-0.5">{{ disburseSuccess() }}</div>
+        </div>
+      </div>
+      <button (click)="disburseSuccess.set(null)" class="text-emerald-600 hover:text-emerald-800 font-bold text-sm px-2 py-1">✕</button>
+    </div>
+  }
 
   <!-- Equity Overview KPI Cards -->
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -64,40 +126,52 @@
     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
       <span class="text-xs font-semibold text-amber-600 uppercase tracking-wider block">Available Wallet Balance</span>
       <span class="text-2xl font-bold text-amber-700 mt-1 block">৳{{ totalWalletLiabilities | number:'1.2-2' }}</span>
-      <span class="text-xs text-slate-500 mt-1 block">Active shareholder claims</span>
+      <span class="text-xs text-slate-500 mt-1 block">Active shareholder claim balance</span>
     </div>
   </div>
 
-  <!-- Monthly Net Profit Computation Panel (Waterfall: Product Sales -> Sales Expenses -> Profit -> Office Expenses -> Net Profit -> Shareholders) -->
+  <!-- Month-to-Month Profit Distribution & Draft Calculation Panel -->
   @if (monthlyProfit()) {
-    <div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 sm:p-7 shadow-xl border border-slate-800 space-y-6">
+    <div class="bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 text-white rounded-3xl p-6 sm:p-7 shadow-xl border border-slate-800 space-y-6">
       <!-- Panel Header -->
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-white/10">
         <div>
           <div class="flex items-center gap-2">
-            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-indigo-400/30">
-              P&L Financial Engine
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-400/30">
+              Profit Sharing Engine
             </span>
             <span class="text-xs text-slate-400">•</span>
-            <span class="text-xs font-medium text-slate-300">Period: {{ monthlyProfit().month }}</span>
+            <span class="text-xs font-medium text-slate-300">Period: {{ monthlyProfit().periodLabel || monthlyProfit().month }}</span>
           </div>
-          <h2 class="text-xl font-black mt-1 text-white">Profit & Loss Waterfall to Shareholder Equity</h2>
+          <h2 class="text-xl font-black mt-1 text-white">Month-to-Month Financial Waterfall & Shareholder Draft</h2>
           <p class="text-xs text-slate-400 mt-0.5">
-            Deducts Sales Expenses from Product Sales to calculate Operating Profit, then deducts Office Expenses to determine Net Profit for Shareholder distribution.
+            Deducts Net Purchases & Direct Job Costs from Sales to calculate Profit, then deducts Office Expenses to determine Distributable Net Profit.
           </p>
         </div>
-        <div class="flex items-center gap-3">
+
+        <div class="flex flex-wrap items-center gap-3">
           <div class="text-right">
             <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Distributable Net Profit</span>
             <span class="text-3xl font-black text-emerald-400 tracking-tight">৳{{ monthlyProfit().netProfit | number:'1.2-2' }}</span>
           </div>
+
           @if (monthlyProfit().isDistributed) {
-            <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-              ✓ Distributed
+            <span class="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>✓ Final Disbursed ({{ monthlyProfit().distributionDate | date:'mediumDate' }})</span>
             </span>
+          } @else if (monthlyProfit().netProfit > 0) {
+            <button
+              (click)="openDisburseConfirm()"
+              [disabled]="distributing()"
+              class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold text-xs shadow-lg transition cursor-pointer"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .8-3 1.8 0 .9 1.343 1.2 3 1.5s3 .6 3 1.5c0 .9-1.343 1.8-3 1.8m0-5.4v-1.8m0 5.4v1.8M3 12a9 9 0 1118 0 9 9 0 01-18 0z" /></svg>
+              <span>{{ distributing() ? 'Disbursing...' : 'Final Disbursement Net Profit' }}</span>
+            </button>
           } @else {
-            <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
-              Pending Allocation
+            <span class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/10 text-slate-400 border border-white/10">
+              Net Profit ৳0.00 (No Profit to Disburse)
             </span>
           }
         </div>
@@ -114,7 +188,7 @@
           <div class="text-lg font-black text-white">
             ৳{{ monthlyProfit().totalConfirmedSales | number:'1.2-2' }}
           </div>
-          <div class="text-[11px] text-slate-400 mt-1">Confirmed Project Bills</div>
+          <div class="text-[11px] text-slate-400 mt-1">Confirmed Sales Bills</div>
         </div>
 
         <!-- 2. Sales Expenses -->
@@ -126,7 +200,7 @@
           <div class="text-lg font-black text-rose-300">
             -৳{{ getSalesExpensesTotal(monthlyProfit()) | number:'1.2-2' }}
           </div>
-          <div class="text-[11px] text-rose-200/60 mt-1">Purchases, Transport, HPL, Comm.</div>
+          <div class="text-[11px] text-rose-200/60 mt-1">Purchases (Net), Transport, Fitting</div>
         </div>
 
         <!-- 3. Operating Profit -->
@@ -162,7 +236,7 @@
           <div class="text-lg font-black text-emerald-300">
             ৳{{ monthlyProfit().netProfit | number:'1.2-2' }}
           </div>
-          <div class="text-[11px] text-emerald-200/60 mt-1">Available for Shareholders</div>
+          <div class="text-[11px] text-emerald-200/60 mt-1">Distributable to Shareholders</div>
         </div>
       </div>
 
@@ -180,7 +254,7 @@
 
           <div class="space-y-2 text-slate-300">
             <div class="flex justify-between py-1 border-b border-white/5">
-              <span>• Purchase Payment (Vendor Bills)</span>
+              <span>• Purchase Payment (Vendor Bills net of discount)</span>
               <span class="font-semibold text-white">৳{{ (monthlyProfit().salesExpenses?.purchasePayment || monthlyProfit().totalPurchases || 0) | number:'1.2-2' }}</span>
             </div>
             <div class="flex justify-between py-1 border-b border-white/5">
@@ -271,44 +345,140 @@
         </div>
       </div>
 
-      <!-- Shareholder Equity Allocation Preview for this Month -->
-      <div class="pt-3 border-t border-white/10">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+      <!-- Percentage-wise Draft Calculation Worksheet -->
+      <div class="mt-6 pt-5 border-t border-white/10">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
-            <h3 class="text-xs font-bold uppercase tracking-wider text-amber-300">
-              Shareholder Net Profit Allocation (Equity Distribution)
-            </h3>
-            <p class="text-[11px] text-slate-400">
-              Net Profit ৳{{ monthlyProfit().netProfit | number:'1.2-2' }} is allocated to active partners as per ownership %.
+            <div class="flex items-center gap-2">
+              <h3 class="text-sm font-bold uppercase tracking-wider text-amber-300">
+                Shareholder Percentage-Wise Profit Allocation Worksheet
+              </h3>
+              <span
+                class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider"
+                [class]="monthlyProfit().isDistributed ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'"
+              >
+                {{ monthlyProfit().isDistributed ? '✓ Final Disbursed Record' : '● Draft Preview (Pending Final Disbursement)' }}
+              </span>
+            </div>
+            <p class="text-xs text-slate-300 mt-1">
+              Net Profit of <strong class="text-white">৳{{ monthlyProfit().netProfit | number:'1.2-2' }}</strong> for period <strong class="text-amber-300">{{ monthlyProfit().periodLabel || monthlyProfit().month }}</strong> is allocated to registered shareholders strictly as per ownership %.
             </p>
           </div>
-          @if (!monthlyProfit().isDistributed && monthlyProfit().netProfit > 0) {
+
+          <div class="flex items-center gap-2">
             <button
-              (click)="triggerDistributeProfit()"
-              [disabled]="distributing()"
-              class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-xs transition cursor-pointer"
+              (click)="exportProfitDraftPdf()"
+              class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 text-xs font-semibold border border-white/15 transition flex items-center gap-1.5 cursor-pointer"
+              title="Export Draft Worksheet PDF"
             >
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              <span>{{ distributing() ? 'Distributing...' : 'Execute Distribution to Wallets' }}</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <span>Export PDF</span>
             </button>
-          }
+
+            @if (!monthlyProfit().isDistributed && monthlyProfit().netProfit > 0) {
+              <button
+                (click)="openDisburseConfirm()"
+                class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span>Final Disbursement Net Profit</span>
+              </button>
+            }
+          </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-          @for (w of wallets(); track w._id) {
-            <div class="bg-white/5 border border-white/10 rounded-xl p-3 flex items-center justify-between text-xs">
-              <div>
-                <div class="font-bold text-white">{{ w.shareholderId?.name || 'Shareholder' }}</div>
-                <div class="text-[11px] text-amber-300">{{ w.sharePercentage }}% Equity Share</div>
-              </div>
-              <div class="text-right">
-                <span class="text-[10px] text-slate-400 block uppercase">Profit Share</span>
-                <span class="font-bold text-emerald-400 text-sm">
-                  ৳{{ ((monthlyProfit().netProfit * w.sharePercentage) / 100) | number:'1.2-2' }}
-                </span>
-              </div>
-            </div>
-          }
+        <!-- Draft Calculation Table -->
+        <div class="bg-black/25 border border-white/10 rounded-2xl overflow-hidden shadow-inner">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-300">
+              <thead class="bg-white/5 uppercase text-[10px] font-bold tracking-wider text-slate-400 border-b border-white/10">
+                <tr>
+                  <th class="py-3 px-4">#</th>
+                  <th class="py-3 px-4">Shareholder / Partner</th>
+                  <th class="py-3 px-4 text-center">Equity Share</th>
+                  <th class="py-3 px-4 text-right">Draft Profit Share (৳)</th>
+                  <th class="py-3 px-4 text-right">Current Wallet Balance</th>
+                  <th class="py-3 px-4 text-right">Projected New Balance</th>
+                  <th class="py-3 px-4 text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/5">
+                @for (alloc of (monthlyProfit().draftAllocations || []); track alloc.walletId; let idx = $index) {
+                  <tr class="hover:bg-white/5 transition">
+                    <td class="py-3.5 px-4 text-slate-400 font-mono">{{ idx + 1 }}</td>
+                    <td class="py-3.5 px-4 font-semibold text-white">
+                      <div class="flex items-center gap-2.5">
+                        <div class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30 flex items-center justify-center font-bold text-[11px]">
+                          {{ (alloc.name || 'S').slice(0, 2).toUpperCase() }}
+                        </div>
+                        <div>
+                          <div class="text-white font-bold">{{ alloc.name }}</div>
+                          <div class="text-[10px] text-slate-400 font-normal">
+                            {{ alloc.designation || 'Partner' }} <span *ngIf="alloc.email">• {{ alloc.email }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-3.5 px-4 text-center">
+                      <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                        {{ alloc.sharePercentage }}%
+                      </span>
+                    </td>
+                    <td class="py-3.5 px-4 text-right font-extrabold text-emerald-400 text-sm">
+                      ৳{{ alloc.draftShareAmount | number:'1.2-2' }}
+                    </td>
+                    <td class="py-3.5 px-4 text-right font-medium text-slate-300">
+                      ৳{{ alloc.currentBalance | number:'1.2-2' }}
+                    </td>
+                    <td class="py-3.5 px-4 text-right font-bold text-amber-300">
+                      ৳{{ alloc.projectedBalance | number:'1.2-2' }}
+                    </td>
+                    <td class="py-3.5 px-4 text-center">
+                      @if (alloc.status === 'finalized') {
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                          ✓ Disbursed
+                        </span>
+                      } @else {
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 inline-flex items-center gap-1">
+                          <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+                          Draft Preview
+                        </span>
+                      }
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="7" class="py-8 text-center text-slate-400">
+                      No active shareholders with equity percentage found. Click "Add Shareholder" to allocate equity.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+              <!-- Summary Footer -->
+              <tfoot class="bg-white/5 border-t border-white/10 font-bold text-slate-300 text-xs">
+                <tr>
+                  <td colspan="2" class="py-3.5 px-4 text-right uppercase tracking-wider text-slate-400">
+                    Draft Summary:
+                  </td>
+                  <td class="py-3.5 px-4 text-center text-amber-300">
+                    {{ monthlyProfit().totalAllocatedPercentage }}% Allocated
+                  </td>
+                  <td class="py-3.5 px-4 text-right text-emerald-400 text-sm font-black">
+                    ৳{{ monthlyProfit().distributableAmount | number:'1.2-2' }}
+                  </td>
+                  <td class="py-3.5 px-4 text-right text-slate-400">
+                    ৳{{ totalWalletLiabilities | number:'1.2-2' }}
+                  </td>
+                  <td class="py-3.5 px-4 text-right text-amber-200">
+                    ৳{{ (totalWalletLiabilities + (monthlyProfit().isDistributed ? 0 : monthlyProfit().distributableAmount)) | number:'1.2-2' }}
+                  </td>
+                  <td class="py-3.5 px-4 text-center text-[10px] text-slate-400">
+                    {{ monthlyProfit().unallocatedPercentage > 0 ? (monthlyProfit().unallocatedPercentage + '% Retained') : '100% Shared' }}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -317,8 +487,11 @@
   <!-- Shareholder Wallets Table -->
   <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
     <div class="p-4 border-b border-slate-100 flex items-center justify-between">
-      <h3 class="text-base font-bold text-slate-900">Registered Shareholder Accounts</h3>
-      <span class="text-xs text-slate-500">{{ wallets().length }} Active Shareholder(s)</span>
+      <div>
+        <h3 class="text-base font-bold text-slate-900">Registered Shareholder Accounts</h3>
+        <p class="text-xs text-slate-500 mt-0.5">Live shareholder balances updated immediately upon final net profit disbursement.</p>
+      </div>
+      <span class="text-xs text-slate-500 font-semibold">{{ wallets().length }} Active Shareholder(s)</span>
     </div>
 
     <div class="overflow-x-auto">
@@ -367,21 +540,21 @@
                 <div class="inline-flex items-center gap-1.5">
                   <button
                     (click)="openLedger(w)"
-                    class="text-xs text-slate-600 hover:text-slate-900 font-semibold px-2 py-1 rounded hover:bg-slate-100 transition"
+                    class="text-xs text-slate-600 hover:text-slate-900 font-semibold px-2 py-1 rounded hover:bg-slate-100 transition cursor-pointer"
                     title="View Transaction History"
                   >
                     Ledger
                   </button>
                   <button
                     (click)="openEditPercentage(w)"
-                    class="text-xs text-amber-600 hover:text-amber-800 font-semibold px-2 py-1 rounded hover:bg-amber-50 transition"
+                    class="text-xs text-amber-600 hover:text-amber-800 font-semibold px-2 py-1 rounded hover:bg-amber-50 transition cursor-pointer"
                     title="Change Equity Share %"
                   >
                     Adjust %
                   </button>
                   <button
                     (click)="removeShareholder(w)"
-                    class="text-xs text-rose-500 hover:text-rose-700 font-semibold px-2 py-1 rounded hover:bg-rose-50 transition"
+                    class="text-xs text-rose-500 hover:text-rose-700 font-semibold px-2 py-1 rounded hover:bg-rose-50 transition cursor-pointer"
                     title="Deactivate Account"
                   >
                     Remove
@@ -396,7 +569,7 @@
                   <p class="text-sm">No shareholder accounts registered yet.</p>
                   <button
                     (click)="openCreateModal()"
-                    class="px-4 py-2 rounded-xl bg-amber-500 text-white font-semibold text-xs hover:bg-amber-600 text-slate-900 font-bold shadow-xs"
+                    class="px-4 py-2 rounded-xl bg-amber-500 text-slate-900 font-bold text-xs hover:bg-amber-400 shadow-xs cursor-pointer"
                   >
                     + Register First Shareholder
                   </button>
@@ -408,6 +581,103 @@
       </table>
     </div>
   </div>
+
+  <!-- Final Disbursement Confirmation Modal -->
+  @if (showDisburseConfirmModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
+      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-6 sm:p-7 animate-in zoom-in-95 duration-150 space-y-5">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div>
+            <h3 class="text-lg font-bold text-slate-900">Execute Final Net Profit Disbursement</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Commits draft profit allocation directly into shareholder equity wallets.</p>
+          </div>
+          <button (click)="showDisburseConfirmModal.set(false)" class="text-slate-400 hover:text-slate-600 text-lg font-bold">✕</button>
+        </div>
+
+        @if (disburseError()) {
+          <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs font-medium">
+            {{ disburseError() }}
+          </div>
+        }
+
+        <!-- Payout Period & Amount Card -->
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-500 font-medium">Selected Calculation Period:</span>
+            <span class="font-bold text-slate-900">{{ monthlyProfit()?.periodLabel || monthlyProfit()?.month }}</span>
+          </div>
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-500 font-medium">Calculated Net Profit:</span>
+            <span class="font-bold text-emerald-700 text-sm">৳{{ monthlyProfit()?.netProfit | number:'1.2-2' }}</span>
+          </div>
+          <div class="flex justify-between items-center text-xs pt-2 border-t border-slate-200">
+            <span class="text-slate-700 font-bold">Distributable Payout Amount:</span>
+            <span class="text-base font-black text-slate-900">৳{{ disburseCustomAmount | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <!-- Shareholder Payout Breakdown List -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+            Shareholder Payout Allocations
+          </label>
+          <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
+            @for (alloc of (monthlyProfit()?.draftAllocations || []); track alloc.walletId) {
+              <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
+                <div>
+                  <div class="font-bold text-slate-900">{{ alloc.name }}</div>
+                  <div class="text-[11px] text-slate-500">{{ alloc.sharePercentage }}% Equity Share</div>
+                </div>
+                <div class="text-right">
+                  <div class="font-black text-emerald-600 text-sm">
+                    +৳{{ ((disburseCustomAmount || 0) * alloc.sharePercentage / 100) | number:'1.2-2' }}
+                  </div>
+                  <div class="text-[10px] text-slate-400">
+                    New Balance: ৳{{ ((alloc.currentBalance || 0) + ((disburseCustomAmount || 0) * alloc.sharePercentage / 100)) | number:'1.2-2' }}
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Optional Notes -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Voucher / Disbursement Notes (Optional)</label>
+          <input
+            type="text"
+            [(ngModel)]="disburseNotes"
+            placeholder="e.g. Approved quarterly profit sharing for Q4"
+            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+          />
+        </div>
+
+        <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-[11px] leading-relaxed">
+          <strong>Notice:</strong> This action commits the distribution to each partner's wallet ledger and updates their available balance in real time.
+        </div>
+
+        <!-- Modal Actions -->
+        <div class="flex items-center justify-end gap-3 pt-2">
+          <button
+            type="button"
+            (click)="showDisburseConfirmModal.set(false)"
+            class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50 transition cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            (click)="executeFinalDisbursement()"
+            [disabled]="distributing()"
+            class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold text-sm shadow-md transition disabled:opacity-50 cursor-pointer flex items-center gap-2"
+          >
+            <svg *ngIf="distributing()" class="animate-spin h-4 w-4 text-slate-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            <span>{{ distributing() ? 'Disbursing...' : 'Confirm & Disburse Now' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 
   <!-- Create Shareholder Modal -->
   @if (showCreateModal()) {
@@ -447,63 +717,59 @@
               @if (availableEmployees().length > 0) {
                 <select
                   [(ngModel)]="newForm.shareholderId"
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                 >
                   @for (emp of availableEmployees(); track (emp.id || emp._id)) {
-                    <option [value]="(emp.id || emp._id)">
-                      {{ emp.name }} ({{ emp.email }} - {{ emp.designation || 'Partner' }})
+                    <option [value]="emp.id || emp._id">
+                      {{ emp.name }} ({{ emp.designation || 'Staff' }})
                     </option>
                   }
                 </select>
               } @else {
-                <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800">
-                  No unassigned registered users found. Switch to "New Partner" above.
-                </div>
+                <p class="text-xs text-slate-400">All registered employees are already linked to shareholder accounts.</p>
               }
             </div>
           } @else {
             <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Partner / Shareholder Name *</label>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Partner Full Name *</label>
               <input
                 type="text"
                 [(ngModel)]="newForm.name"
-                placeholder="e.g. Director Kamal Hossain"
-                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold"
+                placeholder="e.g. John Doe"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1">Phone</label>
-                <input
-                  type="text"
-                  [(ngModel)]="newForm.phone"
-                  placeholder="01XXXXXXXXX"
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1">Email</label>
-                <input
-                  type="email"
-                  [(ngModel)]="newForm.email"
-                  placeholder="partner@interiorcounsel.com"
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Email Address (Optional)</label>
+              <input
+                type="email"
+                [(ngModel)]="newForm.email"
+                placeholder="partner@interiorcounsel.com"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Phone Number (Optional)</label>
+              <input
+                type="tel"
+                [(ngModel)]="newForm.phone"
+                placeholder="01XXXXXXXXX"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              />
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-600 mb-1">Designation / Role</label>
               <input
                 type="text"
                 [(ngModel)]="newForm.designation"
-                placeholder="e.g. Managing Partner / Director"
-                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="e.g. Director / Managing Partner"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
           }
 
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Equity Share (%) *</label>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Initial Equity Share (%) *</label>
             <div class="relative">
               <input
                 type="number"
@@ -511,148 +777,158 @@
                 max="100"
                 step="0.01"
                 [(ngModel)]="newForm.sharePercentage"
-                placeholder="e.g. 50"
-                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold"
+                placeholder="0.00"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 pr-10 font-bold"
               />
-              <span class="absolute right-3.5 top-2.5 text-sm font-bold text-slate-400">%</span>
+              <span class="absolute right-3.5 top-2.5 text-slate-400 font-bold text-sm">%</span>
             </div>
-            <p class="text-[11px] text-slate-400 mt-1">Currently allocated across all partners: {{ totalAllocatedPercentage }}%</p>
+            <p class="text-[11px] text-slate-400 mt-1">
+              Currently allocated: {{ totalAllocatedPercentage }}% of 100% total company capital.
+            </p>
           </div>
         </div>
 
-        <div class="flex justify-end gap-3 mt-6">
+        <div class="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-100">
           <button
             type="button"
             (click)="showCreateModal.set(false)"
-            class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+            class="px-4 py-2 rounded-xl text-slate-500 font-medium text-xs hover:bg-slate-50 transition"
           >
             Cancel
           </button>
           <button
             type="button"
             (click)="saveNewShareholder()"
-            [disabled]="!newForm.shareholderId || availableEmployees().length === 0"
-            class="px-4 py-2 rounded-xl bg-amber-500 text-sm font-semibold text-white hover:bg-amber-600 text-slate-900 font-bold shadow-xs disabled:opacity-50"
+            class="px-4 py-2 rounded-xl bg-amber-500 text-slate-900 font-bold text-xs hover:bg-amber-400 shadow-xs transition"
           >
-            Register Shareholder
+            Save Shareholder
           </button>
         </div>
       </div>
     </div>
   }
 
-  <!-- Edit Share Percentage Modal -->
+  <!-- Edit Shareholder Percentage Modal -->
   @if (showEditModal()) {
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in zoom-in-95 duration-150">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 animate-in zoom-in-95 duration-150">
         <h3 class="text-lg font-bold text-slate-900 mb-1">Adjust Equity Share</h3>
-        <p class="text-xs text-slate-500 mb-4">Update ownership percentage for {{ editForm.shareholderName }}.</p>
+        <p class="text-xs text-slate-500 mb-4">{{ editForm.shareholderName }}</p>
 
-        <div class="space-y-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Share Percentage (%)</label>
-            <div class="relative">
-              <input
-                type="number"
-                min="0"
-                max="100"
-                step="0.01"
-                [(ngModel)]="editForm.sharePercentage"
-                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold"
-              />
-              <span class="absolute right-3.5 top-2.5 text-sm font-bold text-slate-400">%</span>
-            </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">New Equity Share Percentage (%)</label>
+          <div class="relative">
+            <input
+              type="number"
+              min="0"
+              max="100"
+              step="0.01"
+              [(ngModel)]="editForm.sharePercentage"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 pr-10 font-bold"
+            />
+            <span class="absolute right-3.5 top-2.5 text-slate-400 font-bold text-sm">%</span>
           </div>
         </div>
 
-        <div class="flex justify-end gap-3 mt-6">
+        <div class="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-100">
           <button
             type="button"
             (click)="showEditModal.set(false)"
-            class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+            class="px-4 py-2 rounded-xl text-slate-500 font-medium text-xs hover:bg-slate-50 transition"
           >
             Cancel
           </button>
           <button
             type="button"
             (click)="saveSharePercentage()"
-            class="px-4 py-2 rounded-xl bg-amber-500 text-sm font-semibold text-white hover:bg-amber-600 text-slate-900 font-bold shadow-xs"
+            class="px-4 py-2 rounded-xl bg-amber-500 text-slate-900 font-bold text-xs hover:bg-amber-400 shadow-xs transition"
           >
-            Save Changes
+            Update Share %
           </button>
         </div>
       </div>
     </div>
   }
 
-  <!-- Transaction History Ledger Modal -->
+  <!-- Shareholder Ledger Modal -->
   @if (showLedgerModal() && activeWallet()) {
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col p-6 animate-in zoom-in-95 duration-150">
+      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl p-6 animate-in zoom-in-95 duration-150 space-y-4">
         <div class="flex items-center justify-between pb-3 border-b border-slate-100">
           <div>
-            <h3 class="text-lg font-bold text-slate-900">{{ activeWallet().shareholderId?.name }} — Wallet Ledger</h3>
-            <p class="text-xs text-slate-500">
-              Equity Share: {{ activeWallet().sharePercentage }}% • Balance:
-              <span class="font-bold text-amber-600">৳{{ activeWallet().currentBalance | number:'1.2-2' }}</span>
-            </p>
+            <h3 class="text-lg font-bold text-slate-900">{{ activeWallet().shareholderId?.name }} — Equity Ledger</h3>
+            <p class="text-xs text-slate-500">{{ activeWallet().sharePercentage }}% Equity Ownership Account</p>
           </div>
-          <button (click)="showLedgerModal.set(false)" class="text-slate-400 hover:text-slate-600 text-lg font-bold">&times;</button>
+          <button (click)="showLedgerModal.set(false)" class="text-slate-400 hover:text-slate-600 text-lg font-bold">✕</button>
         </div>
 
-        <div class="overflow-y-auto flex-1 my-4 pr-1">
+        <!-- Ledger Summary Row -->
+        <div class="grid grid-cols-3 gap-3">
+          <div class="p-3 bg-emerald-50 rounded-xl">
+            <span class="text-[10px] uppercase font-bold text-emerald-700">Total Distributed</span>
+            <span class="block text-base font-bold text-emerald-800 mt-0.5">৳{{ activeWallet().totalDistributed | number:'1.2-2' }}</span>
+          </div>
+          <div class="p-3 bg-amber-50 rounded-xl">
+            <span class="text-[10px] uppercase font-bold text-amber-700">Total Withdrawn</span>
+            <span class="block text-base font-bold text-amber-800 mt-0.5">৳{{ activeWallet().totalWithdrawn | number:'1.2-2' }}</span>
+          </div>
+          <div class="p-3 bg-slate-100 rounded-xl">
+            <span class="text-[10px] uppercase font-bold text-slate-700">Current Balance</span>
+            <span class="block text-base font-bold text-slate-900 mt-0.5">৳{{ activeWallet().currentBalance | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <!-- Transaction Table -->
+        <div class="border border-slate-100 rounded-2xl overflow-hidden max-h-72 overflow-y-auto">
           <table class="w-full text-left text-xs text-slate-600">
-            <thead class="bg-slate-50 text-[10px] uppercase font-bold text-slate-400 sticky top-0">
+            <thead class="bg-slate-50 text-[10px] uppercase font-semibold text-slate-400 sticky top-0">
               <tr>
                 <th class="py-2.5 px-3">Date</th>
                 <th class="py-2.5 px-3">Type</th>
-                <th class="py-2.5 px-3">Reference / Notes</th>
-                <th class="py-2.5 px-3 text-right">Amount</th>
+                <th class="py-2.5 px-3">Period / Ref</th>
+                <th class="py-2.5 px-3 text-right">Amount (৳)</th>
+                <th class="py-2.5 px-3">Notes</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
-              @for (tx of (activeWallet().transactions || []); track $index) {
+              @for (t of (activeWallet().transactions || []); track t._id || t.date) {
                 <tr class="hover:bg-slate-50/50">
-                  <td class="py-2.5 px-3 text-slate-500">{{ tx.date | date:'dd MMM yyyy, hh:mm a' }}</td>
+                  <td class="py-2.5 px-3 whitespace-nowrap">{{ t.date | date:'mediumDate' }}</td>
                   <td class="py-2.5 px-3">
                     <span
-                      class="px-2 py-0.5 rounded-full font-semibold capitalize"
-                      [class.bg-emerald-50]="tx.type === 'distribution'"
-                      [class.text-emerald-700]="tx.type === 'distribution'"
-                      [class.bg-amber-50]="tx.type === 'withdrawal'"
-                      [class.text-amber-700]="tx.type === 'withdrawal'"
+                      class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                      [class.bg-emerald-50]="t.type === 'distribution'"
+                      [class.text-emerald-700]="t.type === 'distribution'"
+                      [class.bg-amber-50]="t.type === 'withdrawal'"
+                      [class.text-amber-700]="t.type === 'withdrawal'"
                     >
-                      {{ tx.type }}
+                      {{ t.type === 'distribution' ? '+ Profit Share' : '- Drawing' }}
                     </span>
                   </td>
-                  <td class="py-2.5 px-3">
-                    <div class="font-medium text-slate-800">{{ tx.reference || '—' }}</div>
-                    <div class="text-[11px] text-slate-400">{{ tx.notes }}</div>
-                  </td>
+                  <td class="py-2.5 px-3 font-mono text-[11px] text-slate-500">{{ t.month || t.reference || '—' }}</td>
                   <td
-                    class="py-2.5 px-3 text-right font-bold"
-                    [class.text-emerald-600]="tx.type === 'distribution'"
-                    [class.text-rose-600]="tx.type === 'withdrawal'"
+                    class="py-2.5 px-3 text-right font-bold whitespace-nowrap"
+                    [class.text-emerald-600]="t.type === 'distribution'"
+                    [class.text-amber-600]="t.type === 'withdrawal'"
                   >
-                    {{ tx.type === 'withdrawal' ? '-' : '+' }}৳{{ tx.amount | number:'1.2-2' }}
+                    {{ t.type === 'distribution' ? '+' : '-' }}৳{{ t.amount | number:'1.2-2' }}
                   </td>
+                  <td class="py-2.5 px-3 text-slate-500 truncate max-w-xs">{{ t.notes || '—' }}</td>
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="4" class="py-8 text-center text-slate-400">
-                    No transactions recorded for this wallet yet.
-                  </td>
+                  <td colspan="5" class="py-8 text-center text-slate-400">No transactions recorded yet in this equity account.</td>
                 </tr>
               }
             </tbody>
           </table>
         </div>
 
-        <div class="flex justify-end pt-3 border-t border-slate-100">
+        <div class="flex justify-end pt-2">
           <button
             type="button"
             (click)="showLedgerModal.set(false)"
-            class="px-4 py-2 rounded-xl bg-slate-100 text-xs font-semibold text-slate-700 hover:bg-slate-200"
+            class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-semibold text-xs hover:bg-slate-200 transition"
           >
             Close
           </button>

@@ -21,17 +21,27 @@ export class ShareholdersComponent implements OnInit {
   readonly employees = signal<any[]>([]);
   readonly monthlyProfit = signal<any | null>(null);
   readonly loading = signal(false);
+  readonly loadingProfit = signal(false);
   readonly distributing = signal(false);
 
-  // Month selector for profit distribution
-  selectedMonth: string = new Date().toISOString().slice(0, 7); // 'YYYY-MM'
+  // Month-to-month selector for draft profit calculation
+  fromMonth: string = new Date().toISOString().slice(0, 7); // 'YYYY-MM'
+  toMonth: string = new Date().toISOString().slice(0, 7);   // 'YYYY-MM'
+  selectedMonth: string = new Date().toISOString().slice(0, 7); // kept for backward compatibility
 
   // Modals & UI Toggles
   readonly showCreateModal = signal(false);
   readonly showEditModal = signal(false);
   readonly showLedgerModal = signal(false);
   readonly showBreakdownDetails = signal(true);
+  readonly showDisburseConfirmModal = signal(false);
   readonly activeWallet = signal<any | null>(null);
+
+  // Disbursement Form
+  disburseNotes: string = '';
+  disburseCustomAmount: number | null = null;
+  readonly disburseError = signal<string | null>(null);
+  readonly disburseSuccess = signal<string | null>(null);
 
   getSalesExpensesTotal(p: any): number {
     if (!p) return 0;
@@ -99,15 +109,46 @@ export class ShareholdersComponent implements OnInit {
   }
 
   loadMonthlyProfit() {
-    this.commercialService.getMonthlyProfit(this.selectedMonth).subscribe({
+    this.loadingProfit.set(true);
+    this.commercialService.getMonthlyProfit(this.fromMonth, this.toMonth).subscribe({
       next: (res) => {
         this.monthlyProfit.set(res.data || null);
+        this.loadingProfit.set(false);
       },
+      error: () => this.loadingProfit.set(false),
     });
   }
 
-  onMonthChange() {
+  onPeriodChange() {
+    if (this.fromMonth && this.toMonth && this.fromMonth > this.toMonth) {
+      this.toMonth = this.fromMonth;
+    }
+    this.selectedMonth = this.fromMonth;
     this.loadMonthlyProfit();
+  }
+
+  setQuickPeriod(preset: 'this_month' | 'last_month' | 'last_3_months' | 'ytd') {
+    const now = new Date();
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const thisMonthStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}`;
+
+    if (preset === 'this_month') {
+      this.fromMonth = thisMonthStr;
+      this.toMonth = thisMonthStr;
+    } else if (preset === 'last_month') {
+      const d = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const lastMonthStr = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+      this.fromMonth = lastMonthStr;
+      this.toMonth = lastMonthStr;
+    } else if (preset === 'last_3_months') {
+      const d = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+      this.fromMonth = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+      this.toMonth = thisMonthStr;
+    } else if (preset === 'ytd') {
+      this.fromMonth = `${now.getFullYear()}-01`;
+      this.toMonth = thisMonthStr;
+    }
+    this.onPeriodChange();
   }
 
   // Available users not already assigned an active wallet
@@ -166,6 +207,7 @@ export class ShareholdersComponent implements OnInit {
       next: () => {
         this.showCreateModal.set(false);
         this.loadData();
+        this.loadMonthlyProfit();
       },
       error: (err) => alert(err?.error?.message || 'Failed to register shareholder'),
     });
@@ -190,6 +232,7 @@ export class ShareholdersComponent implements OnInit {
       next: () => {
         this.showEditModal.set(false);
         this.loadData();
+        this.loadMonthlyProfit();
       },
       error: (err) => alert(err?.error?.message || 'Failed to update share percentage'),
     });
@@ -205,6 +248,7 @@ export class ShareholdersComponent implements OnInit {
     this.commercialService.removeShareholder(id).subscribe({
       next: () => {
         this.loadData();
+        this.loadMonthlyProfit();
       },
       error: (err) => alert(err?.error?.message || 'Failed to remove shareholder'),
     });
@@ -215,22 +259,51 @@ export class ShareholdersComponent implements OnInit {
     this.showLedgerModal.set(true);
   }
 
-  triggerDistributeProfit() {
-    if (!confirm(`Are you sure you want to calculate and distribute net profit for ${this.selectedMonth} into shareholder wallets?`)) {
+  openDisburseConfirm() {
+    const p = this.monthlyProfit();
+    if (!p) return;
+    if (p.isDistributed) {
+      alert(`Profit for ${p.periodLabel || p.month} has already been disbursed on ${new Date(p.distributionDate).toLocaleDateString()}.`);
       return;
     }
+    if (!p.netProfit || p.netProfit <= 0) {
+      alert(`Distributable net profit is ৳${p.netProfit || 0}. Cannot disburse zero or negative profit.`);
+      return;
+    }
+    this.disburseNotes = '';
+    this.disburseCustomAmount = p.netProfit;
+    this.disburseError.set(null);
+    this.showDisburseConfirmModal.set(true);
+  }
 
+  executeFinalDisbursement() {
+    const p = this.monthlyProfit();
+    if (!p) return;
     this.distributing.set(true);
-    this.commercialService.distributeProfit(this.selectedMonth).subscribe({
+    this.disburseError.set(null);
+
+    const payload = {
+      fromMonth: this.fromMonth,
+      toMonth: this.toMonth,
+      distributableAmount: this.disburseCustomAmount !== null ? Number(this.disburseCustomAmount) : p.netProfit,
+      notes: this.disburseNotes,
+    };
+
+    this.commercialService.distributeProfit(payload).subscribe({
       next: () => {
         this.distributing.set(false);
-        alert(`Successfully distributed profit for ${this.selectedMonth}!`);
+        this.showDisburseConfirmModal.set(false);
+        const amountFormatted = (payload.distributableAmount || 0).toLocaleString();
+        const periodStr = p.periodLabel || `${this.fromMonth} to ${this.toMonth}`;
+        this.disburseSuccess.set(`Net profit of ৳${amountFormatted} successfully disbursed to all shareholders for ${periodStr}! Wallets credited.`);
+        setTimeout(() => this.disburseSuccess.set(null), 8000);
         this.loadData();
         this.loadMonthlyProfit();
       },
       error: (err) => {
         this.distributing.set(false);
-        alert(err?.error?.message || 'Failed to distribute profit');
+        const errMsg = err?.error?.message || 'Failed to disburse profit';
+        this.disburseError.set(errMsg);
       },
     });
   }
@@ -266,7 +339,7 @@ export class ShareholdersComponent implements OnInit {
     this.exportService.exportToExcel({
       filename: 'Shareholder_Equity_Wallets',
       title: 'Interior Counsel — Shareholder Equity & Wallets',
-      subtitle: `Period: ${this.selectedMonth} | Active Shareholders: ${this.wallets().length}`,
+      subtitle: `Period: ${this.fromMonth} to ${this.toMonth} | Active Shareholders: ${this.wallets().length}`,
       headers: ['#', 'Partner Name', 'Designation', 'Email', 'Equity %', 'Total Distributed (BDT)', 'Total Withdrawn (BDT)', 'Current Balance (BDT)'],
       rows,
     });
@@ -286,8 +359,32 @@ export class ShareholdersComponent implements OnInit {
     this.exportService.exportToPdf({
       filename: 'Shareholder_Equity_Wallets',
       title: 'Interior Counsel — Shareholder Equity & Wallets',
-      subtitle: `Period: ${this.selectedMonth}`,
+      subtitle: `Period: ${this.fromMonth} to ${this.toMonth}`,
       headers: ['#', 'Partner Name', 'Designation', 'Equity %', 'Total Distributed', 'Withdrawn', 'Balance'],
+      rows,
+    });
+  }
+
+  exportProfitDraftPdf(): void {
+    const p = this.monthlyProfit();
+    if (!p) return;
+    const allocations = p.draftAllocations || [];
+    const rows = allocations.map((a: any, idx: number) => [
+      idx + 1,
+      a.name,
+      a.designation,
+      `${a.sharePercentage}%`,
+      `৳${Number(a.draftShareAmount || 0).toLocaleString()}`,
+      `৳${Number(a.currentBalance || 0).toLocaleString()}`,
+      `৳${Number(a.projectedBalance || 0).toLocaleString()}`,
+      a.status === 'finalized' ? 'Disbursed' : 'Draft',
+    ]);
+
+    this.exportService.exportToPdf({
+      filename: `Profit_Distribution_${p.periodKey}`,
+      title: `Interior Counsel — Profit Distribution Worksheet (${p.periodLabel})`,
+      subtitle: `Distributable Net Profit: ৳${Number(p.netProfit || 0).toLocaleString()} | Status: ${p.isDistributed ? 'FINAL DISBURSED' : 'DRAFT CALCULATION'}`,
+      headers: ['#', 'Partner Name', 'Role', 'Equity %', 'Share (BDT)', 'Current Balance', 'New Balance', 'Status'],
       rows,
     });
   }
