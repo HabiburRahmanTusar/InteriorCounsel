@@ -887,9 +887,17 @@ export class BillingComponent implements OnInit {
     if (b._id) {
       this.commercialService.getBill(b._id).subscribe({
         next: (res) => {
-          const fullBill = res.data?.bill || res.data || res;
+          const payload = res.data || res;
+          const fullBill = payload?.bill || payload;
           if (fullBill) {
-            this.activeInvoice.set({ ...b, ...fullBill });
+            this.activeInvoice.set({
+              ...b,
+              ...fullBill,
+              payments: payload?.payments || fullBill?.payments || b.payments,
+              vendorBills: payload?.vendorBills || fullBill?.vendorBills || b.vendorBills,
+              directExpenses: payload?.directExpenses || fullBill?.directExpenses || b.directExpenses,
+              profitability: payload?.profitability || fullBill?.profitability || b.profitability,
+            });
           }
         },
       });
@@ -1042,6 +1050,77 @@ export class BillingComponent implements OnInit {
     const total = this.getInvoiceGrandTotal(invoice);
     const paid = Number(invoice.totalCashIn) || 0;
     return Number(Math.max(0, total - paid).toFixed(2));
+  }
+
+  getInvoiceTotalPurchase(invoice: any): number {
+    if (!invoice) return 0;
+    return Number(
+      (
+        Number(invoice.totalPurchase) ||
+        Number(invoice.vendorTotalPurchase) ||
+        Number(invoice.materialCost) ||
+        Number(invoice.profitability?.materialCost) ||
+        0
+      ).toFixed(2)
+    );
+  }
+
+  getInvoiceTotalCashOut(invoice: any): number {
+    if (!invoice) return 0;
+
+    // Direct Expenses (CashOut vouchers linked to bill)
+    const directExpensesSum = (invoice.directExpenses || []).reduce(
+      (sum: number, exp: any) => sum + (Number(exp.amount) || 0),
+      0
+    );
+
+    // Direct Costs on the Bill (Transport + Fitting + Commission + Patty Box + Sales Return)
+    const transport = Number(invoice.transportCharge) || 0;
+    const fitting = Number(invoice.fittingCharge) || 0;
+    const patty = Number(invoice.pattyBoxCharge) || 0;
+    const commission = Number(invoice.salesCommission) || 0;
+    const salesReturn = Number(invoice.salesReturn) || 0;
+    const sumDirectCharges = transport + fitting + patty + commission + salesReturn;
+
+    const directCosts = Number(invoice.directCosts) || sumDirectCharges;
+    const directExpenseCost = Number(invoice.directExpenseCost) || Number(invoice.profitability?.directExpenseCost) || 0;
+    const explicitCashOut = Number(invoice.totalCashOut) || 0;
+
+    const totalCashOut = Math.max(
+      directCosts + directExpensesSum,
+      directCosts + directExpenseCost,
+      explicitCashOut,
+      sumDirectCharges
+    );
+
+    if (totalCashOut > 0) {
+      return Number(totalCashOut.toFixed(2));
+    }
+
+    // Mathematical derivation if billProfit is present:
+    // Profit = Total Sale - Purchase - Cashout => Cashout = Total Sale - Purchase - Profit
+    const grandTotal = this.getInvoiceGrandTotal(invoice) || Number(invoice.totalAmount) || 0;
+    const purchase = this.getInvoiceTotalPurchase(invoice);
+    const profit = invoice.billProfit !== undefined && invoice.billProfit !== null ? Number(invoice.billProfit) : null;
+    if (profit !== null && grandTotal > 0) {
+      const derived = grandTotal - purchase - profit;
+      if (derived >= 0) {
+        return Number(derived.toFixed(2));
+      }
+    }
+
+    return 0;
+  }
+
+  getInvoiceProfit(invoice: any): number {
+    if (!invoice) return 0;
+    if (invoice.billProfit !== undefined && invoice.billProfit !== null && !isNaN(Number(invoice.billProfit))) {
+      return Number(Number(invoice.billProfit).toFixed(2));
+    }
+    const grandTotal = this.getInvoiceGrandTotal(invoice) || Number(invoice.totalAmount) || 0;
+    const purchase = this.getInvoiceTotalPurchase(invoice);
+    const cashOut = this.getInvoiceTotalCashOut(invoice);
+    return Number((grandTotal - purchase - cashOut).toFixed(2));
   }
 
   printInvoice() {
