@@ -40,14 +40,14 @@
         <span>+ Record Cash In</span>
       </button>
       <button
-        (click)="openOutModal('operating_expense')"
+        (click)="openOutModal('operating_expense', true)"
         class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs sm:text-sm shadow-sm transition cursor-pointer"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
         <span>+ Record Office Expense</span>
       </button>
       <button
-        (click)="openOutModal('purchase')"
+        (click)="openOutModal('purchase', false)"
         class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs sm:text-sm shadow-sm transition cursor-pointer"
       >
         <span>- Record Cash Out</span>
@@ -530,36 +530,64 @@
   @if (showOutModal()) {
     <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
       <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
-        <h2 class="text-lg font-bold text-slate-900">Record Cash Out (Disbursement)</h2>
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900">
+              {{ isOfficeExpenseModal() ? 'Record Office Expense' : 'Record Cash Out (Disbursement)' }}
+            </h2>
+            <p class="text-xs text-slate-500">
+              {{ isOfficeExpenseModal() ? 'Record company administrative and overhead expenses deducted from profit' : 'Track client cash-in collections, vendor disbursements, and profit distributions' }}
+            </p>
+          </div>
+          <button (click)="showOutModal.set(false)" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition">✕</button>
+        </div>
+
         <div class="space-y-3 text-sm">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Expense / Payment Type</label>
             <select [(ngModel)]="formOut.type" class="w-full p-2.5 rounded-xl border border-slate-200">
-              <optgroup label="Sales Expenses (Deducted from Product Sales)">
-                <option value="purchase">Purchase Payment (Vendor Bills)</option>
-                <option value="petty_box">HPL Carrying / Petty Box</option>
-                <option value="transport">Transportation / Load-Unload Charge</option>
-                <option value="commission">Sales Commission</option>
-                <option value="sales_return">Sales Return & Adjustments</option>
-                <option value="fitting_charge">Fitting and Installation</option>
-              </optgroup>
-              <optgroup label="Office Expenses (Deducted from Profit)">
-                <option value="showroom_rent">Office / Showroom Rent</option>
-                <option value="salary">Staff Salary</option>
-                <option value="electricity_bill">Electricity Expenses</option>
-                <option value="wasa_bill">WASA & Water Expenses</option>
-                <option value="mobile_bill">Mobile / Phone & Internet</option>
-                <option value="conveyance">Conveyance & Travel</option>
-                <option value="entertainment">Guest Hospitality & Entertainment</option>
-                <option value="operating_expense">Office and Administration Expenses</option>
-                <option value="showroom_expense">Showroom Supplies</option>
-                <option value="vat">VAT & Taxes</option>
-                <option value="petty_cash">Petty Cash Top-up</option>
-                <option value="others">Other Expenses</option>
-              </optgroup>
-              <optgroup label="Equity / Capital">
-                <option value="withdraw_profit">Shareholder Profit Withdrawal</option>
-              </optgroup>
+              @if (isOfficeExpenseModal()) {
+                <optgroup label="Office Expenses (Deducted from Profit)">
+                  <option value="operating_expense">Office and Administration Expenses</option>
+                  <option value="showroom_rent">Office / Showroom Rent</option>
+                  <option value="salary">Staff Salary</option>
+                  <option value="electricity_bill">Electricity Expenses</option>
+                  <option value="wasa_bill">WASA & Water Expenses</option>
+                  <option value="mobile_bill">Mobile / Phone & Internet</option>
+                  <option value="conveyance">Conveyance & Travel</option>
+                  <option value="entertainment">Guest Hospitality & Entertainment</option>
+                  <option value="showroom_expense">Showroom Supplies</option>
+                  <option value="vat">VAT & Taxes</option>
+                  <option value="petty_cash">Petty Cash Top-up</option>
+                  <option value="others">Other Expenses</option>
+                </optgroup>
+              } @else {
+                <optgroup label="Sales Expenses (Deducted from Product Sales)">
+                  <option value="purchase">Purchase Payment (Vendor Bills)</option>
+                  <option value="petty_box">HPL Carrying / Petty Box</option>
+                  <option value="transport">Transportation / Load-Unload Charge</option>
+                  <option value="commission">Sales Commission</option>
+                  <option value="sales_return">Sales Return & Adjustments</option>
+                  <option value="fitting_charge">Fitting and Installation</option>
+                </optgroup>
+                <optgroup label="Office Expenses (Deducted from Profit)">
+                  <option value="showroom_rent">Office / Showroom Rent</option>
+                  <option value="salary">Staff Salary</option>
+                  <option value="electricity_bill">Electricity Expenses</option>
+                  <option value="wasa_bill">WASA & Water Expenses</option>
+                  <option value="mobile_bill">Mobile / Phone & Internet</option>
+                  <option value="conveyance">Conveyance & Travel</option>
+                  <option value="entertainment">Guest Hospitality & Entertainment</option>
+                  <option value="operating_expense">Office and Administration Expenses</option>
+                  <option value="showroom_expense">Showroom Supplies</option>
+                  <option value="vat">VAT & Taxes</option>
+                  <option value="petty_cash">Petty Cash Top-up</option>
+                  <option value="others">Other Expenses</option>
+                </optgroup>
+                <optgroup label="Equity / Capital">
+                  <option value="withdraw_profit">Shareholder Profit Withdrawal</option>
+                </optgroup>
+              }
             </select>
           </div>
 
@@ -567,15 +595,22 @@
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">
               Link to Master Bill / Project (Optional)
             </label>
-            <select [(ngModel)]="formOut.billId" class="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs">
-              <option value="">No Bill Linked (General Cash Out / Overhead)</option>
-              @for (b of bills(); track b._id) {
-                <option [value]="b._id">
-                  {{ b.billNumber }} — {{ b.projectName || getCustomerName(b) }} (Total: ৳{{ (b.totalAmount || 0) | number:'1.2-2' }})
-                </option>
-              }
-            </select>
-            <p class="text-[11px] text-slate-400 mt-1">If this cash disbursement is incurred for a specific client bill, select it here so it hits the bill's cash out and profit.</p>
+            @if (isOfficeExpenseModal()) {
+              <select [(ngModel)]="formOut.billId" class="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-600" disabled>
+                <option value="">No Bill Linked (General Cash Out / Overhead)</option>
+              </select>
+              <p class="text-[11px] text-slate-400 mt-1">Office expenses are general business overhead deducted from company profit.</p>
+            } @else {
+              <select [(ngModel)]="formOut.billId" class="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs">
+                <option value="">No Bill Linked (General Cash Out / Overhead)</option>
+                @for (b of bills(); track b._id) {
+                  <option [value]="b._id">
+                    {{ b.billNumber }} — {{ b.projectName || getCustomerName(b) }} (Total: ৳{{ (b.totalAmount || 0) | number:'1.2-2' }})
+                  </option>
+                }
+              </select>
+              <p class="text-[11px] text-slate-400 mt-1">If this cash disbursement is incurred for a specific client bill, select it here so it hits the bill's cash out and profit.</p>
+            }
           </div>
 
           @if (formOut.type === 'purchase') {

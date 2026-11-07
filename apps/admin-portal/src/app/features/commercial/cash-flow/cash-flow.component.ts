@@ -31,6 +31,7 @@ export class CashFlowComponent implements OnInit {
   // Modals
   readonly showInModal = signal(false);
   readonly showOutModal = signal(false);
+  readonly isOfficeExpenseModal = signal(false);
 
   // Data helpers
   readonly clients = signal<any[]>([]);
@@ -83,7 +84,7 @@ export class CashFlowComponent implements OnInit {
     this.route.queryParams.subscribe((params) => {
       if (params['type'] === 'office') {
         this.activeTab.set('out');
-        this.openOutModal('operating_expense');
+        this.openOutModal('operating_expense', true);
       }
     });
   }
@@ -236,7 +237,8 @@ export class CashFlowComponent implements OnInit {
     this.showInModal.set(true);
   }
 
-  openOutModal(defaultType: string = 'purchase') {
+  openOutModal(defaultType: string = 'purchase', isOffice: boolean = false) {
+    this.isOfficeExpenseModal.set(isOffice || defaultType === 'operating_expense');
     this.formOut = {
       type: defaultType,
       amount: 0,
