@@ -337,20 +337,23 @@ export class VendorBillsComponent implements OnInit {
       return;
     }
     const rows = list.map((vb: any) => [
+      vb.billNumber || vb.billRef || '—',
+      vb.date ? new Date(vb.date).toISOString().slice(0, 10) : '—',
       vb.vendorId?.name || vb.vendorName || 'Supplier',
-      vb.vendorId?.phone || '-',
+      vb.billRef || '—',
+      vb.mainBillId?.billNumber ? `${vb.mainBillId.billNumber} (${vb.mainBillId.projectName || ''})` : 'General Stock',
       vb.totalAmount || 0,
+      vb.discountAmount || 0,
+      vb.netAmount !== undefined ? vb.netAmount : Math.max(0, (vb.totalAmount || 0) - (vb.discountAmount || 0)),
       vb.paidAmount || 0,
       vb.vendorDue !== undefined ? vb.vendorDue : Math.max(0, (vb.totalAmount || 0) - (vb.discountAmount || 0) - (vb.paidAmount || 0)),
-      vb.billNumber || vb.billRef || '-',
-      vb.date ? new Date(vb.date).toISOString().slice(0, 10) : '-',
       vb.paymentState || 'not_paid',
     ]);
     this.exportService.exportToExcel({
       filename: 'InteriorCounsel_Vendor_Purchase_Bills',
-      title: 'Supplier Purchase & Vendor Bills Register',
+      title: 'Material & Vendor Procurement Register',
       subtitle: 'Total Bills: ' + rows.length,
-      headers: ['Supplier Name', 'Contact Phone', 'Total Purchased (BDT)', 'Total Payment (BDT)', 'Outstanding Due (BDT)', 'Bill No', 'Date', 'Status'],
+      headers: ['Bill #', 'Date', 'Supplier / Vendor', 'Vendor Ref', 'Linked Project', 'Purchase Amount (BDT)', 'Discount (BDT)', 'Net Amount (BDT)', 'Paid (BDT)', 'Vendor Due (BDT)', 'Status'],
       rows,
     });
   }
@@ -362,18 +365,21 @@ export class VendorBillsComponent implements OnInit {
       return;
     }
     const rows = list.map((vb: any) => [
+      vb.billNumber || vb.billRef || '—',
+      vb.date ? new Date(vb.date).toISOString().slice(0, 10) : '—',
       vb.vendorId?.name || vb.vendorName || 'Supplier',
-      vb.vendorId?.phone || '—',
       (vb.totalAmount || 0).toLocaleString(),
+      (vb.discountAmount || 0).toLocaleString(),
+      (vb.netAmount !== undefined ? vb.netAmount : Math.max(0, (vb.totalAmount || 0) - (vb.discountAmount || 0))).toLocaleString(),
       (vb.paidAmount || 0).toLocaleString(),
       (vb.vendorDue !== undefined ? vb.vendorDue : Math.max(0, (vb.totalAmount || 0) - (vb.discountAmount || 0) - (vb.paidAmount || 0))).toLocaleString(),
-      vb.billNumber || vb.billRef || '—',
+      vb.paymentState || 'not_paid',
     ]);
     this.exportService.exportToPdf({
       filename: 'InteriorCounsel_Vendor_Purchase_Bills',
-      title: 'Supplier Purchase & Vendor Bills Register',
+      title: 'Material & Vendor Procurement Register',
       subtitle: 'Total Purchase Invoices: ' + rows.length,
-      headers: ['Supplier Name', 'Contact', 'Total Purchased (Tk)', 'Total Payment (Tk)', 'Outstanding Due (Tk)', 'Bill No'],
+      headers: ['Bill #', 'Date', 'Supplier', 'Purchase (Tk)', 'Discount (Tk)', 'Net (Tk)', 'Paid (Tk)', 'Due (Tk)', 'Status'],
       rows,
       orientation: 'landscape',
     });

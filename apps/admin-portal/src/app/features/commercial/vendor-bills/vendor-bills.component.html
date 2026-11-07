@@ -61,93 +61,94 @@
       <table class="w-full text-left text-sm text-slate-600">
         <thead class="bg-slate-100/90 dark:bg-slate-800/95 text-xs font-bold uppercase text-slate-700 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700">
           <tr>
-            <th class="px-5 py-3.5">Supplier Name</th>
-            <th class="px-5 py-3.5">Contact</th>
-            <th class="px-5 py-3.5 text-right">Total Purchased</th>
-            <th class="px-5 py-3.5 text-right">Total Payment</th>
-            <th class="px-5 py-3.5 text-right">Outstanding Due</th>
-            <th class="px-5 py-3.5 text-center">Action</th>
+            <th class="px-5 py-3.5">Bill #</th>
+            <th class="px-5 py-3.5">Supplier & Invoice Ref</th>
+            <th class="px-5 py-3.5">Linked Client Project</th>
+            <th class="px-5 py-3.5 text-right">Purchase Amount</th>
+            <th class="px-5 py-3.5 text-right">Discount</th>
+            <th class="px-5 py-3.5 text-right">Net Amount</th>
+            <th class="px-5 py-3.5 text-right">Paid</th>
+            <th class="px-5 py-3.5 text-right">Vendor Due</th>
+            <th class="px-5 py-3.5 text-center">Status</th>
+            <th class="px-5 py-3.5 text-right">Actions</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
           @if (loading()) {
             <tr>
-              <td colspan="6" class="px-5 py-8 text-center text-slate-400">Loading vendor bills...</td>
+              <td colspan="10" class="px-5 py-8 text-center text-slate-400">Loading vendor procurement bills...</td>
             </tr>
           } @else if (vendorBills().length === 0) {
             <tr>
-              <td colspan="6" class="px-5 py-12 text-center text-slate-400">
+              <td colspan="10" class="px-5 py-12 text-center text-slate-400">
                 No vendor bills recorded. Click <strong>New Vendor Bill</strong> to add material purchases.
               </td>
             </tr>
           } @else {
             @for (bill of vendorBills(); track bill._id) {
               <tr class="hover:bg-slate-50/80 transition-colors">
-                <!-- 1. Supplier Name -->
                 <td class="px-5 py-4 font-semibold text-slate-900 dark:text-white">
-                  <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-amber-50 text-amber-700 font-bold flex items-center justify-center text-xs">
-                      {{ (bill.vendorId?.name || bill.vendorName || 'V').slice(0, 2).toUpperCase() }}
-                    </div>
-                    <div>
-                      <div class="font-bold text-slate-900">{{ bill.vendorId?.name || bill.vendorName || 'Unknown Supplier' }}</div>
-                      <div class="text-[11px] text-slate-400 font-normal">
-                        {{ bill.billNumber }} @if (bill.billRef) { • Ref: {{ bill.billRef }} } • {{ bill.date | date:'dd/MM/yyyy' }}
-                      </div>
-                    </div>
-                  </div>
+                  <div class="font-bold font-mono text-slate-900">{{ bill.billNumber }}</div>
+                  @if (bill.stockPurposeNumber) {
+                    <div class="text-[10px] text-amber-600 font-bold tracking-wider uppercase">{{ bill.stockPurposeNumber }}</div>
+                  }
+                  <div class="text-xs font-normal text-slate-400">{{ bill.date | date:'dd MMM yyyy' }}</div>
                 </td>
-
-                <!-- 2. Contact -->
                 <td class="px-5 py-4">
-                  <div class="font-medium text-slate-800">{{ bill.vendorId?.phone || '—' }}</div>
-                  <div class="text-[11px] text-slate-400">{{ bill.vendorId?.email || '—' }}</div>
+                  <div class="font-bold text-slate-900 dark:text-white">{{ bill.vendorId?.name || bill.vendorName || 'Unknown Supplier' }}</div>
+                  <div class="text-xs text-slate-500">Ref: {{ bill.billRef || '—' }}</div>
                 </td>
-
-                <!-- 3. Total Purchased -->
-                <td class="px-5 py-4 text-right font-bold text-slate-900 dark:text-white">
-                  ৳ {{ bill.totalAmount | number:'1.2-2' }}
-                  @if ((bill.discountAmount || 0) > 0) {
-                    <div class="text-[10px] text-emerald-600 font-medium">Disc: -৳{{ bill.discountAmount | number:'1.2-2' }}</div>
+                <td class="px-5 py-4">
+                  @if (bill.mainBillId) {
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 text-xs font-medium border border-amber-200/60">
+                      {{ bill.mainBillId?.billNumber }} ({{ bill.mainBillId?.projectName }})
+                    </span>
+                  } @else {
+                    <span class="text-xs text-slate-400 italic">General Stock</span>
                   }
                 </td>
-
-                <!-- 4. Total Payment -->
-                <td class="px-5 py-4 text-right font-semibold text-emerald-600">
+                <td class="px-5 py-4 text-right font-medium text-slate-900 dark:text-white">
+                  ৳ {{ bill.totalAmount | number:'1.2-2' }}
+                </td>
+                <td class="px-5 py-4 text-right font-bold text-emerald-600">
+                  @if ((bill.discountAmount || 0) > 0) {
+                    - ৳ {{ bill.discountAmount | number:'1.2-2' }}
+                  } @else {
+                    <span class="text-slate-400 font-normal">—</span>
+                  }
+                </td>
+                <td class="px-5 py-4 text-right font-bold text-slate-900 dark:text-white">
+                  ৳ {{ (bill.netAmount !== undefined ? bill.netAmount : ((bill.totalAmount || 0) - (bill.discountAmount || 0))) | number:'1.2-2' }}
+                </td>
+                <td class="px-5 py-4 text-right text-emerald-700 font-semibold">
                   ৳ {{ (bill.paidAmount || 0) | number:'1.2-2' }}
                 </td>
-
-                <!-- 5. Outstanding Due -->
-                <td class="px-5 py-4 text-right font-bold" [class.text-rose-600]="(bill.vendorDue > 0)" [class.text-slate-400]="(bill.vendorDue <= 0)">
+                <td class="px-5 py-4 text-right font-bold text-rose-600">
                   ৳ {{ (bill.vendorDue !== undefined ? bill.vendorDue : ((bill.totalAmount || 0) - (bill.discountAmount || 0) - (bill.paidAmount || 0))) | number:'1.2-2' }}
                 </td>
-
-                <!-- 6. Action (Details Information) -->
-                <td class="px-5 py-4 text-center whitespace-nowrap">
-                  <div class="inline-flex items-center gap-1.5">
-                    <button
-                      (click)="viewDetails(bill)"
-                      type="button"
-                      class="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-800 hover:bg-amber-500/20 font-bold text-xs inline-flex items-center gap-1 transition"
-                      title="View Details Information"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                      <span>Details</span>
-                    </button>
-                    <button
-                      (click)="deleteVendorBill(bill._id)"
-                      type="button"
-                      class="p-1 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 transition"
-                      title="Delete Vendor Bill"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
-                  </div>
+                <td class="px-5 py-4 text-center">
+                  <span
+                    class="px-2.5 py-1 rounded-full text-xs font-semibold"
+                    [class.bg-emerald-50]="bill.paymentState === 'paid' || bill.status === 'Paid'"
+                    [class.text-emerald-700]="bill.paymentState === 'paid' || bill.status === 'Paid'"
+                    [class.bg-amber-50]="bill.paymentState === 'partial'"
+                    [class.text-amber-700]="bill.paymentState === 'partial'"
+                    [class.bg-rose-50]="bill.paymentState === 'not_paid' && bill.status !== 'Paid'"
+                    [class.text-rose-700]="bill.paymentState === 'not_paid' && bill.status !== 'Paid'"
+                  >
+                    {{ bill.paymentState === 'paid' ? 'Paid' : bill.paymentState === 'partial' ? 'Partial' : 'Unpaid' }}
+                  </span>
+                </td>
+                <td class="px-5 py-4 text-right">
+                  <button
+                    (click)="deleteVendorBill(bill._id)"
+                    class="text-rose-500 hover:text-rose-700 p-1.5 rounded-lg hover:bg-rose-50 transition"
+                    title="Delete Vendor Bill"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
                 </td>
               </tr>
             }
