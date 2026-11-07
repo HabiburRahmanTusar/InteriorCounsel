@@ -1114,13 +1114,16 @@ export class BillingComponent implements OnInit {
 
   getInvoiceProfit(invoice: any): number {
     if (!invoice) return 0;
+    const grandTotal = this.getInvoiceGrandTotal(invoice);
+    const purchase = this.getInvoiceTotalPurchase(invoice);
+    const cashOut = this.getInvoiceTotalCashOut(invoice);
+    if (grandTotal > 0) {
+      return Number((grandTotal - purchase - cashOut).toFixed(2));
+    }
     if (invoice.billProfit !== undefined && invoice.billProfit !== null && !isNaN(Number(invoice.billProfit))) {
       return Number(Number(invoice.billProfit).toFixed(2));
     }
-    const grandTotal = this.getInvoiceGrandTotal(invoice) || Number(invoice.totalAmount) || 0;
-    const purchase = this.getInvoiceTotalPurchase(invoice);
-    const cashOut = this.getInvoiceTotalCashOut(invoice);
-    return Number((grandTotal - purchase - cashOut).toFixed(2));
+    return 0;
   }
 
   printInvoice() {
