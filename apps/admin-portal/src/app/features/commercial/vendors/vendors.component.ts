@@ -26,6 +26,9 @@ export class VendorsComponent implements OnInit {
   readonly showModal = signal(false);
   readonly showDiscountModal = signal(false);
   readonly showHistoryModal = signal(false);
+  readonly showDetailsModal = signal(false);
+  readonly selectedVendorDetails = signal<any | null>(null);
+  readonly loadingDetails = signal(false);
   readonly activeVendor = signal<any | null>(null);
 
   // Vendor Mode: user can register new vendor OR select existing vendor
@@ -297,6 +300,33 @@ export class VendorsComponent implements OnInit {
   }
 
   // --- Supplier Discount Handling (Odoo & Menu_RBAC Engine) ---
+  openDetailsModal(vendor: any) {
+    this.selectedVendorDetails.set(vendor);
+    this.showDetailsModal.set(true);
+    if (vendor?._id) {
+      this.loadingDetails.set(true);
+      this.commercialService.getVendorById(vendor._id).subscribe({
+        next: (res: any) => {
+          this.loadingDetails.set(false);
+          const data = res.data || res;
+          if (data?.vendor) {
+            this.selectedVendorDetails.set({
+              ...data.vendor,
+              vendorBills: data.vendorBills || [],
+              recentPayments: data.recentPayments || [],
+            });
+          }
+        },
+        error: () => this.loadingDetails.set(false),
+      });
+    }
+  }
+
+  closeDetailsModal() {
+    this.showDetailsModal.set(false);
+    this.selectedVendorDetails.set(null);
+  }
+
   openDiscountModal(vendor: any) {
     this.activeVendor.set(vendor);
     const vendorId = vendor._id || vendor.id;
@@ -404,19 +434,15 @@ export class VendorsComponent implements OnInit {
     const rows = list.map((v) => [
       v.name || '—',
       v.phone || '—',
-      v.email || '—',
-      v.bankAccountName || '—',
-      v.bankAccountNumber || '—',
-      v.bankName || '—',
       v.totalPurchased || 0,
       v.totalPaid || 0,
-      v.outstandingDue || 0,
+      v.dueBalance !== undefined ? v.dueBalance : (v.outstandingDue || 0),
     ]);
     this.exportService.exportToExcel({
       filename: 'InteriorCounsel_Suppliers_Directory',
       title: 'Suppliers & Vendors Directory',
       subtitle: 'Total Suppliers: ' + rows.length,
-      headers: ['Supplier Name', 'Phone', 'Email', 'Account Name', 'Account No', 'Bank Name', 'Total Purchases (BDT)', 'Total Paid (BDT)', 'Outstanding Due (BDT)'],
+      headers: ['Supplier Name', 'Contact Phone', 'Total Purchased (BDT)', 'Total Payment (BDT)', 'Outstanding Due (BDT)'],
       rows,
     });
     this.toastr.success('Suppliers directory exported to Excel');
@@ -433,13 +459,13 @@ export class VendorsComponent implements OnInit {
       v.phone || '—',
       (v.totalPurchased || 0).toLocaleString(),
       (v.totalPaid || 0).toLocaleString(),
-      (v.outstandingDue || 0).toLocaleString(),
+      (v.dueBalance !== undefined ? v.dueBalance : (v.outstandingDue || 0)).toLocaleString(),
     ]);
     this.exportService.exportToPdf({
       filename: 'InteriorCounsel_Suppliers_Directory',
-      title: 'Suppliers & Trade Vendors Directory',
+      title: 'Suppliers Directory',
       subtitle: 'Total Registered Suppliers: ' + rows.length,
-      headers: ['Supplier Name', 'Contact Phone', 'Purchased (Tk)', 'Paid (Tk)', 'Due (Tk)'],
+      headers: ['Supplier Name', 'Contact', 'Total Purchased (Tk)', 'Total Payment (Tk)', 'Outstanding Due (Tk)'],
       rows,
       orientation: 'landscape',
     });

@@ -57,13 +57,12 @@
       <table class="w-full text-left text-xs text-slate-600">
         <thead class="bg-slate-100/90 dark:bg-slate-800/95 text-xs font-bold uppercase text-slate-700 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700">
           <tr>
-            <th class="py-3 px-4">Vendor Name</th>
-                        <th class="py-3 px-4">Contact</th>
-            <th class="py-3 px-4">Bank Details</th>
+            <th class="py-3 px-4">Supplier Name</th>
+            <th class="py-3 px-4">Contact</th>
             <th class="py-3 px-4 text-right">Total Purchased</th>
-            <th class="py-3 px-4 text-right">Discount Given</th>
+            <th class="py-3 px-4 text-right">Total Payment</th>
             <th class="py-3 px-4 text-right">Outstanding Due</th>
-            <th class="py-3 px-4 text-center">Actions</th>
+            <th class="py-3 px-4 text-center">Action</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
@@ -71,41 +70,46 @@
             <tr class="hover:bg-slate-50/50 transition">
               <td class="py-3.5 px-4 font-semibold text-slate-900 dark:text-white">
                 <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 font-bold flex items-center justify-center text-xs">
-                    {{ (v.name || 'V').slice(0, 2).toUpperCase() }}
+                  <div class="w-8 h-8 rounded-full bg-amber-50 text-amber-700 font-bold flex items-center justify-center text-xs">
+                    {{ (v.name || 'S').slice(0, 2).toUpperCase() }}
                   </div>
                   <div>
-                    <div>{{ v.name }}</div>
+                    <div class="font-bold text-slate-900">{{ v.name }}</div>
                     <div class="text-[11px] text-slate-400 font-normal">{{ v.vendorCode }}</div>
                   </div>
                 </div>
               </td>
               <td class="py-3.5 px-4">
-                <div class="font-medium text-slate-800">{{ v.phone }}</div>
+                <div class="font-medium text-slate-800">{{ v.phone || '—' }}</div>
                 <div class="text-[11px] text-slate-400">{{ v.email || '—' }}</div>
-              </td>
-              <td class="py-3.5 px-4 text-[11px] text-slate-600">
-                @if (v.bankDetails?.accountNumber) {
-                  <div>{{ v.bankDetails.bankName }} - {{ v.bankDetails.accountNumber }}</div>
-                  <div class="text-slate-400">{{ v.bankDetails.accountName }}</div>
-                } @else {
-                  <span class="text-slate-400 italic">Cash / Unspecified</span>
-                }
               </td>
               <td class="py-3.5 px-4 text-right font-medium text-slate-900 dark:text-white">
                 ৳ {{ (v.totalPurchased || 0) | number:'1.2-2' }}
               </td>
-              <td class="py-3.5 px-4 text-right font-bold text-emerald-600">
-                ৳ {{ (v.totalDiscountReceived || 0) | number:'1.2-2' }}
+              <td class="py-3.5 px-4 text-right font-semibold text-emerald-600">
+                ৳ {{ (v.totalPaid || 0) | number:'1.2-2' }}
               </td>
-              <td class="py-3.5 px-4 text-right font-bold" [class.text-rose-600]="(v.dueBalance || 0) > 0" [class.text-slate-400]="!(v.dueBalance || 0)">
-                ৳ {{ (v.dueBalance || 0) | number:'1.2-2' }}
+              <td class="py-3.5 px-4 text-right font-bold" [class.text-rose-600]="(v.dueBalance || v.outstandingDue || 0) > 0" [class.text-slate-400]="!(v.dueBalance || v.outstandingDue || 0)">
+                ৳ {{ (v.dueBalance !== undefined ? v.dueBalance : (v.outstandingDue || 0)) | number:'1.2-2' }}
               </td>
               <td class="py-3.5 px-4 text-center whitespace-nowrap">
                 <div class="inline-flex items-center gap-1.5">
                   <button
+                    (click)="openDetailsModal(v)"
+                    type="button"
+                    class="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 dark:text-amber-400 font-bold hover:bg-amber-100 transition inline-flex items-center gap-1 text-xs"
+                    title="View Details Information"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    <span>Details</span>
+                  </button>
+                  <button
                     (click)="openDiscountModal(v)"
-                    class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 font-bold hover:bg-emerald-100 transition inline-flex items-center gap-1"
+                    type="button"
+                    class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 font-bold hover:bg-emerald-100 transition inline-flex items-center gap-1 text-xs"
                     title="Give Supplier Discount"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -115,7 +119,8 @@
                   </button>
                   <button
                     (click)="openHistory(v)"
-                    class="px-2 py-1 rounded-lg bg-slate-100 text-slate-600 font-semibold hover:bg-slate-200 transition"
+                    type="button"
+                    class="px-2 py-1 rounded-lg bg-slate-100 text-slate-600 font-semibold hover:bg-slate-200 transition text-xs"
                     title="View Discount History"
                   >
                     History ({{ (v.discounts || []).length }})
@@ -125,7 +130,7 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="7" class="py-12 text-center text-slate-400">
+              <td colspan="6" class="py-12 text-center text-slate-400">
                 No vendors found. Click "Add Vendor" to register a supplier.
               </td>
             </tr>
@@ -285,42 +290,88 @@
 
         <div class="overflow-y-auto flex-1 my-4 pr-1">
           <table class="w-full text-left text-xs text-slate-600">
-            <thead class="bg-slate-50 text-[10px] uppercase font-bold text-slate-400 sticky top-0 border-b border-slate-100">
-              <tr>
-                <th class="py-2.5 px-3">Date</th>
-                <th class="py-2.5 px-3">Bill / Ref No.</th>
-                <th class="py-2.5 px-3">Type & Value</th>
-                <th class="py-2.5 px-3 text-right">Discount (Adjusted)</th>
-                <th class="py-2.5 px-3">Note</th>
-                <th class="py-2.5 px-3 text-center">Action</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-              @for (d of (activeVendor().discounts || []); track d._id) {
-                <tr class="hover:bg-slate-50/50">
-                  <td class="py-2.5 px-3 text-slate-500">{{ d.date | date:'dd/MM/yyyy' }}</td>
-                  <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ d.billNo || '—' }} ({{ d.supplierRef || '—' }})</td>
-                  <td class="py-2.5 px-3">{{ d.type }} ({{ d.value }}{{ d.type === 'Percent' ? '%' : '৳' }})</td>
-                  <td class="py-2.5 px-3 text-right font-bold text-emerald-600">৳ {{ d.amount | number:'1.2-2' }}</td>
-                  <td class="py-2.5 px-3 text-slate-400 max-w-xs truncate">{{ d.note || '—' }}</td>
-                  <td class="py-2.5 px-3 text-center">
-                    <button
-                      (click)="reverseDiscount(d._id)"
-                      class="text-rose-500 hover:text-rose-700 text-[11px] font-bold hover:underline"
-                    >
-                      Reverse
-                    </button>
-                  </td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="6" class="py-8 text-center text-slate-400">
-                    No supplier discounts recorded for this vendor yet.
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
+        <thead class="bg-slate-100/90 dark:bg-slate-800/95 text-xs font-bold uppercase text-slate-700 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700">
+          <tr>
+            <th class="py-3 px-4">Supplier Name</th>
+            <th class="py-3 px-4">Contact</th>
+            <th class="py-3 px-4 text-right">Total Purchased</th>
+            <th class="py-3 px-4 text-right">Total Payment</th>
+            <th class="py-3 px-4 text-right">Outstanding Due</th>
+            <th class="py-3 px-4 text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          @for (v of vendors(); track v._id) {
+            <tr class="hover:bg-slate-50/50 transition">
+              <td class="py-3.5 px-4 font-semibold text-slate-900 dark:text-white">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full bg-amber-50 text-amber-700 font-bold flex items-center justify-center text-xs">
+                    {{ (v.name || 'S').slice(0, 2).toUpperCase() }}
+                  </div>
+                  <div>
+                    <div class="font-bold text-slate-900">{{ v.name }}</div>
+                    <div class="text-[11px] text-slate-400 font-normal">{{ v.vendorCode }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="py-3.5 px-4">
+                <div class="font-medium text-slate-800">{{ v.phone || '—' }}</div>
+                <div class="text-[11px] text-slate-400">{{ v.email || '—' }}</div>
+              </td>
+              <td class="py-3.5 px-4 text-right font-medium text-slate-900 dark:text-white">
+                ৳ {{ (v.totalPurchased || 0) | number:'1.2-2' }}
+              </td>
+              <td class="py-3.5 px-4 text-right font-semibold text-emerald-600">
+                ৳ {{ (v.totalPaid || 0) | number:'1.2-2' }}
+              </td>
+              <td class="py-3.5 px-4 text-right font-bold" [class.text-rose-600]="(v.dueBalance || v.outstandingDue || 0) > 0" [class.text-slate-400]="!(v.dueBalance || v.outstandingDue || 0)">
+                ৳ {{ (v.dueBalance !== undefined ? v.dueBalance : (v.outstandingDue || 0)) | number:'1.2-2' }}
+              </td>
+              <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                <div class="inline-flex items-center gap-1.5">
+                  <button
+                    (click)="openDetailsModal(v)"
+                    type="button"
+                    class="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 dark:text-amber-400 font-bold hover:bg-amber-100 transition inline-flex items-center gap-1 text-xs"
+                    title="View Details Information"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    <span>Details</span>
+                  </button>
+                  <button
+                    (click)="openDiscountModal(v)"
+                    type="button"
+                    class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 font-bold hover:bg-emerald-100 transition inline-flex items-center gap-1 text-xs"
+                    title="Give Supplier Discount"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .8-3 1.8 0 .9 1.343 1.2 3 1.5s3 .6 3 1.5c0 .9-1.343 1.8-3 1.8m0-5.4v-1.8m0 5.4v1.8M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
+                    </svg>
+                    <span>Discount</span>
+                  </button>
+                  <button
+                    (click)="openHistory(v)"
+                    type="button"
+                    class="px-2 py-1 rounded-lg bg-slate-100 text-slate-600 font-semibold hover:bg-slate-200 transition text-xs"
+                    title="View Discount History"
+                  >
+                    History ({{ (v.discounts || []).length }})
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="py-12 text-center text-slate-400">
+                No vendors found. Click "Add Vendor" to register a supplier.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
         </div>
 
         <div class="flex justify-end pt-3 border-t border-slate-100">
@@ -506,3 +557,169 @@
     </div>
   }
 </div>
+
+  <!-- =========================================================================
+       SUPPLIER DETAILS INFORMATION MODAL
+       ========================================================================= -->
+  @if (showDetailsModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl p-6 sm:p-8 animate-in zoom-in-95 duration-150 my-6 border border-slate-100 max-h-[90vh] flex flex-col">
+        <!-- Header -->
+        <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-amber-50 text-amber-700 font-bold flex items-center justify-center text-sm shadow-xs">
+              {{ (selectedVendorDetails()?.name || 'S').slice(0, 2).toUpperCase() }}
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-slate-900">{{ selectedVendorDetails()?.name }}</h2>
+              <div class="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
+                <span class="font-mono font-bold text-amber-600">{{ selectedVendorDetails()?.vendorCode || 'VND' }}</span>
+                <span>•</span>
+                <span>Supplier Information & Details</span>
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            (click)="closeDetailsModal()"
+            class="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition text-2xl leading-none"
+          >
+            &times;
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="flex-1 overflow-y-auto space-y-4 pr-1 text-xs">
+          <!-- 4 Financial KPI Stat Cards -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+              <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Total Purchased</span>
+              <span class="text-base font-black text-slate-900 mt-0.5 block">
+                ৳ {{ (selectedVendorDetails()?.totalPurchased || 0) | number:'1.2-2' }}
+              </span>
+            </div>
+            <div class="bg-emerald-50/60 p-3 rounded-xl border border-emerald-100/60">
+              <span class="text-[10px] uppercase font-bold text-emerald-600 block tracking-wider">Total Payment</span>
+              <span class="text-base font-black text-emerald-700 mt-0.5 block">
+                ৳ {{ (selectedVendorDetails()?.totalPaid || 0) | number:'1.2-2' }}
+              </span>
+            </div>
+            <div class="bg-amber-50/60 p-3 rounded-xl border border-amber-100/60">
+              <span class="text-[10px] uppercase font-bold text-amber-600 block tracking-wider">Discounts</span>
+              <span class="text-base font-black text-amber-700 mt-0.5 block">
+                ৳ {{ (selectedVendorDetails()?.totalDiscountReceived || 0) | number:'1.2-2' }}
+              </span>
+            </div>
+            <div class="bg-rose-50/60 p-3 rounded-xl border border-rose-100/60">
+              <span class="text-[10px] uppercase font-bold text-rose-500 block tracking-wider">Outstanding Due</span>
+              <span class="text-base font-black text-rose-600 mt-0.5 block">
+                ৳ {{ (selectedVendorDetails()?.dueBalance !== undefined ? selectedVendorDetails()?.dueBalance : (selectedVendorDetails()?.outstandingDue || 0)) | number:'1.2-2' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Contact & Profile Information Card -->
+          <div class="bg-white p-4 rounded-2xl border border-slate-200/80 space-y-3">
+            <h4 class="font-bold text-slate-800 uppercase tracking-wider text-[11px]">Contact & Company Profile</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-slate-600">
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Contact Person</span>
+                <span class="font-semibold text-slate-800">{{ selectedVendorDetails()?.contactPerson || '—' }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Phone Number</span>
+                <span class="font-semibold text-slate-800">{{ selectedVendorDetails()?.phone || '—' }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Email Address</span>
+                <span class="font-semibold text-slate-800">{{ selectedVendorDetails()?.email || '—' }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Trade License</span>
+                <span class="font-semibold text-slate-800">{{ selectedVendorDetails()?.tradeLicense || '—' }}</span>
+              </div>
+              <div class="sm:col-span-2">
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Address / Shop Location</span>
+                <span class="font-semibold text-slate-800">{{ selectedVendorDetails()?.address || '—' }}</span>
+              </div>
+              @if (selectedVendorDetails()?.notes) {
+                <div class="sm:col-span-2">
+                  <span class="text-slate-400 block text-[10px] uppercase font-bold">Notes</span>
+                  <span class="text-slate-700 italic">{{ selectedVendorDetails()?.notes }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Bank Account Details Card -->
+          <div class="bg-white p-4 rounded-2xl border border-slate-200/80 space-y-3">
+            <h4 class="font-bold text-slate-800 uppercase tracking-wider text-[11px]">Bank Account Details</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-slate-600">
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Bank Name</span>
+                <span class="font-semibold text-slate-800">{{ selectedVendorDetails()?.bankDetails?.bankName || selectedVendorDetails()?.bankName || 'Cash / Unspecified' }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Account Name</span>
+                <span class="font-semibold text-slate-800">{{ selectedVendorDetails()?.bankDetails?.accountName || selectedVendorDetails()?.bankAccountName || '—' }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Account Number</span>
+                <span class="font-mono font-bold text-slate-800">{{ selectedVendorDetails()?.bankDetails?.accountNumber || selectedVendorDetails()?.bankAccountNumber || '—' }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Branch</span>
+                <span class="font-semibold text-slate-800">{{ selectedVendorDetails()?.bankDetails?.branch || selectedVendorDetails()?.branch || '—' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Purchase Bills Section -->
+          @if (selectedVendorDetails()?.vendorBills?.length > 0) {
+            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 space-y-2.5">
+              <h4 class="font-bold text-slate-800 uppercase tracking-wider text-[11px]">
+                Purchase Bills ({{ selectedVendorDetails()?.vendorBills?.length }})
+              </h4>
+              <div class="divide-y divide-slate-100 max-h-40 overflow-y-auto">
+                @for (vb of selectedVendorDetails()?.vendorBills; track vb._id) {
+                  <div class="py-2 flex items-center justify-between text-xs">
+                    <div>
+                      <span class="font-bold text-slate-900 font-mono">{{ vb.billNumber }}</span>
+                      <span class="text-slate-400 ml-2">{{ vb.date | date:'dd/MM/yyyy' }}</span>
+                      @if (vb.mainBillId?.billNumber) {
+                        <span class="text-slate-500 ml-2">Linked: {{ vb.mainBillId.billNumber }}</span>
+                      }
+                    </div>
+                    <div class="text-right">
+                      <span class="font-bold text-slate-900">৳{{ vb.totalAmount | number:'1.2-2' }}</span>
+                      @if ((vb.discountAmount || 0) > 0) {
+                        <span class="text-emerald-600 ml-1.5 text-[11px]">(-৳{{ vb.discountAmount | number:'1.2-2' }})</span>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Footer -->
+        <div class="flex items-center justify-between pt-4 border-t border-slate-100 mt-4">
+          <button
+            type="button"
+            (click)="closeDetailsModal(); openDiscountModal(selectedVendorDetails())"
+            class="px-3.5 py-2 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold text-xs inline-flex items-center gap-1.5 transition"
+          >
+            <span>+</span> Give Supplier Discount
+          </button>
+          <button
+            type="button"
+            (click)="closeDetailsModal()"
+            class="px-5 py-2 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  }

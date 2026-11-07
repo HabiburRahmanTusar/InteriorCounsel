@@ -22,6 +22,13 @@ export class VendorBillsComponent implements OnInit {
   billSearch = '';
   readonly loading = signal(false);
   readonly showModal = signal(false);
+  readonly showDetailsModal = signal(false);
+  readonly selectedBillForDetails = signal<any | null>(null);
+
+  viewDetails(bill: any) {
+    this.selectedBillForDetails.set(bill);
+    this.showDetailsModal.set(true);
+  }
 
   // Form State
   formBill: any = {
@@ -115,25 +122,57 @@ export class VendorBillsComponent implements OnInit {
     this.onMasterBillSelected('');
   }
 
-  // Odoo Feature: Product Line Mirroring from Master Sales Bill
+  // Product Line Mirroring from Master Sales Bill
   onMasterBillSelected(billId: string) {
     if (!billId) {
       this.selectedMasterBill.set(null);
+      this.formBill.mainBillId = '';
       this.formBill.items = [];
       this.billSearch = '';
       this.matchingBills.set([]);
       return;
     }
-    const bill = this.masterBills().find((b) => b._id === billId);
+
+    this.formBill.mainBillId = billId;
+    const bill = this.masterBills().find((b) => b._id === billId || b.id === billId || (b.billNumber && b.billNumber.toLowerCase() === billId.toLowerCase()));
     this.selectedMasterBill.set(bill || null);
     if (bill && !this.billSearch) {
       this.billSearch = bill.billNumber;
     }
     this.matchingBills.set([]);
 
-    this.commercialService.getBillLinesForVendor(billId).subscribe({
-      next: (res) => {
-        this.formBill.items = res.data || [];
+    const mapItems = (items: any[]) => items.map((it: any) => ({
+      description: it.description || '',
+      unit: it.unit || 'pcs',
+      quantity: Number(it.quantity) || 1,
+      unitPrice: it.purchaseAmount && it.quantity ? Number((it.purchaseAmount / it.quantity).toFixed(2)) : (Number(it.unitPrice) || 0),
+      amount: Number((Number(it.purchaseAmount) || Number(it.amount) || ((Number(it.quantity) || 1) * (Number(it.unitPrice) || 0))).toFixed(2)),
+      isSelected: true,
+    }));
+
+    // 1. Immediately mirror lines if cached on the bill object
+    if (bill && Array.isArray(bill.items) && bill.items.length > 0) {
+      this.formBill.items = mapItems(bill.items);
+    }
+
+    // 2. Fetch full bill by ID to ensure complete and up-to-date products
+    this.commercialService.getBillById(billId).subscribe({
+      next: (res: any) => {
+        const fullBill = res.data || res;
+        if (fullBill && Array.isArray(fullBill.items) && fullBill.items.length > 0) {
+          this.formBill.items = mapItems(fullBill.items);
+        }
+      },
+      error: () => {
+        // Fallback to getBillLinesForVendor
+        this.commercialService.getBillLinesForVendor(billId).subscribe({
+          next: (r: any) => {
+            const lines = r?.data || r || [];
+            if (Array.isArray(lines) && lines.length > 0) {
+              this.formBill.items = mapItems(lines);
+            }
+          },
+        });
       },
     });
   }
@@ -298,22 +337,20 @@ export class VendorBillsComponent implements OnInit {
       return;
     }
     const rows = list.map((vb: any) => [
-      vb.billNumber || vb.billRef || '—',
-      vb.date ? new Date(vb.date).toISOString().slice(0, 10) : '—',
       vb.vendorId?.name || vb.vendorName || 'Supplier',
-      vb.category || 'General',
+      vb.vendorId?.phone || '-',
       vb.totalAmount || 0,
-      vb.discountAmount || 0,
-      vb.netAmount !== undefined ? vb.netAmount : Math.max(0, (vb.totalAmount || 0) - (vb.discountAmount || 0)),
       vb.paidAmount || 0,
       vb.vendorDue !== undefined ? vb.vendorDue : Math.max(0, (vb.totalAmount || 0) - (vb.discountAmount || 0) - (vb.paidAmount || 0)),
+      vb.billNumber || vb.billRef || '-',
+      vb.date ? new Date(vb.date).toISOString().slice(0, 10) : '-',
       vb.paymentState || 'not_paid',
     ]);
     this.exportService.exportToExcel({
       filename: 'InteriorCounsel_Vendor_Purchase_Bills',
       title: 'Supplier Purchase & Vendor Bills Register',
       subtitle: 'Total Bills: ' + rows.length,
-      headers: ['Bill Number', 'Date', 'Supplier / Vendor', 'Category', 'Purchase Amount', 'Discount', 'Net Amount', 'Paid', 'Vendor Due', 'Status'],
+      headers: ['Supplier Name', 'Contact Phone', 'Total Purchased (BDT)', 'Total Payment (BDT)', 'Outstanding Due (BDT)', 'Bill No', 'Date', 'Status'],
       rows,
     });
   }
@@ -325,20 +362,18 @@ export class VendorBillsComponent implements OnInit {
       return;
     }
     const rows = list.map((vb: any) => [
-      vb.billNumber || vb.billRef || '—',
-      vb.date ? new Date(vb.date).toISOString().slice(0, 10) : '—',
       vb.vendorId?.name || vb.vendorName || 'Supplier',
-      vb.category || 'General',
+      vb.vendorId?.phone || '—',
       (vb.totalAmount || 0).toLocaleString(),
       (vb.paidAmount || 0).toLocaleString(),
-      (((vb.totalAmount || 0) - (vb.paidAmount || 0))).toLocaleString(),
-      vb.paymentStatus || 'Pending',
+      (vb.vendorDue !== undefined ? vb.vendorDue : Math.max(0, (vb.totalAmount || 0) - (vb.discountAmount || 0) - (vb.paidAmount || 0))).toLocaleString(),
+      vb.billNumber || vb.billRef || '—',
     ]);
     this.exportService.exportToPdf({
       filename: 'InteriorCounsel_Vendor_Purchase_Bills',
       title: 'Supplier Purchase & Vendor Bills Register',
       subtitle: 'Total Purchase Invoices: ' + rows.length,
-      headers: ['Bill No', 'Date', 'Supplier', 'Category', 'Total (Tk)', 'Paid (Tk)', 'Due (Tk)', 'Status'],
+      headers: ['Supplier Name', 'Contact', 'Total Purchased (Tk)', 'Total Payment (Tk)', 'Outstanding Due (Tk)', 'Bill No'],
       rows,
       orientation: 'landscape',
     });

@@ -212,10 +212,10 @@ exports.getBillLinesForVendor = async (billId) => {
   }
   return (bill.items || []).map((item) => ({
     description: item.description,
-    unit: item.unit,
-    quantity: item.quantity,
-    unitPrice: item.unitPrice,
-    amount: item.amount,
+    unit: item.unit || 'pcs',
+    quantity: Number(item.quantity) || 1,
+    unitPrice: item.purchaseAmount && item.quantity ? Number((item.purchaseAmount / item.quantity).toFixed(2)) : (Number(item.unitPrice) || 0),
+    amount: item.purchaseAmount ? Number(item.purchaseAmount) : (Number(item.amount) || ((Number(item.quantity) || 1) * (Number(item.unitPrice) || 0))),
     isSelected: true, // Default checked for mirroring (Odoo _prune_unselected_lines)
   }));
 };

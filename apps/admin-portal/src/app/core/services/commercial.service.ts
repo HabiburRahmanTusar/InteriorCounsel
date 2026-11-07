@@ -51,6 +51,7 @@ export interface VendorBill {
   stockPurposeNumber?: string;
   date: string;
   vendorId: any;
+  vendorName?: string;
   mainBillId?: any;
   category: string;
   items: BillItem[];
@@ -124,6 +125,10 @@ export class CommercialService {
     return this.http.get<any>(`${this.baseUrl}/billing`, { params });
   }
 
+  getBillById(id: string): Observable<any> {
+    return this.getBill(id);
+  }
+
   getBill(id: string): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/billing/${id}`);
   }
@@ -172,6 +177,10 @@ export class CommercialService {
 
   createClient(data: any): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/clients`, data);
+  }
+
+  getVendorById(id: string): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/vendors/${id}`);
   }
 
   getVendors(params?: any): Observable<any> {
