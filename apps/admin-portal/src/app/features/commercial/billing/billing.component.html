@@ -1145,7 +1145,7 @@
         </div>
 
         <!-- Dynamic Payment Stamp -->
-        @let ps = getPayState(activeInvoice().totalAmount, activeInvoice().totalCashIn);
+        @let ps = getPayState(getInvoiceGrandTotal(activeInvoice()), activeInvoice().totalCashIn);
         <div class="ip-stamp absolute font-extrabold uppercase tracking-widest pointer-events-none select-none"
           [class.text-emerald-600]="ps.cls === 'paid'" [class.border-emerald-600]="ps.cls === 'paid'"
           [class.text-amber-500]="ps.cls === 'part'" [class.border-amber-500]="ps.cls === 'part'"
@@ -1277,7 +1277,7 @@
             <div class="flex items-baseline gap-2 text-xs">
               <span class="font-bold whitespace-nowrap text-slate-900">Taka In Word:</span>
               <span class="font-semibold text-slate-800 italic">
-                {{ getTakaWords(activeInvoice().totalAmount) }} Taka Only
+                {{ getTakaWords(getInvoiceGrandTotal(activeInvoice())) }} Taka Only
               </span>
             </div>
             <div class="text-[11px] text-slate-500 italic mt-3 font-medium">
@@ -1287,19 +1287,19 @@
 
           <!-- Official Totals Box matching screenshot -->
           <div class="w-56 border-l border-b border-slate-800 text-xs font-semibold divide-y divide-slate-800">
-            @if (activeInvoice().discountAmount > 0) {
+            @if (getInvoiceDiscount(activeInvoice()) > 0) {
             <div class="flex justify-between px-3 py-1.5 bg-white">
-              <span class="text-slate-600">SUBTOTAL</span>
-              <span>{{ (activeInvoice().totalAmount + activeInvoice().discountAmount) | number:'1.2-2' }}</span>
+              <span class="text-slate-600 font-bold">SUBTOTAL</span>
+              <span class="font-bold text-slate-900">{{ getInvoiceSubtotal(activeInvoice()) | number:'1.2-2' }}</span>
             </div>
-            <div class="flex justify-between px-3 py-1.5 text-rose-600 bg-white">
-              <span class="text-slate-600">DISCOUNT</span>
-              <span>- {{ activeInvoice().discountAmount | number:'1.2-2' }}</span>
+            <div class="flex justify-between px-3 py-1.5 text-rose-600 bg-white font-bold">
+              <span class="text-slate-600 font-bold">DISCOUNT</span>
+              <span class="text-rose-600">- {{ getInvoiceDiscount(activeInvoice()) | number:'1.2-2' }}</span>
             </div>
             }
             <div class="flex justify-between px-3 py-2 bg-white">
               <span class="text-slate-600 font-bold">TOTAL</span>
-              <span class="font-bold text-slate-900">{{ activeInvoice().totalAmount | number:'1.2-2' }}</span>
+              <span class="font-bold text-slate-900">{{ getInvoiceGrandTotal(activeInvoice()) | number:'1.2-2' }}</span>
             </div>
             <div class="flex justify-between px-3 py-2 bg-white">
               <span class="text-slate-600 font-bold">PAYMENT</span>
@@ -1307,9 +1307,7 @@
             </div>
             <div class="flex justify-between px-3 py-2 bg-white">
               <span class="text-slate-600 font-bold">DUE</span>
-              <span class="font-bold text-slate-900">{{ ((activeInvoice().customerDue !== undefined ?
-                activeInvoice().customerDue : (activeInvoice().totalAmount - (activeInvoice().totalCashIn || 0)))) |
-                number:'1.2-2' }}</span>
+              <span class="font-bold text-slate-900">{{ getInvoiceDue(activeInvoice()) | number:'1.2-2' }}</span>
             </div>
           </div>
         </div>
@@ -1445,7 +1443,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div class="bg-white p-3.5 rounded-xl border border-slate-200">
             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Bill Total</span>
-            <span class="text-base font-black text-slate-900">{{ activeInvoice().totalAmount | number:'1.2-2' }}</span>
+            <span class="text-base font-black text-slate-900">{{ getInvoiceGrandTotal(activeInvoice()) | number:'1.2-2' }}</span>
           </div>
           <div class="bg-white p-3.5 rounded-xl border border-slate-200">
             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Received</span>
@@ -1454,9 +1452,7 @@
           </div>
           <div class="bg-white p-3.5 rounded-xl border border-slate-200">
             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Balance Due</span>
-            <span class="text-base font-black text-rose-600">{{ ((activeInvoice().customerDue !== undefined ?
-              activeInvoice().customerDue : (activeInvoice().totalAmount - (activeInvoice().totalCashIn || 0)))) |
-              number:'1.2-2' }}</span>
+            <span class="text-base font-black text-rose-600">{{ getInvoiceDue(activeInvoice()) | number:'1.2-2' }}</span>
           </div>
         </div>
 
