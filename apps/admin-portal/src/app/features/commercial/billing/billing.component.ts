@@ -1068,47 +1068,22 @@ export class BillingComponent implements OnInit {
   getInvoiceTotalCashOut(invoice: any): number {
     if (!invoice) return 0;
 
-    // Direct Expenses (CashOut vouchers linked to bill)
-    const directExpensesSum = (invoice.directExpenses || []).reduce(
-      (sum: number, exp: any) => sum + (Number(exp.amount) || 0),
-      0
-    );
-
-    // Direct Costs on the Bill (Transport + Fitting + Commission + Patty Box + Sales Return)
-    const transport = Number(invoice.transportCharge) || 0;
-    const fitting = Number(invoice.fittingCharge) || 0;
-    const patty = Number(invoice.pattyBoxCharge) || 0;
-    const commission = Number(invoice.salesCommission) || 0;
-    const salesReturn = Number(invoice.salesReturn) || 0;
-    const sumDirectCharges = transport + fitting + patty + commission + salesReturn;
-
-    const directCosts = Number(invoice.directCosts) || sumDirectCharges;
-    const directExpenseCost = Number(invoice.directExpenseCost) || Number(invoice.profitability?.directExpenseCost) || 0;
-    const explicitCashOut = Number(invoice.totalCashOut) || 0;
-
-    const totalCashOut = Math.max(
-      directCosts + directExpensesSum,
-      directCosts + directExpenseCost,
-      explicitCashOut,
-      sumDirectCharges
-    );
-
-    if (totalCashOut > 0) {
-      return Number(totalCashOut.toFixed(2));
+    // ONLY count actual CashOut records recorded in Cash Flow module linked to this bill.
+    // Never treat Other Charges (Transport, Fitting, Labor, etc.) as cashout.
+    const directExpenses = invoice.directExpenses || [];
+    if (Array.isArray(directExpenses) && directExpenses.length > 0) {
+      const sum = directExpenses.reduce(
+        (acc: number, exp: any) => acc + (Number(exp.amount) || 0),
+        0
+      );
+      return Number(sum.toFixed(2));
     }
 
-    // Mathematical derivation if billProfit is present:
-    // Profit = Total Sale - Purchase - Cashout => Cashout = Total Sale - Purchase - Profit
-    const grandTotal = this.getInvoiceGrandTotal(invoice) || Number(invoice.totalAmount) || 0;
-    const purchase = this.getInvoiceTotalPurchase(invoice);
-    const profit = invoice.billProfit !== undefined && invoice.billProfit !== null ? Number(invoice.billProfit) : null;
-    if (profit !== null && grandTotal > 0) {
-      const derived = grandTotal - purchase - profit;
-      if (derived >= 0) {
-        return Number(derived.toFixed(2));
-      }
+    if (invoice.profitability && typeof invoice.profitability.directExpenseCost === 'number' && invoice.profitability.directExpenseCost > 0) {
+      return Number(Number(invoice.profitability.directExpenseCost).toFixed(2));
     }
 
+    // If no cashflow voucher (cashout) recorded against this bill yet, cashout is strictly 0.00
     return 0;
   }
 
@@ -1119,9 +1094,6 @@ export class BillingComponent implements OnInit {
     const cashOut = this.getInvoiceTotalCashOut(invoice);
     if (grandTotal > 0) {
       return Number((grandTotal - purchase - cashOut).toFixed(2));
-    }
-    if (invoice.billProfit !== undefined && invoice.billProfit !== null && !isNaN(Number(invoice.billProfit))) {
-      return Number(Number(invoice.billProfit).toFixed(2));
     }
     return 0;
   }
