@@ -1064,6 +1064,37 @@ export class BillingComponent implements OnInit {
     return Number(Math.max(0, total - paid).toFixed(2));
   }
 
+  getInvoiceDirectCosts(invoice: any): number {
+    if (!invoice) return 0;
+    const directCosts = Number(invoice.directCosts);
+    if (!isNaN(directCosts) && directCosts > 0) {
+      return Number(directCosts.toFixed(2));
+    }
+    const transport = Number(invoice.transportCharge) || 0;
+    const fitting = Number(invoice.fittingCharge) || 0;
+    const patty = Number(invoice.pattyBoxCharge) || 0;
+    const commission = Number(invoice.salesCommission) || 0;
+    const salesReturn = Number(invoice.salesReturn) || 0;
+    const otherCharges = (invoice.otherCharges || []).reduce((acc: number, c: any) => acc + (Number(c.amount) || 0), 0);
+    const sum = transport + fitting + patty + commission + salesReturn || otherCharges;
+    return Number(sum.toFixed(2));
+  }
+
+  getInvoiceVendorDue(invoice: any): number {
+    if (!invoice) return 0;
+    if (invoice.vendorTotalDue !== undefined && invoice.vendorTotalDue !== null) {
+      return Number(invoice.vendorTotalDue) || 0;
+    }
+    if (invoice.vendorDue !== undefined && invoice.vendorDue !== null) {
+      return Number(invoice.vendorDue) || 0;
+    }
+    if (Array.isArray(invoice.vendorBills) && invoice.vendorBills.length > 0) {
+      const sum = invoice.vendorBills.reduce((acc: number, vb: any) => acc + (Number(vb.vendorDue) || 0), 0);
+      return Number(sum.toFixed(2));
+    }
+    return 0;
+  }
+
   getInvoiceTotalPurchase(invoice: any): number {
     if (!invoice) return 0;
     return Number(
@@ -1075,6 +1106,15 @@ export class BillingComponent implements OnInit {
         0
       ).toFixed(2)
     );
+  }
+
+  getInvoiceCashOutList(invoice: any = null): any[] {
+    const inv = invoice || this.activeInvoice();
+    if (!inv) return [];
+    if (Array.isArray(inv.directExpenses) && inv.directExpenses.length > 0) {
+      return inv.directExpenses;
+    }
+    return [];
   }
 
   getInvoiceTotalCashOut(invoice: any): number {
@@ -1231,17 +1271,17 @@ export class BillingComponent implements OnInit {
       return;
     }
     const rows = list.map((b) => [
-      b.billNumber || '—',
-      b.date ? new Date(b.date).toISOString().slice(0, 10) : '—',
-      this.getInvoiceCustomerName(b) || 'Customer',
-      b.projectName || '—',
-      this.getInvoiceSalesperson(b) || '—',
-      b.totalAmount || 0,
+      b.date ? new Date(b.date).toISOString().slice(0, 10) : '-',
+      b.billNumber || '-',
+      `${this.getInvoiceCustomerName(b) || 'Customer'} - ${b.projectName || ''}`,
+      this.getInvoiceGrandTotal(b) || b.totalAmount || 0,
       b.totalCashIn || 0,
-      b.customerDue || 0,
-      b.directCosts || 0,
-      b.vendorTotalPurchase || 0,
-      b.billProfit || 0,
+      this.getInvoiceDue(b),
+      this.getInvoiceTotalPurchase(b),
+      this.getInvoiceDirectCosts(b),
+      this.getInvoiceTotalCashOut(b),
+      this.getInvoiceVendorDue(b),
+      this.getInvoiceProfit(b),
       b.status || 'Draft',
     ]);
     this.exportService.exportToExcel({
@@ -1249,8 +1289,18 @@ export class BillingComponent implements OnInit {
       title: 'Commercial Sales & Invoice Register',
       subtitle: 'Total Invoices: ' + rows.length,
       headers: [
-        'Bill No', 'Date', 'Customer', 'Project', 'Salesperson',
-        'Total Billed (BDT)', 'Collected (BDT)', 'Customer Due (BDT)', 'Direct Costs (BDT)', 'Vendor Bills (BDT)', 'Gross Profit (BDT)', 'Status'
+        'Date',
+        'Bill No',
+        'Client / Project Name',
+        'Total Amount',
+        'Received',
+        'Due',
+        'Total Purchase',
+        'Others Cost = Direct Cost',
+        'Total Cashout',
+        'Vendor/Supplier Due',
+        'Profit',
+        'Status',
       ],
       rows,
     });
@@ -1264,20 +1314,37 @@ export class BillingComponent implements OnInit {
       return;
     }
     const rows = list.map((b) => [
-      b.billNumber || '—',
-      b.date ? new Date(b.date).toISOString().slice(0, 10) : '—',
+      b.date ? new Date(b.date).toISOString().slice(0, 10) : '-',
+      b.billNumber || '-',
       this.getInvoiceCustomerName(b) || 'Customer',
-      (b.totalAmount || 0).toLocaleString(),
+      (this.getInvoiceGrandTotal(b) || b.totalAmount || 0).toLocaleString(),
       (b.totalCashIn || 0).toLocaleString(),
-      (b.customerDue || 0).toLocaleString(),
-      (b.billProfit || 0).toLocaleString(),
+      this.getInvoiceDue(b).toLocaleString(),
+      this.getInvoiceTotalPurchase(b).toLocaleString(),
+      this.getInvoiceDirectCosts(b).toLocaleString(),
+      this.getInvoiceTotalCashOut(b).toLocaleString(),
+      this.getInvoiceVendorDue(b).toLocaleString(),
+      this.getInvoiceProfit(b).toLocaleString(),
       b.status || 'Draft',
     ]);
     this.exportService.exportToPdf({
       filename: 'InteriorCounsel_Sales_Invoices',
       title: 'Commercial Sales & Invoice Register',
       subtitle: 'Total Invoices: ' + rows.length,
-      headers: ['Bill No', 'Date', 'Customer', 'Billed (Tk)', 'Paid (Tk)', 'Due (Tk)', 'Profit (Tk)', 'Status'],
+      headers: [
+        'Date',
+        'Bill No',
+        'Customer',
+        'Total Amount',
+        'Received',
+        'Due',
+        'Purchase',
+        'Direct Cost',
+        'Cashout',
+        'Vendor Due',
+        'Profit',
+        'Status',
+      ],
       rows,
       orientation: 'landscape',
     });

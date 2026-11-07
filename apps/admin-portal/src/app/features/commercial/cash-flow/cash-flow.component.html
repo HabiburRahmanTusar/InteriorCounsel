@@ -563,6 +563,21 @@
             </select>
           </div>
 
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">
+              Link to Master Bill / Project (Optional)
+            </label>
+            <select [(ngModel)]="formOut.billId" class="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs">
+              <option value="">No Bill Linked (General Cash Out / Overhead)</option>
+              @for (b of bills(); track b._id) {
+                <option [value]="b._id">
+                  {{ b.billNumber }} — {{ b.projectName || getCustomerName(b) }} (Total: ৳{{ (b.totalAmount || 0) | number:'1.2-2' }})
+                </option>
+              }
+            </select>
+            <p class="text-[11px] text-slate-400 mt-1">If this cash disbursement is incurred for a specific client bill, select it here so it hits the bill's cash out and profit.</p>
+          </div>
+
           @if (formOut.type === 'purchase') {
             <div>
               <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Vendor Bill (Invoice Ref)</label>

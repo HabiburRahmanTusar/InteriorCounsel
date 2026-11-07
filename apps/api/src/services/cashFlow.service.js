@@ -31,6 +31,28 @@ async function syncBillAfterCashIn(billId) {
     paymentState,
   });
 
+  if (bill.customerId) {
+    const customerPayments = await CashIn.find({ customerId: bill.customerId });
+    const totalPaid = customerPayments.reduce((acc, p) => acc + (p.amount || 0), 0);
+    const customer = await Customer.findById(bill.customerId);
+    if (customer) {
+      await Customer.findByIdAndUpdate(bill.customerId, {
+        totalPaid: Number(totalPaid.toFixed(2)),
+        dueBalance: Number(((customer.totalBilled || 0) - totalPaid).toFixed(2)),
+      });
+    }
+  }
+}
+
+async function syncBillAfterCashOut(billId) {
+  if (!billId) return;
+  const cashOuts = await CashOut.find({ billId });
+  const totalCashOut = cashOuts.reduce((acc, c) => acc + (c.amount || 0), 0);
+  await Bill.findByIdAndUpdate(billId, {
+    totalCashOut: Number(totalCashOut.toFixed(2)),
+  });
+}
+
   // Sync customer
   if (bill.customerId) {
     const customerPayments = await CashIn.find({ customerId: bill.customerId });
@@ -299,12 +321,23 @@ exports.recordCashOut = async (data, userId) => {
     }
   }
 
+  const payload = { ...data };
+  if (!payload.billId) delete payload.billId;
+  if (!payload.vendorBillId) delete payload.vendorBillId;
+  if (!payload.vendorId) delete payload.vendorId;
+  if (!payload.employeeId) delete payload.employeeId;
+  if (!payload.shareholderId) delete payload.shareholderId;
+
   const record = new CashOut({
-    ...data,
+    ...payload,
     paidBy: userId || data.paidBy,
   });
 
   const saved = await record.save();
+
+  if (saved.billId) {
+    await syncBillAfterCashOut(saved.billId);
+  }
 
   // 1. If vendor purchase bill payment
   if (saved.vendorBillId) {
@@ -359,6 +392,7 @@ exports.deleteCashOut = async (id) => {
   await record.deleteOne();
 
   if (vendorBillId) await syncVendorBillAfterCashOut(vendorBillId);
+  if (record.billId) await syncBillAfterCashOut(record.billId);
   if (salaryRecordId) {
     await SalaryRecord.findByIdAndUpdate(salaryRecordId, { status: 'Draft' });
   }
