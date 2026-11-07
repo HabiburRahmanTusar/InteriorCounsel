@@ -1173,14 +1173,57 @@ export class BillingComponent implements OnInit {
     return 0;
   }
 
+  getInvoicePurchaseDiscount(invoice: any): number {
+    if (!invoice) return 0;
+    if (Array.isArray(invoice.vendorBills) && invoice.vendorBills.length > 0) {
+      const discount = invoice.vendorBills
+        .filter((vb: any) => vb.status !== 'Cancelled')
+        .reduce((acc: number, vb: any) => acc + (Number(vb.discountAmount) || 0), 0);
+      return Number(discount.toFixed(2));
+    }
+    return 0;
+  }
+
+  getInvoiceGrossPurchase(invoice: any): number {
+    if (!invoice) return 0;
+    if (Array.isArray(invoice.vendorBills) && invoice.vendorBills.length > 0) {
+      const gross = invoice.vendorBills
+        .filter((vb: any) => vb.status !== 'Cancelled')
+        .reduce((acc: number, vb: any) => acc + (Number(vb.totalAmount) || 0), 0);
+      return Number(gross.toFixed(2));
+    }
+    return this.getInvoiceTotalPurchase(invoice);
+  }
+
   getInvoiceTotalPurchase(invoice: any): number {
     if (!invoice) return 0;
+
+    // 1. If invoice has vendorBills array, calculate net purchase after discount
+    if (Array.isArray(invoice.vendorBills) && invoice.vendorBills.length > 0) {
+      const netPurchases = invoice.vendorBills
+        .filter((vb: any) => vb.status !== 'Cancelled')
+        .reduce((acc: number, vb: any) => {
+          const gross = Number(vb.totalAmount) || 0;
+          const discount = Number(vb.discountAmount) || 0;
+          const net = (vb.netAmount !== undefined && vb.netAmount !== null)
+            ? Number(vb.netAmount)
+            : Math.max(0, gross - discount);
+          return acc + (isNaN(net) ? 0 : net);
+        }, 0);
+      return Number(netPurchases.toFixed(2));
+    }
+
+    // 2. If profitability object has materialCost (which is after discount)
+    if (invoice.profitability && typeof invoice.profitability.materialCost === 'number') {
+      return Number(Number(invoice.profitability.materialCost).toFixed(2));
+    }
+
+    // 3. Fallback to vendorTotalPurchase or totalPurchase
     return Number(
       (
-        Number(invoice.totalPurchase) ||
         Number(invoice.vendorTotalPurchase) ||
+        Number(invoice.totalPurchase) ||
         Number(invoice.materialCost) ||
-        Number(invoice.profitability?.materialCost) ||
         0
       ).toFixed(2)
     );

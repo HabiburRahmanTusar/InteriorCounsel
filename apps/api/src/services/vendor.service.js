@@ -1,6 +1,7 @@
 const Vendor = require('../models/Vendor');
 const VendorBill = require('../models/VendorBill');
 const CashOut = require('../models/CashOut');
+const vendorBillService = require('./vendorBill.service');
 
 exports.listVendors = async ({ search, category, status, page = 1, limit = 20 }) => {
   const query = {};
@@ -21,8 +22,17 @@ exports.listVendors = async ({ search, category, status, page = 1, limit = 20 })
     Vendor.countDocuments(query),
   ]);
 
+  const sanitizedVendors = vendors.map((v) => {
+    const obj = v.toObject ? v.toObject() : { ...v };
+    const gross = obj.grossPurchased !== undefined ? obj.grossPurchased : (obj.totalPurchased || 0);
+    const discount = obj.totalDiscountReceived || 0;
+    obj.grossPurchased = gross;
+    obj.totalPurchased = Number(Math.max(0, gross - discount).toFixed(2));
+    return obj;
+  });
+
   return {
-    data: vendors,
+    data: sanitizedVendors,
     pagination: {
       page: Number(page),
       limit: Number(limit),
@@ -46,8 +56,14 @@ exports.getVendorById = async (id) => {
     CashOut.find({ vendorId: id, type: 'purchase' }).sort({ date: -1 }).limit(10),
   ]);
 
+  const vendorObj = vendor.toObject ? vendor.toObject() : { ...vendor };
+  const gross = vendorObj.grossPurchased !== undefined ? vendorObj.grossPurchased : (vendorObj.totalPurchased || 0);
+  const discount = vendorObj.totalDiscountReceived || 0;
+  vendorObj.grossPurchased = gross;
+  vendorObj.totalPurchased = Number(Math.max(0, gross - discount).toFixed(2));
+
   return {
-    vendor,
+    vendor: vendorObj,
     vendorBills,
     recentPayments: payments,
   };
@@ -156,7 +172,15 @@ exports.applySupplierDiscount = async (vendorId, { vendorBillId, billNo, supplie
   vendor.totalDiscountReceived = Number(((vendor.totalDiscountReceived || 0) + discountAmount).toFixed(2));
   await vendor.save();
 
-  return { vendor, vendorBill, discount: discountEntry };
+  // Recalculate vendor net purchased and due balance
+  await vendorBillService.updateVendorFinancials(vendorId);
+  if (vendorBill.mainBillId) {
+    const billingService = require('./billing.service');
+    await billingService.recalculateBillProfit(vendorBill.mainBillId);
+  }
+  const refreshedVendor = await Vendor.findById(vendorId);
+
+  return { vendor: refreshedVendor, vendorBill, discount: discountEntry };
 };
 
 exports.reverseSupplierDiscount = async (vendorId, discountId) => {
@@ -183,8 +207,16 @@ exports.reverseSupplierDiscount = async (vendorId, discountId) => {
     if (vendorBill) {
       vendorBill.discountAmount = Math.max(0, Number(((vendorBill.discountAmount || 0) - discount.amount).toFixed(2)));
       await vendorBill.save();
+      if (vendorBill.mainBillId) {
+        const billingService = require('./billing.service');
+        await billingService.recalculateBillProfit(vendorBill.mainBillId);
+      }
     }
   }
 
-  return { vendor, reversedDiscount: discount };
+  // Recalculate vendor net purchased and due balance
+  await vendorBillService.updateVendorFinancials(vendorId);
+  const refreshedVendor = await Vendor.findById(vendorId);
+
+  return { vendor: refreshedVendor, reversedDiscount: discount };
 };

@@ -34,6 +34,7 @@ const vendorSchema = new mongoose.Schema(
       branch: { type: String, trim: true },
       routingNumber: { type: String, trim: true },
     },
+    grossPurchased: { type: Number, default: 0, min: 0 },
     totalPurchased: { type: Number, default: 0, min: 0 },
     totalPaid: { type: Number, default: 0, min: 0 },
     totalDiscountReceived: { type: Number, default: 0, min: 0 },

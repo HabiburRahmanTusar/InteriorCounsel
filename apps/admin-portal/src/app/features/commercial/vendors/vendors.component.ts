@@ -87,6 +87,20 @@ export class VendorsComponent implements OnInit {
     });
   }
 
+  getVendorNetPurchased(v: any): number {
+    if (!v) return 0;
+    const gross = Number(v.grossPurchased !== undefined ? v.grossPurchased : v.totalPurchased) || 0;
+    const discount = Number(v.totalDiscountReceived) || 0;
+    if (v.grossPurchased !== undefined) {
+      return Number(Math.max(0, gross - discount).toFixed(2));
+    }
+    // If totalPurchased was already net: (gross - totalPaid == dueBalance)
+    if (v.dueBalance !== undefined && Math.abs(gross - (v.totalPaid || 0) - v.dueBalance) < 0.01) {
+      return gross;
+    }
+    return Number(Math.max(0, gross - discount).toFixed(2));
+  }
+
   openCreateModal() {
     this.newVendor = {
       name: '',
@@ -434,7 +448,7 @@ export class VendorsComponent implements OnInit {
     const rows = list.map((v) => [
       v.name || '—',
       v.phone || '—',
-      v.totalPurchased || 0,
+      this.getVendorNetPurchased(v),
       v.totalPaid || 0,
       v.dueBalance !== undefined ? v.dueBalance : (v.outstandingDue || 0),
     ]);
@@ -457,7 +471,7 @@ export class VendorsComponent implements OnInit {
     const rows = list.map((v) => [
       v.name || '—',
       v.phone || '—',
-      (v.totalPurchased || 0).toLocaleString(),
+      this.getVendorNetPurchased(v).toLocaleString(),
       (v.totalPaid || 0).toLocaleString(),
       (v.dueBalance !== undefined ? v.dueBalance : (v.outstandingDue || 0)).toLocaleString(),
     ]);

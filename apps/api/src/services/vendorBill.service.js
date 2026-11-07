@@ -31,16 +31,18 @@ function calculateVendorBillTotals(data) {
 
 async function updateVendorFinancials(vendorId) {
   const bills = await VendorBill.find({ vendorId, status: { $ne: 'Cancelled' } });
-  const totalPurchased = bills.reduce((acc, b) => acc + (b.totalAmount || 0), 0);
+  const grossPurchased = bills.reduce((acc, b) => acc + (b.totalAmount || 0), 0);
   const totalDiscountReceived = bills.reduce((acc, b) => acc + (b.discountAmount || 0), 0);
+  const netPurchased = Number(Math.max(0, grossPurchased - totalDiscountReceived).toFixed(2));
 
   const payments = await CashOut.find({ vendorId, type: 'purchase' });
   const totalPaid = payments.reduce((acc, p) => acc + (p.amount || 0), 0);
 
-  const dueBalance = Number(((totalPurchased - totalDiscountReceived) - totalPaid).toFixed(2));
+  const dueBalance = Number((netPurchased - totalPaid).toFixed(2));
 
   await Vendor.findByIdAndUpdate(vendorId, {
-    totalPurchased: Number(totalPurchased.toFixed(2)),
+    totalPurchased: netPurchased,
+    grossPurchased: Number(grossPurchased.toFixed(2)),
     totalDiscountReceived: Number(totalDiscountReceived.toFixed(2)),
     totalPaid: Number(totalPaid.toFixed(2)),
     dueBalance,

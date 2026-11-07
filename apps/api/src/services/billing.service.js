@@ -97,7 +97,12 @@ async function recalculateBillProfit(billId) {
   if (!bill) return;
 
   const vendorBills = await VendorBill.find({ mainBillId: billId, status: { $ne: 'Cancelled' } });
-  const vendorTotalPurchase = vendorBills.reduce((acc, vb) => acc + (vb.netAmount !== undefined ? vb.netAmount : Math.max(0, (vb.totalAmount || 0) - (vb.discountAmount || 0))), 0);
+  const vendorTotalPurchase = vendorBills.reduce((acc, vb) => {
+    const net = (vb.netAmount !== undefined && vb.netAmount !== null)
+      ? Number(vb.netAmount)
+      : Math.max(0, (Number(vb.totalAmount) || 0) - (Number(vb.discountAmount) || 0));
+    return acc + (isNaN(net) ? 0 : net);
+  }, 0);
 
   // Direct Real-Time Bill Profitability: Total Sale - (Direct Costs + Vendor Total Purchase)
   const billProfit = Number(((bill.totalAmount || 0) - ((bill.directCosts || 0) + vendorTotalPurchase)).toFixed(2));
@@ -148,8 +153,27 @@ exports.listBills = async ({ search, customerId, salespersonId, paymentState, st
     Bill.countDocuments(query),
   ]);
 
+  const enrichedBills = await Promise.all(
+    bills.map(async (b) => {
+      const bObj = b.toObject ? b.toObject() : { ...b };
+      const vBills = await VendorBill.find({ mainBillId: b._id, status: { $ne: 'Cancelled' } });
+      if (vBills && vBills.length > 0) {
+        const netPurchase = vBills.reduce((acc, vb) => {
+          const net = (vb.netAmount !== undefined && vb.netAmount !== null)
+            ? Number(vb.netAmount)
+            : Math.max(0, (Number(vb.totalAmount) || 0) - (Number(vb.discountAmount) || 0));
+          return acc + (isNaN(net) ? 0 : net);
+        }, 0);
+        bObj.vendorTotalPurchase = Number(netPurchase.toFixed(2));
+        bObj.totalPurchase = bObj.vendorTotalPurchase;
+        bObj.billProfit = Number(((bObj.totalAmount || 0) - ((bObj.directCosts || 0) + bObj.vendorTotalPurchase)).toFixed(2));
+      }
+      return bObj;
+    })
+  );
+
   return {
-    data: bills,
+    data: enrichedBills,
     pagination: {
       page: Number(page),
       limit: Number(limit),
@@ -176,7 +200,13 @@ exports.getBillById = async (id) => {
     CashOut.find({ billId: id }).populate('paidBy', 'name').sort({ date: -1 }),
   ]);
 
-  const materialCost = vendorBills.reduce((acc, vb) => acc + (vb.netAmount !== undefined ? vb.netAmount : Math.max(0, (vb.totalAmount || 0) - (vb.discountAmount || 0))), 0);
+  const materialCost = vendorBills.reduce((acc, vb) => {
+    const net = (vb.netAmount !== undefined && vb.netAmount !== null)
+      ? Number(vb.netAmount)
+      : Math.max(0, (Number(vb.totalAmount) || 0) - (Number(vb.discountAmount) || 0));
+    return acc + (isNaN(net) ? 0 : net);
+  }, 0);
+
   const directExpenseCost = directExpenses.reduce((acc, exp) => acc + (exp.amount || 0), 0);
   const totalProjectCost = Number((materialCost + (bill.directCosts || 0) + directExpenseCost).toFixed(2));
   const projectGrossProfit = Number(((bill.totalAmount || 0) - totalProjectCost).toFixed(2));
@@ -184,8 +214,13 @@ exports.getBillById = async (id) => {
     ? Number(((projectGrossProfit / bill.totalAmount) * 100).toFixed(1))
     : 0;
 
+  const billObj = bill.toObject ? bill.toObject() : { ...bill };
+  billObj.vendorTotalPurchase = Number(materialCost.toFixed(2));
+  billObj.totalPurchase = Number(materialCost.toFixed(2));
+  billObj.billProfit = Number(((billObj.totalAmount || 0) - ((billObj.directCosts || 0) + billObj.vendorTotalPurchase)).toFixed(2));
+
   return {
-    bill,
+    bill: billObj,
     payments,
     vendorBills,
     directExpenses,
