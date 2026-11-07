@@ -637,8 +637,20 @@ export class BillingComponent implements OnInit {
     return Math.max(0, this.totalPurchaseAmount - this.totalSupplierDiscount);
   }
 
+  get formCashOutTotal(): number {
+    // Only actual Cash Flow (CashOut) records linked to this bill
+    // Never treat Other Charges (Transport, Fitting, Labor) as cashout!
+    if (this.isEditingBill() && this.currentBillId()) {
+      const active = this.activeInvoice();
+      if (active && (active._id === this.currentBillId() || active.id === this.currentBillId())) {
+        return this.getInvoiceTotalCashOut(active);
+      }
+    }
+    return 0;
+  }
+
   get formBillProfit(): number {
-    return Number((this.formGrandTotal - (this.formOtherChargesTotal + this.netPurchaseAmount)).toFixed(2));
+    return Number((this.formGrandTotal - (this.netPurchaseAmount + this.formCashOutTotal)).toFixed(2));
   }
 
   isExistingSupplier(name: string): boolean {
